@@ -1,0 +1,58 @@
+---
+import { getEntry, render } from 'astro:content';
+import ContentEntry from '../components/ContentEntry.astro';
+import { includeDrafts, isVisible, selected } from '../lib/content';
+import '../styles/global.css';
+
+const home = await getEntry('pages', 'home');
+const page = home && isVisible(home) ? home : undefined;
+const profileEntry = page ? await getEntry('profile', page.data.profile) : undefined;
+const profile = profileEntry && isVisible(profileEntry) ? profileEntry : undefined;
+const intro = page ? await render(page) : undefined;
+const bio = profile ? await render(profile) : undefined;
+const Intro = intro?.Content;
+const Bio = bio?.Content;
+const sectionNames = ['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'] as const;
+const sections = await Promise.all(sectionNames.map(async (name) => ({
+  name, entries: page ? await selected(name, page.data[name]) : [],
+})));
+const labels = { experience: 'Experience', expertise: 'Expertise', projects: 'Selected work', credentials: 'Credentials and training', education: 'Education', interests: 'Interests', callouts: 'Perspective' };
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{profile ? `${profile.data.name} | Content preview` : 'Site in preparation'}</title>
+    <meta name="description" content={page?.data.description_short ?? 'A personal website in preparation.'} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main">
+      {includeDrafts && <aside class="notice">Content preview · Draft entries are visible here. This is an initial content layout.</aside>}
+      {page && profile ? (
+        <>
+          <header class="intro">
+            <p class="eyebrow">{profile.data.headline}</p>
+            <h1>{profile.data.name}</h1>
+            <p class="lead">{profile.data.description_short}</p>
+            {Intro && <Intro />}
+          </header>
+          <nav aria-label="Page sections">
+            {sections.filter(({ entries }) => entries.length).map(({ name }) => <a href={`#section-${name}`}>{labels[name]}</a>)}
+          </nav>
+          {Bio && <section aria-label="Biography"><Bio /></section>}
+          {sections.filter(({ entries }) => entries.length).map(({ name, entries }) => (
+            <section id={`section-${name}`} aria-labelledby={`heading-${name}`}>
+              <h2 id={`heading-${name}`}>{labels[name]}</h2>
+              {entries.map((entry) => <ContentEntry entry={entry} />)}
+            </section>
+          ))}
+        </>
+      ) : (
+        <header class="intro"><h1>Site in preparation</h1><p>Content will appear here when it is ready for publication.</p></header>
+      )}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-drafts/
+.astro/
+.devenv/
+devenv.local.nix
+devenv.local.yaml
+.direnv/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store

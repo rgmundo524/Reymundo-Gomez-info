@@ -1,0 +1,29 @@
+{
+  "name": "reymundo-gomez-info",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "check:content": "node --import tsx scripts/check-content.ts",
+    "check": "npm run check:content && astro check",
+    "build": "npm run check && astro build",
+    "preview": "astro preview",
+    "build:drafts": "node --import tsx scripts/build-drafts.ts",
+    "preview:drafts": "astro preview --outDir dist-drafts",
+    "test": "node --import tsx --test tests/content.test.ts"
+  },
+  "dependencies": {
+    "astro": "7.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@types/node": "24.13.3",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "yaml": "2.9.0"
+  }
+}

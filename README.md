@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This first version establishes the content model and a simple content preview.
-The visual website design and public deployment come later. Resume-based example
+The visual website design and public deployment come later. Generic example
 entries are drafts; an ordinary production build excludes them.
 
 ## Start locally
@@ -103,9 +103,12 @@ repository. Use `npm run build` as its build command and `dist` as its output
 directory, with Node 24. GitHub Actions is not required. No Cloudflare project,
 DNS records, GitHub Actions workflows, or public site are created by this scaffold.
 
-## Source material
+## Example content
 
-Initial examples were drafted from the supplied August 21, 2026 resume. They need
-editorial review, including dates, exact titles, credential names, and attribution.
-The original PDF, home address, personal email addresses, and references' contact
-details are not included. This repository is not licensed for third-party reuse.
+The repository contains generic demonstration entries, not an imported resume.
+Replace them with your reviewed personal content after making the repository
+private. The separate resume-content-drafts.zip download contains the initial
+resume-based entries and import instructions. Do not commit that archive to this
+public repository.
+
+This repository is not licensed for third-party reuse.

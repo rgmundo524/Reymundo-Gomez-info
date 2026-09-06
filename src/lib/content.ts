@@ -1,0 +1,32 @@
+import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
+
+export const includeDrafts = import.meta.env.DEV || import.meta.env.CONTENT_PREVIEW === 'drafts';
+
+export function isVisible(entry: { data: { publication_status: string } }): boolean {
+  return includeDrafts || entry.data.publication_status === 'published';
+}
+
+export async function selected<K extends CollectionKey>(collection: K, ids: string[]): Promise<CollectionEntry<K>[]> {
+  if (!ids.length) return [];
+  const available = await getCollection(collection);
+  const entries = ids.map((id) => {
+    const entry = available.find((candidate) => candidate.id === id);
+    if (!entry) throw new Error(`Page references missing ${collection}/${id}. Run npm run check:content for details.`);
+    return entry;
+  });
+  return entries.filter(isVisible);
+}
+
+export function activePosition(periods: { start: string; end: string | null }[], asOf = new Date().toISOString().slice(0, 7)): boolean {
+  return periods.some(({ start, end }) => start <= asOf && (end === null || end >= asOf));
+}
+
+export function formatMonth(value: string): string {
+  const [year, month] = value.split('-').map(Number);
+  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
+export function formatPeriods(periods: { start: string; end: string | null }[]): string {
+  return [...periods].sort((a, b) => a.start.localeCompare(b.start))
+    .map(({ start, end }) => `${formatMonth(start)} to ${end ? formatMonth(end) : 'Present'}`).join('; ');
+}
