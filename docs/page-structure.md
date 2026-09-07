@@ -86,8 +86,11 @@ select draft content. Site metadata remains `noindex` during development.
 
 Every page can set `navigation: { label: Home, order: 10 }` in its frontmatter.
 Lower values appear first; omitting navigation hides the menu item. The current
-order is Home, Work History, Casework, Credentials, Expertise, Articles, Contact. The
-renamed Work History page retains `/about/` to preserve existing links.
+menu order is Home, Work History, Casework, Credentials, Expertise, Articles.
+Contact is a separate button immediately to the right of the compact theme toggle.
+The `/contact/` page remains available; the button appears only when that page is
+visible in the current build. The renamed Work History page retains `/about/` to
+preserve existing links.
 
 Supporting pages set `section_order`, a list of collection names such as
 `experience`, `charts`, `projects`, `credentials`, `education`, `expertise`,
@@ -176,15 +179,21 @@ References: [timeline documentation](https://www.amcharts.com/docs/v5/charts/tim
 ## Credential issuers
 
 The Credentials page uses `credentials_source: all` and discovers every visible
-credential Markdown file, including nested folders. Issuers are grouped
-alphabetically; each group lists newer awards first, then credential name.
+credential Markdown file, including nested folders. Its `issuer_order` list sets
+the group order; unlisted issuers follow alphabetically. Each group lists newer
+awards first, then credential name.
 Course links, verification links, and local badge files are optional fields on
 each credential. See [credential authoring](credentials.md).
 
 ## Color mode
 
-The header toggle switches light/dark mode and remembers the choice in local
-browser storage across pages and visits. Without a saved choice it follows the
-system preference. Both modes use the shared CSS variables, including chart
-surfaces, tables, notices, and keyboard focus styles. No external dependency is
-used for theme state.
+Every page starts in dark mode directly in its HTML, including without JavaScript.
+The icon-only header toggle switches the current page to light or dark mode. It
+does not read or save a preference or follow the system color scheme. New page
+loads and browser history restorations return to dark mode. The accessible label
+and pressed state identify the toggle; its tooltip describes the next action.
+
+The toggle retains a 44-pixel touch target. It and the Contact button stay together
+on narrow screens, above the wrapping navigation links. Both color modes use the
+shared CSS variables, including chart surfaces, tables, notices, and keyboard
+focus styles. No external dependency is used for theme state.

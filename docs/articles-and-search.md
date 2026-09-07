@@ -26,8 +26,8 @@ does not schedule publication: `publication_status` controls visibility.
 Published articles cannot reference draft case records. Publish the Articles
 page and its required profile separately to include it in public navigation.
 
-The current navigation inserts Articles before Contact, using `order: 55` in
-`content/pages/articles.md`. Its `section_order: [articles]` selects the automatic
+Articles follows Expertise in the navigation, using `order: 55` in
+`content/pages/articles.md`; Contact is a separate header button. Its `section_order: [articles]` selects the automatic
 article listing. A starter introduction remains a draft for review.
 
 ## Search casework

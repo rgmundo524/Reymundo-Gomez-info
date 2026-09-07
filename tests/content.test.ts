@@ -696,6 +696,15 @@ test('credentials group new issuers automatically and order awards by year then 
   assert.equal(new Set(groups.map(({ id }) => id)).size, groups.length);
   assert.equal(entries[0].id, 'ci'); // Input order is not mutated.
   assert.deepEqual(groupCredentials([]), []);
+  const ordered = groupCredentials(entries, [' trm   labs ', 'Future issuer']);
+  assert.deepEqual(ordered.map(({ issuer }) => issuer), ['TRM Labs', 'ACAMS', 'Chainalysis']);
+  assert.deepEqual(ordered[0].entries.map(({ id }) => id), ['aci', 'cfc', 'ci']);
+  assert.equal(ordered[0].id, groups[2].id, 'Reordering groups preserves their existing anchors');
+  const page = { ...base, title: 'Credentials', profile: 'reymundo' };
+  assert.deepEqual(schemas.pages.parse(page).issuer_order, []);
+  assert.deepEqual(schemas.pages.parse({ ...page, issuer_order: ['TRM Labs', 'Chainalysis'] }).issuer_order, ['TRM Labs', 'Chainalysis']);
+  assert.equal(schemas.pages.safeParse({ ...page, issuer_order: ['TRM Labs', ' trm   labs '] }).success, false);
+  assert.equal(schemas.pages.safeParse({ ...page, issuer_order: [' '] }).success, false);
 });
 
 test('credential program links, verification, and optional badge assets remain distinct', () => {

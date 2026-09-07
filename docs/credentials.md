@@ -13,10 +13,30 @@ appear during development; only published entries appear in production.
 ## Grouping and ordering
 
 Use a consistent `issuer` name, such as `TRM Labs`, `Chainalysis`, or `ACAMS`.
-Capitalization and repeated spaces are ignored when grouping. Groups sort
-alphabetically. Within a group, credentials sort by `issued_year` newest first,
-then by name and slug. A new issuing authority automatically gets a new group
-and a link in the issuer navigation.
+Capitalization and repeated spaces are ignored when grouping. Set `issuer_order`
+once in `content/pages/credentials.md` to control the issuing-authority groups:
+
+```yaml
+issuer_order:
+  - TRM Labs
+  - Chainalysis
+  - Blockchain Intelligence Group
+  - Input Output Global
+  - Alchemy University
+  - BerkeleyX
+```
+
+This is the initial example order. Rearrange the list when the cards are finalized.
+Listed issuers come first; unlisted issuers follow alphabetically. A listed issuer
+without visible credentials does not create an empty section. Names match without
+regard to capitalization or repeated spaces. Duplicate names and blank entries
+fail validation. Omit the field or use `issuer_order: []` for alphabetical order.
+The issuer navigation follows the same order, and changing this list preserves
+existing group anchors.
+
+Individual credential files keep their existing `issuer` field. Within each group,
+credentials still sort by `issued_year` newest first, then by name and slug. A new
+issuing authority automatically gets a new group and an issuer-navigation link.
 
 The existing content has 11 credentials across six issuers. There is no ACAMS
 entry yet; add one only when there is a credential or training record to describe.

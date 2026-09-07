@@ -17,7 +17,8 @@ const { title, description } = Astro.props;
 const profile = Astro.props.profile ?? await pageProfile(await getEntry('pages', 'home'));
 const contact = contactLink(profile);
 const visiblePages = await getCollection('pages', isVisible);
-const navigation = visiblePages.filter(({ data }) => data.navigation)
+const contactPage = visiblePages.find(({ id }) => id === 'contact');
+const navigation = visiblePages.filter(({ id, data }) => id !== 'contact' && data.navigation)
   .sort((a, b) => a.data.navigation!.order - b.data.navigation!.order || a.id.localeCompare(b.id))
   .map(({ id, data }) => ({ id, label: data.navigation!.label, url: id === 'home' ? '/' : `/${id}/` }));
 const name = profile?.data.name ?? 'Reymundo Gómez';
@@ -26,7 +27,7 @@ const canonical = new URL(currentPath, Astro.site!);
 const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -51,14 +52,6 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
     {Astro.props.article?.published_on && <meta property="article:published_time" content={`${Astro.props.article.published_on}T00:00:00Z`} />}
     {Astro.props.article?.updated_on && <meta property="article:modified_time" content={`${Astro.props.article.updated_on}T00:00:00Z`} />}
     <title>{title}</title>
-    <script is:inline>
-      (() => {
-        let preference;
-        try { preference = localStorage.getItem('reymundo-theme'); } catch {}
-        const dark = preference === 'dark' || (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      })();
-    </script>
   </head>
   <body>
     <ParticleBackground />
@@ -72,7 +65,10 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
         {navigation.length > 0 && <nav class="site-nav" aria-label="Main navigation">
           {navigation.map(({ id, label, url }) => <a href={url} aria-current={(id === 'home' ? currentPath === '/' : currentPath.startsWith(url)) || (id === 'casework' && currentPath.startsWith('/investigations/')) ? 'page' : undefined}>{navigationIcons[id] && <Icon name={navigationIcons[id]} aria-hidden="true" />}<span>{label}</span></a>)}
         </nav>}
-        <button class="theme-toggle" type="button" aria-pressed="false" hidden><Icon name="lucide:moon" class="theme-moon" aria-hidden="true" /><Icon name="lucide:sun" class="theme-sun" aria-hidden="true" /><span>Dark mode</span></button>
+        <div class="header-actions">
+          <button class="theme-toggle" type="button" aria-label="Dark mode" aria-pressed="true" title="Switch to light mode" hidden><Icon name="lucide:moon" class="theme-moon" aria-hidden="true" /><Icon name="lucide:sun" class="theme-sun" aria-hidden="true" /></button>
+          {contactPage && <a class="button button-primary header-contact" href="/contact/" aria-current={currentPath.startsWith('/contact/') ? 'page' : undefined}>Contact</a>}
+        </div>
       </div>
     </header>
     <main id="main"><slot /></main>
@@ -88,9 +84,6 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
     </footer>
     <script>
       const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
-      const system = window.matchMedia('(prefers-color-scheme: dark)');
-      let explicit = false;
-      try { explicit = ['light', 'dark'].includes(localStorage.getItem('reymundo-theme') ?? ''); } catch {}
       function applyTheme(dark: boolean) {
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
         toggle?.setAttribute('aria-pressed', String(dark));
@@ -98,19 +91,12 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
       }
       if (toggle) {
         toggle.hidden = false;
-        applyTheme(document.documentElement.dataset.theme === 'dark');
+        applyTheme(true);
         toggle.addEventListener('click', () => {
           const dark = document.documentElement.dataset.theme !== 'dark';
-          explicit = true;
           applyTheme(dark);
-          try { localStorage.setItem('reymundo-theme', dark ? 'dark' : 'light'); } catch {}
         });
-        system.addEventListener('change', (event) => { if (!explicit) applyTheme(event.matches); });
-        window.addEventListener('storage', (event) => {
-          if (event.key !== 'reymundo-theme' && event.key !== null) return;
-          explicit = event.newValue === 'light' || event.newValue === 'dark';
-          applyTheme(explicit ? event.newValue === 'dark' : system.matches);
-        });
+        window.addEventListener('pageshow', (event) => { if (event.persisted) applyTheme(true); });
       }
     </script>
   </body>

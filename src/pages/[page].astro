@@ -37,7 +37,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
   {page.data.section_order.map((name) => {
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
-      <CredentialGroups entries={credentials} />
+      <CredentialGroups entries={credentials} issuerOrder={page.data.issuer_order} />
     </section>;
     if (name === 'articles') return <section class="container content-section" aria-label="Articles"><ArticleList /></section>;
     if (name === 'charts') return charts.length > 0 && <section class="container content-section" id="section-casework" aria-labelledby="chart-heading">

@@ -149,6 +149,8 @@ export const schemas = {
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
     credentials_source: z.enum(['selected', 'all']).default('selected'),
+    issuer_order: z.array(text).default([]).refine((issuers) => new Set(issuers.map((issuer) => issuer.replace(/\s+/g, ' ').toLocaleLowerCase('en-US'))).size === issuers.length,
+      'List each issuer once; capitalization and repeated spaces are ignored.'),
     timeline: timelineSchema,
     section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),

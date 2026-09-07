@@ -10,6 +10,8 @@ navigation:
   order: 70
 experience_source: selected
 credentials_source: selected
+# Credential issuer groups, first to last. Unlisted issuers follow alphabetically.
+issuer_order: []
 timeline:
   start: null
   scale: 1.2
