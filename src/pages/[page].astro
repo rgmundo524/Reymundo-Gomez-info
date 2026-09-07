@@ -7,7 +7,8 @@ import CaseDashboard from '../components/CaseDashboard.astro';
 import ExperienceTimeline from '../components/ExperienceTimeline.astro';
 import ArticleList from '../components/ArticleList.astro';
 import CredentialGroups from '../components/CredentialGroups.astro';
-import { contactLink, isVisible, pageProfile, selected } from '../lib/content';
+import ContactCards from '../components/ContactCards.astro';
+import { isVisible, pageContact, pageProfile, selected } from '../lib/content';
 import { sortExperience } from '../lib/experience';
 
 export async function getStaticPaths() {
@@ -17,11 +18,11 @@ export async function getStaticPaths() {
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 const { page }: Props = Astro.props;
 const profile = await pageProfile(page);
-const { Content: Intro } = await render(page);
+const contact = await pageContact(page);
+const { Content: Intro } = await render(contact ?? page);
 const biography = page.id === 'about' && profile ? await render(profile) : undefined;
 const Bio = biography?.Content;
 const charts = await selected('charts', page.data.charts);
-const contact = contactLink(profile);
 const experience = sortExperience(page.data.experience_source === 'all' ? await getCollection('experience', isVisible) : await selected('experience', page.data.experience));
 const credentials = page.data.credentials_source === 'all' ? await getCollection('credentials', isVisible) : await selected('credentials', page.data.credentials);
 const sectionNames = ['experience', 'expertise', 'projects', 'education', 'interests', 'callouts'] as const;
@@ -34,6 +35,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     <h1>{page.data.title}</h1>
     <div class="page-lead"><Intro /></div>
   </header>
+  {contact && <ContactCards entry={contact} />}
   {page.data.section_order.map((name) => {
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
@@ -51,5 +53,4 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     </section>;
   })}
   {Bio && <section class="container bio-section"><div><p class="eyebrow">Background</p><h2>{page.data.blocks.bio_heading}</h2></div><div class="reading-copy"><Bio /></div></section>}
-  {page.id === 'contact' && <section class="container contact-band"><div><h2>{page.data.blocks.contact_heading}</h2><p>Blockchain investigations · Expert witness work · Professional collaboration</p></div>{contact && <a class="button button-primary" href={contact.url}>{contact.label}</a>}</section>}
 </SiteLayout>

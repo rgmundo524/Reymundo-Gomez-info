@@ -55,6 +55,7 @@ export function validateRecords(records: ContentRecord[]): void {
     }
     for (const [field, collection] of Object.entries(relationships[record.collection] ?? {})) {
       const value = (record.data as unknown as Record<string, unknown>)[field];
+      if (value === undefined) continue;
       const ids = typeof value === 'string' ? [value] : value as string[];
       if (new Set(ids).size !== ids.length) throw new Error(`${record.file}: duplicate reference in ${field}.`);
       for (const id of ids) {

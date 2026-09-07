@@ -11,7 +11,7 @@ background or work.
 | `/expertise/` | `content/pages/expertise.md` | Full descriptions of all expertise areas and analytical approach |
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Credentials discovered from Markdown, grouped by issuer, followed by education |
-| `/contact/` | `content/pages/contact.md` | Professional enquiry introduction and contact link |
+| `/contact/` | `content/pages/contact.md` selects `content/contacts/reymundo.md` | Organization enquiry cards and a combined personal/social card |
 | `/articles/` | `content/pages/articles.md` | Automatically discovered articles, newest dated entries first |
 | `/articles/<slug>/` | `content/articles/` | Article body, takeaway, topics, and related cases |
 | `/investigations/<chart>/<category>/` | Matching records in `content/cases/` | Case summaries reached from chart slices or legend links |
@@ -63,9 +63,12 @@ copyright notice and does not specify a separate image reuse license. No AI
 portrait, alteration, or generated likeness was used. A higher-resolution
 owner-supplied original can replace this asset later.
 
-Professional contact currently links to the LinkedIn profile listed in the
-resume. To use email instead, set the profile's existing `public_email` field;
-the contact page, homepage, and footer derive their contact link from that one field.
+Professional contact links on the homepage, header, and footer open `/contact/`.
+Its introduction, organization cards, contact details, and combined social card
+come from `content/contacts/reymundo.md`. Use `services[].display_order` to order
+organizations and `enabled: false` to hide a card. Personal email and phone are
+optional fields under `social`; links appear in their written order. See
+[contact authoring](contacts.md) for fields and examples.
 
 ## Draft behavior
 

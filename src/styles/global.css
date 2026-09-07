@@ -98,6 +98,30 @@ li + li { margin-top: .4rem; }
 .contact-band { display: flex; justify-content: space-between; align-items: center; gap: 3rem; padding-block: 5rem; }
 .contact-band p:last-child { color: var(--muted); max-width: 38rem; margin-bottom: 0; }
 .contact-band .button { flex-shrink: 0; }
+.contact-directory { padding-block: 3rem 2rem; }
+.contact-service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.contact-card { min-width: 0; padding: clamp(1.5rem, 3vw, 2.5rem); border: 1px solid var(--line); border-top: 3px solid var(--accent); background: transparent; }
+.contact-service { display: flex; flex-direction: column; }
+.contact-card-icon { width: 1.6rem; height: 1.6rem; color: var(--accent); margin-bottom: 1.2rem; }
+.contact-card h3 { font-family: var(--serif); font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
+.contact-description { color: var(--muted); max-width: 44rem; }
+.contact-details { display: grid; gap: .65rem; margin: .25rem 0 1.5rem; font-size: .9375rem; }
+.contact-details div { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: .8rem; }
+.contact-details dt { color: var(--muted); }
+.contact-details dd { margin: 0; min-width: 0; }
+.contact-card-action { margin-top: auto; padding-top: 1rem; }
+.contact-card-action .button { max-width: 100%; }
+.contact-card-action svg, .contact-social-links svg { flex-shrink: 0; width: 1.2rem; height: 1.2rem; }
+.contact-social { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 2rem 4rem; align-items: center; margin-top: 2rem; }
+.contact-social h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); }
+.contact-person { font-weight: 600; margin-bottom: .65rem; }
+.contact-social-copy > :last-child { margin-bottom: 0; }
+.contact-social-links { display: grid; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.contact-social-links li + li { margin-top: 0; }
+.contact-social-links a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.5rem; padding: 1rem .25rem; border-bottom: 1px solid var(--line); font-weight: 600; text-decoration: none; }
+.contact-social-links a:hover { text-decoration: underline; }
+@media (max-width: 760px) { .contact-service-grid, .contact-social { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .contact-details div { grid-template-columns: 1fr; gap: .1rem; } }
 .site-footer { background: var(--surface); border-top: 1px solid var(--line); margin-top: 2rem; }
 .footer-main { display: flex; justify-content: space-between; gap: 2rem; padding-block: 2.5rem; }
 .footer-name { font-family: var(--serif); font-size: 1.5rem; color: var(--ink); text-decoration: none; }

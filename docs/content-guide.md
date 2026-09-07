@@ -88,6 +88,10 @@ Other collections retain explicit page selections. Page records get their own ro
 credentials appear within the selected page.
 See [the page structure guide](page-structure.md).
 
+The Contact page selects one contact directory using `contact: reymundo`.
+`content/contacts/reymundo.md` holds organization cards, personal details, social
+links, and the displayed introduction. See [contact authoring](contacts.md).
+
 ## Reuse from Astro components
 
 ```astro

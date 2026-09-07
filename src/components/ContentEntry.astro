@@ -5,7 +5,7 @@ import { isCurrentPosition } from '../lib/experience';
 import type { ImageMetadata } from 'astro';
 
 type Props = {
-  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases' | 'articles'>>;
+  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'contacts' | 'charts' | 'cases' | 'articles'>>;
   expanded?: boolean;
   grouped?: boolean;
 };

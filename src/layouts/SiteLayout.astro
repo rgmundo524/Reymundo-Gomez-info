@@ -1,6 +1,6 @@
 ---
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import { contactLink, includeDrafts, isVisible, pageProfile } from '../lib/content';
+import { includeDrafts, isVisible, pageProfile } from '../lib/content';
 import '../styles/global.css';
 import { Icon } from 'astro-icon/components';
 import { navigationIcons } from '../lib/icons';
@@ -15,7 +15,6 @@ type Props = {
 };
 const { title, description } = Astro.props;
 const profile = Astro.props.profile ?? await pageProfile(await getEntry('pages', 'home'));
-const contact = contactLink(profile);
 const visiblePages = await getCollection('pages', isVisible);
 const contactPage = visiblePages.find(({ id }) => id === 'contact');
 const navigation = visiblePages.filter(({ id, data }) => id !== 'contact' && data.navigation)
@@ -75,7 +74,7 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
     <footer class="site-footer">
       <div class="container footer-main">
         <div><a class="footer-name" href="/">{name}</a><p>Blockchain investigations &amp; expert witness work</p></div>
-        {contact && <div class="footer-contact"><span>Professional enquiries</span><a href={contact.url}>{contact.label}</a></div>}
+        {contactPage && <div class="footer-contact"><span>Professional enquiries</span><a href="/contact/">Contact me</a></div>}
       </div>
       <div class="container footer-bottom">
         <span>© {new Date().getFullYear()} {name}</span>

@@ -15,6 +15,7 @@ function loader(name: CollectionName) {
 
 export const collections = {
   profile: defineCollection({ loader: loader('profile'), schema: schemas.profile }),
+  contacts: defineCollection({ loader: loader('contacts'), schema: schemas.contacts }),
   experience: defineCollection({ loader: loader('experience'), schema: schemas.experience }),
   education: defineCollection({ loader: loader('education'), schema: schemas.education }),
   credentials: defineCollection({ loader: loader('credentials'), schema: schemas.credentials }),

@@ -5,6 +5,20 @@ const slug = text.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase words separ
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a quoted YYYY-MM date.');
 const webUrl = z.url({ protocol: /^https?$/ });
 const link = z.strictObject({ label: text, url: webUrl });
+const contactDetails = {
+  email: z.email().nullable().optional(),
+  phone: z.strictObject({
+    label: text,
+    number: text.regex(/^\+[1-9]\d{6,14}$/, 'Use an international phone number, such as +19035550123.'),
+  }).nullable().optional(),
+};
+const contactService = z.strictObject({
+  id: slug, name: text, description: text,
+  display_order: z.number().int().nonnegative().default(100),
+  enabled: z.boolean().default(true),
+  website: link.optional(), action: link,
+  ...contactDetails,
+});
 const refs = () => z.array(slug).default([]);
 const common = {
   slug,
@@ -54,11 +68,23 @@ const caseCategories = z.array(z.strictObject({
 export const schemas = {
   profile: z.strictObject({
     ...common, name: text, headline: text,
-    public_email: z.email().optional(), location: text.optional(),
+    location: text.optional(),
     portrait: z.strictObject({
       image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from src/assets.'),
       alt: text,
       source_url: webUrl.optional(),
+    }).optional(),
+  }),
+  contacts: z.strictObject({
+    ...common,
+    services_heading: text,
+    services: z.array(contactService).default([])
+      .refine((items) => new Set(items.map(({ id }) => id)).size === items.length, 'Each service must have a unique id.'),
+    social: z.strictObject({
+      title: text, name: text, description: text,
+      enabled: z.boolean().default(true),
+      ...contactDetails,
+      links: z.array(link).default([]),
     }).optional(),
   }),
   experience: z.strictObject({
@@ -144,6 +170,7 @@ export const schemas = {
   }),
   pages: z.strictObject({
     ...common, title: text, profile: slug,
+    contact: slug.optional(),
     experience: refs(), education: refs(), credentials: refs(),
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
@@ -171,7 +198,7 @@ export const relationships: Partial<Record<CollectionName, Record<string, Collec
   cases: { chart: 'charts' },
   articles: { related_cases: 'cases' },
   pages: {
-    profile: 'profile', experience: 'experience', education: 'education',
+    profile: 'profile', contact: 'contacts', experience: 'experience', education: 'education',
     credentials: 'credentials', expertise: 'expertise', projects: 'projects',
     interests: 'interests', callouts: 'callouts', charts: 'charts',
   },

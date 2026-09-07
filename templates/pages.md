@@ -28,6 +28,8 @@ section_order:
   - interests
   - callouts
 profile: new-profile
+# For a contact directory, select the slug from content/contacts/.
+# contact: new-contact
 experience: []
 education: []
 credentials: []

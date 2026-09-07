@@ -14,10 +14,10 @@ export async function pageProfile(page: CollectionEntry<'pages'> | undefined) {
   return profile && isVisible(profile) ? profile : undefined;
 }
 
-export function contactLink(profile: CollectionEntry<'profile'> | undefined) {
-  if (profile?.data.public_email) return { label: 'Email Reymundo', url: `mailto:${profile.data.public_email}` };
-  const linkedIn = profile?.data.links.find(({ label }) => label === 'LinkedIn');
-  return linkedIn ? { label: 'Connect on LinkedIn', url: linkedIn.url } : undefined;
+export async function pageContact(page: CollectionEntry<'pages'> | undefined) {
+  if (!page || !isVisible(page) || !page.data.contact) return undefined;
+  const contact = await getEntry('contacts', page.data.contact);
+  return contact && isVisible(contact) ? contact : undefined;
 }
 
 export async function selected<K extends CollectionKey>(collection: K, ids: string[]): Promise<CollectionEntry<K>[]> {

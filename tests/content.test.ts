@@ -185,6 +185,34 @@ test('the actual Markdown collection has valid fields and relationships', async 
   assert.ok(records.some((record) => record.collection === 'pages' && record.data.slug === 'home'));
 });
 
+test('contact records validate public destinations and optional contact details', () => {
+  const service = { id: 'agency', name: 'Agency', description: 'Investigations.', action: { label: 'Contact Agency', url: 'https://example.com/contact/' } };
+  const contact = { ...base, services_heading: 'Services', services: [service], social: { title: 'Connect', name: 'Example', description: 'Professional enquiries.', email: null, phone: null, links: [] } };
+  const parsed = schemas.contacts.parse(contact);
+  assert.equal(parsed.services[0].enabled, true);
+  assert.equal(parsed.services[0].display_order, 100);
+  assert.equal(parsed.social?.email, null);
+  assert.equal(schemas.contacts.safeParse({ ...contact, services: [service, service] }).success, false);
+  assert.equal(schemas.contacts.safeParse({ ...contact, services: [{ ...service, action: { label: 'Unsafe', url: 'javascript:alert(1)' } }] }).success, false);
+  assert.equal(schemas.contacts.safeParse({ ...contact, services: [{ ...service, display_order: -1 }] }).success, false);
+  assert.equal(schemas.contacts.safeParse({ ...contact, social: { ...contact.social, email: 'not-an-email' } }).success, false);
+  assert.equal(schemas.contacts.safeParse({ ...contact, social: { ...contact.social, links: [{ label: 'Unsafe', url: 'data:text/html,hello' }] } }).success, false);
+  assert.equal(schemas.contacts.safeParse({ ...contact, social: { ...contact.social, phone: { label: 'Office', number: '+19035550123' } } }).success, true);
+  assert.equal(schemas.contacts.safeParse({ ...contact, social: { ...contact.social, phone: { label: 'Office', number: '+1 903 555 0123' } } }).success, false);
+});
+
+test('contact selection rejects missing or draft records on published pages', () => {
+  const profile: ContentRecord = { collection: 'profile', data: schemas.profile.parse({ ...base, name: 'Example', headline: 'Investigator', publication_status: 'published' }), body: 'Biography', file: 'profile/example.md' };
+  const page: ContentRecord = { collection: 'pages', data: schemas.pages.parse({ ...base, title: 'Contact', profile: 'example', contact: 'example', publication_status: 'published' }), body: 'Contact', file: 'pages/contact.md' };
+  const contact: ContentRecord = { collection: 'contacts', data: schemas.contacts.parse({ ...base, services_heading: 'Services' }), body: 'Contact information', file: 'contacts/example.md' };
+  assert.throws(() => validateRecords([profile, page]), /missing contacts\/example/);
+  assert.throws(() => validateRecords([profile, page, contact]), /published content references draft contacts\/example/);
+  contact.data.publication_status = 'published';
+  assert.doesNotThrow(() => validateRecords([profile, page, contact]));
+  delete page.data.contact;
+  assert.doesNotThrow(() => validateRecords([profile, page]));
+});
+
 const chart = {
   ...base, title: 'Case types',
   categories: [{ id: 'fraud', label: 'Fraud' }, { id: 'other', label: 'Other' }],

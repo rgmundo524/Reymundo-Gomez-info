@@ -73,7 +73,8 @@ from `templates/` into the matching collection under `content/`.
 
 | Directory | Contents |
 | --- | --- |
-| `content/profile/` | Identity, public contact fields, and biography variants |
+| `content/profile/` | Identity, portrait, and biography variants |
+| `content/contacts/` | Service enquiry cards, personal contact details, and social links |
 | `content/experience/` | Employment roles, date ranges, and achievement bullets |
 | `content/education/` | Degrees and attendance records |
 | `content/credentials/` | Certifications, certificates, and training |
@@ -95,6 +96,9 @@ Work History automatically discovers job files and uses their `display_order`.
 The home page presents a small selection; the supporting pages provide the full
 background and details. Other content files supply the writing. See
 [the page structure guide](docs/page-structure.md) for the route map and portrait.
+Edit `content/contacts/reymundo.md` for the Contact page's organization cards and
+combined personal/social card. See [the contact guide](docs/contacts.md) for
+ordering, optional contact fields, and adding more services or social accounts.
 
 ## Access through Tailscale
 
