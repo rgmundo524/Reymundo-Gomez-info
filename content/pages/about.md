@@ -13,6 +13,7 @@ blocks:
 experience_source: all
 timeline:
   start: "2016-01"
+  scale: 1.2
   levels:
     desktop: 3
     mobile: 5

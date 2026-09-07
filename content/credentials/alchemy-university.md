@@ -3,6 +3,10 @@ slug: alchemy-university
 publication_status: draft
 name: 'Alchemy University: Ethereum and Solidity Development'
 issuer: Alchemy University
+course_url: https://www.alchemy.com/university/courses/ethereum
+links:
+- label: Solidity course
+  url: https://www.alchemy.com/university/courses/solidity
 issued_year: 2023
 credential_type: training
 expertise:

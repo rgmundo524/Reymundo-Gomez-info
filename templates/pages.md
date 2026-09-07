@@ -9,8 +9,10 @@ navigation:
   label: Page label
   order: 70
 experience_source: selected
+credentials_source: selected
 timeline:
   start: null
+  scale: 1.2
   levels:
     desktop: 3
     mobile: 5

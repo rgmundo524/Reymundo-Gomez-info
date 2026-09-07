@@ -3,6 +3,7 @@ slug: plutus-pioneer
 publication_status: draft
 name: Plutus Pioneer Program
 issuer: Input Output Global
+course_url: https://github.com/input-output-hk/plutus-pioneer-program
 issued_year: 2021
 credential_type: training
 expertise:

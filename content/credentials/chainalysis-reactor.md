@@ -3,6 +3,7 @@ slug: chainalysis-reactor
 publication_status: draft
 name: Chainalysis Reactor Certification (CRC)
 issuer: Chainalysis
+course_url: https://training.chainalysis-gov.com/pages/crc
 issued_year: 2022
 credential_type: certification
 expertise:

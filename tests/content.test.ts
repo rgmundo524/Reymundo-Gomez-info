@@ -5,7 +5,8 @@ import { loadContent, validateRecords } from '../scripts/content';
 import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
-import { careerTimeline, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
+import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
+import { groupCredentials } from '../src/lib/credentials';
 import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
 import { visibleArticles } from '../src/lib/articles';
@@ -413,7 +414,7 @@ test('timeline settings reject clipping recorded history and invalid bend counts
   assert.equal(timelineSchema.safeParse({ start: '2020-13' }).success, false);
   assert.equal(timelineSchema.safeParse({ levels: { desktop: 1, mobile: 5 } }).success, false);
   assert.equal(timelineSchema.safeParse({ levels: { desktop: 3, mobile: 9 } }).success, false);
-  assert.deepEqual(timelineSchema.parse(undefined), { start: null, levels: { desktop: 3, mobile: 5 } });
+  assert.deepEqual(timelineSchema.parse(undefined), { start: null, scale: 1.2, levels: { desktop: 3, mobile: 5 } });
   assert.equal(careerTimeline([], timelineSchema.parse({}), '2026-09').spans.length, 0);
 });
 
@@ -424,4 +425,45 @@ test('timeline navigation clamps zoom and chronological shifts at both ends', ()
   assert.deepEqual(timelineWindow(0.25, 0.75, 3), { start: 0, end: 1 });
   const smallest = timelineWindow(0.4, 0.5, 0.01, 0, 0.1);
   assert.ok(Math.abs(smallest.end - smallest.start - 0.1) < 1e-12);
+});
+
+test('timeline hover content belongs to the actual role and period, with a reusable summary override', () => {
+  const entries: Parameters<typeof careerTimeline>[0] = [
+    { id: 'first', data: { organization: 'First firm', role: 'Analyst', description_short: 'First job summary.', blocks: {}, periods: [{ start: '2020-01', end: '2021-01' }] } },
+    { id: 'second', data: { organization: 'Second firm', role: 'Investigator', description_short: 'Default second summary.', blocks: { timeline_summary: 'Specialized investigation work.' }, periods: [{ start: '2022-01', end: null }] } },
+  ];
+  const timeline = careerTimeline(entries, timelineSchema.parse({}), '2026-09');
+  assert.equal(timeline.spans[0].category, timeline.spans[1].category); // Reused lane, different jobs.
+  for (const span of timeline.spans) {
+    const role = timeline.roles.find(({ id }) => id === span.id)!;
+    const text = careerTooltip(role, span);
+    assert.ok(text.includes(role.organization) && text.includes(role.role) && text.includes(span.dates));
+    if (span.id === 'second') {
+      assert.ok(text.includes('Specialized investigation work.') && text.includes('Current role'));
+      assert.ok(!text.includes('First firm') && !text.includes('Default second summary.'));
+    } else assert.ok(text.includes('First job summary.') && text.includes('Past role'));
+  }
+});
+
+test('credentials group new issuers automatically and order awards by year then name', () => {
+  const credential = (id: string, issuer: string, issued_year: number, name = id) => ({ id, data: { issuer, issued_year, name } });
+  const entries = [credential('ci', 'TRM Labs', 2025), credential('crc', 'Chainalysis', 2022),
+    credential('aci', ' trm   labs ', 2026), credential('cci', 'ACAMS', 2024), credential('cfc', 'TRM Labs', 2025)];
+  const groups = groupCredentials(entries);
+  assert.deepEqual(groups.map(({ issuer }) => issuer), ['ACAMS', 'Chainalysis', 'TRM Labs']);
+  assert.deepEqual(groups[2].entries.map(({ id }) => id), ['aci', 'cfc', 'ci']);
+  assert.equal(new Set(groups.map(({ id }) => id)).size, groups.length);
+  assert.equal(entries[0].id, 'ci'); // Input order is not mutated.
+  assert.deepEqual(groupCredentials([]), []);
+});
+
+test('credential program links, verification, and optional badge assets remain distinct', () => {
+  const base = { slug: 'credential', description_short: 'Description', name: 'Training', issuer: 'Issuer', credential_type: 'training', issued_year: 2026 };
+  const record = schemas.credentials.parse({ ...base, course_url: 'https://issuer.example/course',
+    verification_url: 'https://issuer.example/award/123', badge: { image: 'training-badge.svg', alt: 'Training badge', source_url: 'https://issuer.example/course' } });
+  assert.notEqual(record.course_url, record.verification_url);
+  assert.equal(schemas.credentials.parse(base).badge, undefined);
+  assert.equal(schemas.credentials.safeParse({ ...base, course_url: 'javascript:alert(1)' }).success, false);
+  assert.equal(schemas.credentials.safeParse({ ...base, badge: { image: '../badge.svg', alt: 'Badge' } }).success, false);
+  assert.equal(schemas.credentials.safeParse({ ...base, badge: { image: 'badge.png' } }).success, false);
 });

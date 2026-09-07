@@ -3,6 +3,7 @@ slug: certified-cryptocurrency-investigator
 publication_status: draft
 name: Certified Cryptocurrency Investigator (CCI)
 issuer: Blockchain Intelligence Group
+course_url: https://cryptoinvestigatortraining.com/
 issued_year: 2024
 credential_type: certification
 expertise:

@@ -9,18 +9,7 @@ profile: reymundo
 description_short: Professional certifications, technical training, and academic background.
 blocks:
   eyebrow: Education & professional development
-credentials:
-- trm-advanced-crypto-investigator
-- trm-certified-investigator
-- trm-crypto-fundamentals
-- certified-cryptocurrency-investigator
-- ethereum-investigations
-- chainalysis-reactor
-- chainalysis-investigation-specialist
-- plutus-pioneer
-- atala-prism-pioneer
-- alchemy-university
-- berkeleyx-blockchain-fundamentals
+credentials_source: all
 education:
 - texas-am-san-antonio
 - university-of-north-texas

@@ -3,6 +3,9 @@ slug: atala-prism-pioneer
 publication_status: draft
 name: Atala PRISM Pioneer Program
 issuer: Input Output Global
+links:
+- label: Program documentation
+  url: https://github.com/AtalaPRISMTribe/PPPGF/blob/main/PRISM%20Pioneer%20Program%20Governance%20Framework.md
 issued_year: 2022
 credential_type: training
 expertise:

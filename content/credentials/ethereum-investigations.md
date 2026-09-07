@@ -3,6 +3,7 @@ slug: ethereum-investigations
 publication_status: draft
 name: Master CCIE - Ethereum Investigations
 issuer: Blockchain Intelligence Group
+course_url: https://cryptoinvestigatortraining.com/
 issued_year: 2024
 credential_type: certificate
 expertise:

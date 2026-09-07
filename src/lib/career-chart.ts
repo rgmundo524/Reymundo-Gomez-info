@@ -2,7 +2,7 @@ import * as am5 from '@amcharts/amcharts5';
 import * as am5xy from '@amcharts/amcharts5/xy';
 import * as am5timeline from '@amcharts/amcharts5/timeline';
 import am5themes_Dark from '@amcharts/amcharts5/themes/Dark';
-import { timelineWindow, type CareerChartData } from './career-timeline';
+import { careerTooltip, timelineWindow, type CareerChartData } from './career-timeline';
 
 export type CareerChart = { dispose(): void; select(id: string): void; window(): { start: number; end: number } };
 
@@ -15,6 +15,7 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
   try {
     const dark = document.documentElement.dataset.theme === 'dark';
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scale = data.settings.scale;
     const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
     const style = getComputedStyle(figure);
     const ink = am5.color(style.getPropertyValue('--ink').trim());
@@ -45,7 +46,7 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
     const xRenderer = am5timeline.AxisRendererCurveX.new(root, {
       yRenderer, stroke: muted, strokeWidth: 2, strokeOpacity: 0.65, minGridDistance: 85,
     });
-    xRenderer.labels.template.setAll({ fill: ink, fontSize: 14, fontFamily: 'Inter, sans-serif',
+    xRenderer.labels.template.setAll({ fill: ink, fontSize: 14 * scale, fontFamily: 'Inter, sans-serif',
       centerY: am5.p50, paddingTop: 10, paddingBottom: 10, minPosition: 0.015, maxPosition: 0.985 });
     xRenderer.grid.template.setAll({ stroke: muted, strokeOpacity: 0.18 });
     xRenderer.axisFills.template.set('forceHidden', true);
@@ -66,27 +67,30 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
     const roles = new Map(data.roles.map((role) => [role.id, role]));
     const points = data.spans.map((span) => {
       const role = roles.get(span.id)!;
-      return { ...span, organization: role.organization, role: role.role, label: role.label,
+      return { ...span, organization: role.organization, role: role.role, label: role.label, tooltipText: careerTooltip(role, span),
         color: am5.color(dark ? role.dark : role.light),
         status: span.scheduled ? 'Scheduled role' : span.current ? 'Current role' : 'Past role' };
     });
     let selectedId = '';
     type Point = (typeof points)[number];
-    const tooltip = am5.Tooltip.new(root, { getFillFromSprite: false, getStrokeFromSprite: false, getLabelFillFromSprite: false });
+    // Fixed paper/ink colors must not be overridden based on the band's color.
+    // This tooltip belongs to hovered sprites, independently of CurveCursor.
+    const tooltip = am5.Tooltip.new(root, { autoTextColor: false, getFillFromSprite: false, getStrokeFromSprite: false, getLabelFillFromSprite: false });
     tooltip.get('background')?.setAll({ fill: paper, fillOpacity: 0.97, stroke: muted, strokeOpacity: 0.5 });
-    tooltip.label.setAll({ fill: ink, fontSize: 14, maxWidth: 290, oversizedBehavior: 'wrap' });
+    tooltip.label.setAll({ fill: ink, fontSize: 15, maxWidth: 350, oversizedBehavior: 'wrap', populateText: false, ignoreFormatting: true });
     const series = chart.series.push(am5timeline.CurveColumnSeries.new(root, {
       xAxis, yAxis, baseAxis: yAxis, categoryYField: 'category',
       openValueXField: 'from', valueXField: 'to',
-      locationX: 0, openLocationX: 0, exactLocationX: true, tooltip,
+      locationX: 0, openLocationX: 0, exactLocationX: true,
     }));
     series.columns.template.setAll({
       height: am5.percent(76), fillOpacity: 0.68, strokeOpacity: 0.9, strokeWidth: 1.5,
       interactive: true, cursorOverStyle: 'pointer', focusable: true, hoverOnFocus: true,
       role: 'link', ariaLabel: '{organization}. {role}. {dates}. {status}. Press Enter to read role details.',
-      tooltipText: '{organization}\n{role}\n{dates}\n{status}\nSelect to read role details.',
+      tooltip, tooltipText: 'Select to read role details.', tooltipPosition: 'pointer',
     });
     series.columns.template.states.create('hover', { fillOpacity: 0.95, strokeWidth: 3 });
+    series.columns.template.adapters.add('tooltipText', (_text, column) => (column.dataItem?.dataContext as Point)?.tooltipText ?? 'Select to read role details.');
     series.columns.template.adapters.add('fill', (fill, column) => (column.dataItem?.dataContext as Point)?.color ?? fill);
     series.columns.template.adapters.add('stroke', (stroke, column) => (column.dataItem?.dataContext as Point)?.color ?? stroke);
     series.columns.template.adapters.add('fillOpacity', (opacity, column) => (column.dataItem?.dataContext as Point)?.id === selectedId ? 0.95 : opacity);
@@ -102,13 +106,13 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
       const point = item.dataContext as Point;
       if (point.planned && edge === 1) return;
       const circle = am5.Circle.new(root, {
-        radius: point.planned ? 7 : point.current && edge === 1 ? 6 : 4,
+        radius: (point.planned ? 7 : point.current && edge === 1 ? 6 : 4) * scale,
         fill: point.color, fillOpacity: point.scheduled ? 0.3 : 1,
         stroke: point.color, strokeWidth: point.current && edge === 1 ? 3 : 1,
         interactive: true, cursorOverStyle: 'pointer',
         focusable: point.planned, role: 'link', hoverOnFocus: true,
         ariaLabel: `${point.organization}. ${point.dates}. Press Enter to read role details.`,
-        tooltipText: `${point.organization}\n${point.dates}`, tooltip,
+        tooltipText: point.tooltipText, tooltip,
       });
       circle.events.on('click', () => navigate(point.id));
       return am5.Bullet.new(root, { sprite: circle, locationX: edge, locationY: 0.5 });
@@ -120,7 +124,7 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
 
     const present = xAxis.createAxisRange(xAxis.makeDataItem({ value: data.present }));
     present.get('grid')?.setAll({ visible: true, stroke: ink, strokeOpacity: 0.85, strokeWidth: 2, strokeDasharray: [3, 3] });
-    present.get('label')?.setAll({ text: 'Present', fill: ink, fontSize: 14, inside: true, minPosition: 0, maxPosition: 1, location: 0 });
+    present.get('label')?.setAll({ text: 'Present', fill: ink, fontSize: 14 * scale, inside: true, minPosition: 0, maxPosition: 1, location: 0 });
     const cursor = chart.set('cursor', am5timeline.CurveCursor.new(root, {
       xAxis, yAxis, behavior: finePointer.matches ? 'zoomX' : 'none',
     }));
@@ -171,10 +175,10 @@ export function createCareerChart(host: HTMLElement, figure: HTMLElement, data: 
       if (width === lastWidth) return;
       lastWidth = width;
       const compact = width <= 700;
-      tooltip.label.set('maxWidth', Math.min(290, Math.max(120, width - 40)));
+      tooltip.label.set('maxWidth', Math.min(350, Math.max(120, width - 40)));
       const levels = compact ? data.settings.levels.mobile : data.settings.levels.desktop;
       // More tracks need more room per run; a narrow screen gets extra turns.
-      host.style.height = `${levels * Math.max(145, data.lanes.length * 32 + 65) + 100}px`;
+      host.style.height = `${Math.round((levels * Math.max(145, data.lanes.length * 32 + 65) + 100) * scale)}px`;
       chart.setAll({ levelCount: levels, paddingLeft: compact ? 16 : 28, paddingRight: compact ? 16 : 28 });
       root.resize();
     }

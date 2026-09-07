@@ -6,8 +6,15 @@ blocks: {}
 links: []
 name: Credential name
 issuer: Issuing organization
+# Use the same issuer spelling to group related credentials.
 credential_type: training
 issued_year: 2026
+# course_url: https://issuer.example/training/course
+# verification_url: https://issuer.example/verify/your-credential
+# badge:
+#   image: credential-badge.png
+#   alt: Credential name badge
+#   source_url: https://issuer.example/training/course
 expertise: []
 ---
 

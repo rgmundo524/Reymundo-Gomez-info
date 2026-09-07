@@ -1,9 +1,9 @@
 import { plotExperience } from './experience';
 import { formatPeriods } from './dates';
 
-export type TimelineSettings = { start: string | null; levels: { desktop: number; mobile: number } };
+export type TimelineSettings = { start: string | null; scale: number; levels: { desktop: number; mobile: number } };
 type Position = Parameters<typeof plotExperience>[0][number] & {
-  data: { organization: string; role: string; blocks: Record<string, string> };
+  data: { organization: string; role: string; blocks: Record<string, string>; description_short?: string };
 };
 
 // UTC avoids visitors' time zones moving a date into the preceding month.
@@ -35,7 +35,8 @@ export function careerTimeline<T extends Position>(entries: T[], settings: Timel
     const [light, dark] = palette[ids.indexOf(entry.id) % palette.length];
     return { id: entry.id, organization: entry.data.organization,
       label: entry.data.blocks.organization_short ?? entry.data.organization,
-      role: entry.data.role, dates: formatPeriods(entry.data.periods, plot.asOf), light, dark };
+      role: entry.data.role, description: entry.data.blocks.timeline_summary ?? entry.data.description_short ?? '',
+      dates: formatPeriods(entry.data.periods, plot.asOf), light, dark };
   });
   const spans = plot.rows.flatMap(({ entry, periods }) => periods.map((period) => ({
     id: entry.id, key: `${entry.id}-${period.start}`, from: monthTimestamp(period.start),
@@ -62,6 +63,12 @@ export function careerTimeline<T extends Position>(entries: T[], settings: Timel
 }
 
 export type CareerChartData = Omit<ReturnType<typeof careerTimeline>, 'undated'>;
+
+export function careerTooltip(role: { organization: string; role: string; description: string }, span: { dates: string; scheduled: boolean; current: boolean }) {
+  return [role.organization, role.role, span.dates,
+    span.scheduled ? 'Scheduled role' : span.current ? 'Current role' : 'Past role',
+    role.description, 'Select to read role details.'].filter(Boolean).join('\n');
+}
 
 // Both pointer-independent controls and resize/theme restoration use the same
 // clamped viewport math. Six months is the tightest useful view for month data.

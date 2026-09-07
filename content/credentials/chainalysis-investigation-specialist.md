@@ -3,6 +3,7 @@ slug: chainalysis-investigation-specialist
 publication_status: draft
 name: Chainalysis Investigation Specialist Certification (CISC)
 issuer: Chainalysis
+course_url: https://training.chainalysis-gov.com/pages/cisc
 issued_year: 2022
 credential_type: certification
 expertise:

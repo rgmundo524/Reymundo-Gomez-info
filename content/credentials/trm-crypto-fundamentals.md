@@ -3,6 +3,7 @@ slug: trm-crypto-fundamentals
 publication_status: draft
 name: TRM Crypto Fundamentals Certification (CFC)
 issuer: TRM Labs
+course_url: https://www.trmlabs.com/training-and-certifications/crypto-fundamentals
 issued_year: 2025
 credential_type: certification
 expertise:

@@ -3,6 +3,7 @@ slug: trm-certified-investigator
 publication_status: draft
 name: TRM Certified Investigator (CI)
 issuer: TRM Labs
+course_url: https://www.trmlabs.com/training-and-certifications/certified-investigator
 issued_year: 2025
 credential_type: certification
 expertise:

@@ -10,7 +10,7 @@ background or work.
 | `/about/` | `content/pages/about.md` | Work History: interactive role timeline, employment details, interests, biography |
 | `/expertise/` | `content/pages/expertise.md` | Full descriptions of all expertise areas and analytical approach |
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
-| `/credentials/` | `content/pages/credentials.md` | Certifications, training, and education |
+| `/credentials/` | `content/pages/credentials.md` | Credentials discovered from Markdown, grouped by issuer, followed by education |
 | `/contact/` | `content/pages/contact.md` | Professional enquiry introduction and contact link |
 | `/articles/` | `content/pages/articles.md` | Automatically discovered articles, newest dated entries first |
 | `/articles/<slug>/` | `content/articles/` | Article body, takeaway, topics, and related cases |
@@ -122,6 +122,7 @@ respects reduced motion. No hosted chart service, account, or React is needed.
 ```yaml
 timeline:
   start: "2016-01"
+  scale: 1.2
   levels:
     desktop: 3
     mobile: 5
@@ -130,6 +131,9 @@ timeline:
 - `start`: first displayed month, or `null` to start in January of the earliest
   recorded role. It must be on or before the earliest role, so no history is
   silently clipped. The configured 2016 start matches the existing timeline.
+- `scale`: overall chart height, label size, and endpoint marker scale, between
+  0.75 and 1.75. The current 1.2 setting makes it 20% larger. The experience
+  section also uses a wider 80rem maximum width.
 - `levels.desktop` and `levels.mobile`: straight runs along the winding path,
   between 2 and 8. Three runs means two bends. Mobile layout applies when the
   chart container is 700px wide or narrower. Height adjusts to fit the runs and
@@ -141,8 +145,11 @@ A true UTC date axis preserves elapsed time, so months have their actual calenda
 lengths. End months are inclusive: a June end is drawn through July 1. Separate
 employment periods remain separate bands. Overlapping periods automatically use
 adjacent lanes along the same axis. A future role with no end date has only a
-start marker until it begins. Colors identify positions; tooltips include dates
-and current/past/scheduled status. Current endpoints have larger markers.
+start marker until it begins. Colors identify positions; tooltips include organization, role, dates,
+current/past/scheduled status, and the job’s `description_short`. Override that
+summary only for the timeline with `blocks.timeline_summary`. Hover tooltips
+belong to individual spans and endpoints, independently of the zoom cursor;
+their explicit text color follows the popup background in both themes. Current endpoints have larger markers.
 
 Visitors can select bands or role links to open the job details, including with
 the keyboard. Links work before JavaScript loads, when charts cannot load, and
@@ -165,6 +172,14 @@ pinned, and the HTML role links remain available independently of the chart.
 References: [timeline documentation](https://www.amcharts.com/docs/v5/charts/timeline/),
 [accessibility](https://www.amcharts.com/docs/v5/concepts/accessibility/),
 [licensing](https://www.amcharts.com/download/).
+
+## Credential issuers
+
+The Credentials page uses `credentials_source: all` and discovers every visible
+credential Markdown file, including nested folders. Issuers are grouped
+alphabetically; each group lists newer awards first, then credential name.
+Course links, verification links, and local badge files are optional fields on
+each credential. See [credential authoring](credentials.md).
 
 ## Color mode
 

@@ -82,8 +82,9 @@ raise an error in the preview instead of disappearing silently.
 Each record under `content/pages/` selects entries, navigation, and section order.
 The home page remains a curated introduction. Work History uses
 `experience_source: all`, automatically discovering visible job records and
-ordering them by their `display_order` field. Other collections retain explicit
-page selections. Page records get their own route; individual jobs and
+ordering them by their `display_order` field. Credentials uses
+`credentials_source: all` to discover and group credential files by issuer.
+Other collections retain explicit page selections. Page records get their own route; individual jobs and
 credentials appear within the selected page.
 See [the page structure guide](page-structure.md).
 
@@ -115,6 +116,10 @@ separate callout files first, or add one shared Markdown section parser later.
 Credentials distinguish `certification`, `certificate`, and `training`. Use the
 year reported by the source without inventing a month or an expiration. A missing
 `expires_on` means unspecified, not verified perpetual validity.
+
+Use `course_url` for program information and `verification_url` for an individual
+award record. Optional `badge` fields reference a local seal image and its source.
+See [credential authoring](credentials.md) for fields, grouping, links, and images.
 
 Education distinguishes `degree` from `attendance` and records a completion
 status. Attending an institution must not implicitly display as earning a degree.

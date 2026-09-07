@@ -22,11 +22,12 @@ export const periodSchema = z.strictObject({ start: month, end: month.nullable()
 export const timelineSchema = z.strictObject({
   // null starts at January of the earliest recorded role.
   start: month.nullable().default(null),
+  scale: z.number().min(0.75).max(1.75).default(1.2),
   levels: z.strictObject({
     desktop: z.number().int().min(2).max(8).default(3),
     mobile: z.number().int().min(2).max(8).default(5),
   }).default({ desktop: 3, mobile: 5 }),
-}).default({ start: null, levels: { desktop: 3, mobile: 5 } });
+}).default({ start: null, scale: 1.2, levels: { desktop: 3, mobile: 5 } });
 
 const periods = z.array(periodSchema).superRefine((items, ctx) => {
   const sorted = [...items].sort((a, b) => a.start.localeCompare(b.start));
@@ -81,6 +82,12 @@ export const schemas = {
     credential_type: z.enum(['certification', 'certificate', 'training']),
     issued_year: z.number().int().min(1900).max(2200),
     expires_on: z.iso.date().optional(), verification_url: webUrl.optional(),
+    course_url: webUrl.optional(),
+    badge: z.strictObject({
+      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp|svg)$/, 'Use an image filename from src/assets/credentials.'),
+      alt: text,
+      source_url: webUrl.optional(),
+    }).optional(),
     expertise: refs(),
   }),
   expertise: z.strictObject({ ...common, title: text }),
@@ -139,6 +146,7 @@ export const schemas = {
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
+    credentials_source: z.enum(['selected', 'all']).default('selected'),
     timeline: timelineSchema,
     section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),

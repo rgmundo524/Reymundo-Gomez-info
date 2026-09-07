@@ -3,6 +3,7 @@ slug: trm-advanced-crypto-investigator
 publication_status: draft
 name: TRM Advanced Crypto Investigator (ACI)
 issuer: TRM Labs
+course_url: https://www.trmlabs.com/training-and-certifications/advanced-crypto-investigator
 issued_year: 2025
 credential_type: certification
 expertise:
