@@ -45,6 +45,12 @@ export function validateRecords(records: ContentRecord[]): void {
     index.set(key, record);
   }
   for (const record of records) {
+    if (record.collection === 'cases') {
+      const chart = index.get(`charts/${record.data.chart}`);
+      if (chart?.collection === 'charts' && !chart.data.categories.some(({ id }) => id === record.data.category)) {
+        throw new Error(`${record.file}: category references missing charts/${record.data.chart}/${record.data.category}.`);
+      }
+    }
     for (const [field, collection] of Object.entries(relationships[record.collection] ?? {})) {
       const value = (record.data as unknown as Record<string, unknown>)[field];
       const ids = typeof value === 'string' ? [value] : value as string[];

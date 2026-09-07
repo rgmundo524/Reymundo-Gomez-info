@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This first version establishes the content model and a simple content preview.
-The visual website design and public deployment come later. Generic example
+The visual website design and public deployment come later. Resume-based content
 entries are drafts; an ordinary production build excludes them.
 
 ## Start locally
@@ -73,6 +73,8 @@ from `templates/` into the matching collection under `content/`.
 | `content/projects/` | Selected work and public project references |
 | `content/interests/` | Personal interests |
 | `content/callouts/` | Independently reusable passages |
+| `content/charts/` | Case categories and counts for reusable donut charts |
+| `content/cases/` | Individual case summaries linked to a chart category |
 | `content/pages/` | Page introductions and selected content IDs |
 | `templates/` | Copyable examples; never loaded into the site |
 | `src/content/schemas.ts` | Shared authoring rules |
@@ -109,12 +111,27 @@ repository. Use `npm run build` as its build command and `dist` as its output
 directory, with Node 24. GitHub Actions is not required. No Cloudflare project,
 DNS records, GitHub Actions workflows, or public site are created by this scaffold.
 
-## Example content
+## Resume content
 
-The repository contains generic demonstration entries, not an imported resume.
-Replace them with your reviewed personal content after making the repository
-private. The separate resume-content-drafts.zip download contains the initial
-resume-based entries and import instructions. Do not commit that archive to this
-public repository.
+The content inventory contains 53 draft entries, including resume-based content
+and illustrative case examples: one profile, five roles, eleven credentials and training records,
+three education records, seven expertise areas, two selected-work entries,
+nine interests, two callouts, two case charts, ten case examples, and the home page selection.
+
+The interactive case charts use the same reusable SVG component without additional packages.
+Edit counts in `content/charts/criminal-investigations.md` and
+`content/charts/professional-investigations.md`; totals and percentages are calculated.
+The professional chart covers non-criminal investigations, with one sample case
+in each of four categories (four total, 25% each). The criminal chart retains
+varied sample counts to exercise unequal slices. Slice and legend links open
+category pages populated from `content/cases/`. Aggregate counts stay independent
+of the number of selected summaries. See
+[case chart authoring](docs/case-charts.md) for the fields and review workflow.
+
+See [the resume review notes](docs/resume-content-review.md) for source ambiguities
+and details that still need confirmation. The supplied PDF, personal contact
+details, and professional references are not included. Draft status controls the
+website build; the Markdown and editorial notes remain visible in GitHub while
+the repository is public.
 
 This repository is not licensed for third-party reuse.

@@ -115,6 +115,29 @@ year reported by the source without inventing a month or an expiration. A missin
 Education distinguishes `degree` from `attendance` and records a completion
 status. Attending an institution must not implicitly display as earning a degree.
 
+## Case charts
+
+Each file under `content/charts/` supplies categories and integer case counts to
+the reusable interactive donut component. Add its slug to `charts` in the home page selection.
+Totals and percentages are derived; `null` means unknown and `0` means a confirmed
+zero. Charts with unknown counts display their categories without proportions.
+
+Use `data_status: sample` during development. Entering sample values is enough to
+render the charts and exercise their links; historical accuracy is not required
+for this workflow. Set `data_status: confirmed` when preparing real statistics for
+publication. See [case chart authoring](case-charts.md) for the fields.
+
+Individual summaries live in `content/cases/`. Each has a `chart` slug and a
+`category` ID identifying exactly where it belongs. Both are validated. The full
+Markdown body appears on the corresponding category page, alongside any other
+visible summaries assigned there. `description_short` and named `blocks` remain
+independently reusable. `content_kind: example` labels illustrative content.
+
+Selecting a slice or its legend link opens
+`/investigations/<chart-slug>/<category-id>/`. Native links support pointer,
+touch, and keyboard navigation. Category routes and their summaries use the same
+draft visibility rules as the home page.
+
 ## Publishing
 
 1. Review the wording and any source claims.

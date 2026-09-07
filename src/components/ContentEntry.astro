@@ -2,7 +2,7 @@
 import { render, type CollectionEntry } from 'astro:content';
 import { activePosition, formatPeriods } from '../lib/content';
 
-type Props = { entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile'>> };
+type Props = { entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases'>> };
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const data = entry.data;

@@ -22,5 +22,7 @@ export const collections = {
   projects: defineCollection({ loader: loader('projects'), schema: schemas.projects }),
   interests: defineCollection({ loader: loader('interests'), schema: schemas.interests }),
   callouts: defineCollection({ loader: loader('callouts'), schema: schemas.callouts }),
+  charts: defineCollection({ loader: loader('charts'), schema: schemas.charts }),
+  cases: defineCollection({ loader: loader('cases'), schema: schemas.cases }),
   pages: defineCollection({ loader: loader('pages'), schema: schemas.pages }),
 };

@@ -13,6 +13,7 @@ expertise: []
 projects: []
 interests: []
 callouts: []
+charts: []
 ---
 
 Write the full description here. Use paragraphs, lists, and links as needed.

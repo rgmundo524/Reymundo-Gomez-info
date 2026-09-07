@@ -33,6 +33,15 @@ const highlights = z.array(z.strictObject({ id: slug, text })).default([])
   .refine((items) => new Set(items.map((item) => item.id)).size === items.length,
     'Each highlight must have a unique id.');
 
+const caseCategories = z.array(z.strictObject({
+  id: slug,
+  label: text,
+  count: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
+})).min(1).refine((items) => new Set(items.map(({ id }) => id)).size === items.length,
+  'Each chart category must have a unique id.')
+  .refine((items) => new Set(items.map(({ label }) => label.toLowerCase())).size === items.length,
+    'Each chart category must have a unique label.');
+
 export const schemas = {
   profile: z.strictObject({
     ...common, name: text, headline: text,
@@ -63,10 +72,36 @@ export const schemas = {
   }),
   interests: z.strictObject({ ...common, title: text }),
   callouts: z.strictObject({ ...common, title: text }),
+  charts: z.strictObject({
+    ...common,
+    title: text,
+    data_status: z.enum(['sample', 'needs_review', 'confirmed']).default('needs_review'),
+    source_date: z.iso.date(),
+    categories: caseCategories,
+  }).superRefine((entry, ctx) => {
+    const complete = entry.categories.every(({ count }) => count !== null);
+    const total = entry.categories.reduce((sum, { count }) => sum + (count ?? 0), 0);
+    if (!Number.isSafeInteger(total) || (complete && total === 0)) {
+      ctx.addIssue({ code: 'custom', path: ['categories'], message: 'A complete chart must have a positive, safe integer total.' });
+    }
+    if (entry.data_status === 'confirmed' && !complete) {
+      ctx.addIssue({ code: 'custom', path: ['categories'], message: 'Confirmed charts require a count for every category. Use zero only for a known zero.' });
+    }
+    if (entry.publication_status === 'published' && entry.data_status !== 'confirmed') {
+      ctx.addIssue({ code: 'custom', path: ['data_status'], message: 'Confirm chart counts before publishing.' });
+    }
+  }),
+  cases: z.strictObject({
+    ...common,
+    title: text,
+    chart: slug,
+    category: slug,
+    content_kind: z.enum(['example', 'case_study']).default('example'),
+  }),
   pages: z.strictObject({
     ...common, title: text, profile: slug,
     experience: refs(), education: refs(), credentials: refs(),
-    expertise: refs(), projects: refs(), interests: refs(), callouts: refs(),
+    expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
   }),
 };
 
@@ -81,9 +116,10 @@ export const relationships: Partial<Record<CollectionName, Record<string, Collec
   experience: { expertise: 'expertise', projects: 'projects' },
   credentials: { expertise: 'expertise' },
   projects: { experience: 'experience', expertise: 'expertise' },
+  cases: { chart: 'charts' },
   pages: {
     profile: 'profile', experience: 'experience', education: 'education',
     credentials: 'credentials', expertise: 'expertise', projects: 'projects',
-    interests: 'interests', callouts: 'callouts',
+    interests: 'interests', callouts: 'callouts', charts: 'charts',
   },
 };

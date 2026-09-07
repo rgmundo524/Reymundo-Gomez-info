@@ -1,6 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content';
 import ContentEntry from '../components/ContentEntry.astro';
+import CaseChart from '../components/CaseChart.astro';
 import { includeDrafts, isVisible, selected } from '../lib/content';
 import '../styles/global.css';
 
@@ -12,6 +13,7 @@ const intro = page ? await render(page) : undefined;
 const bio = profile ? await render(profile) : undefined;
 const Intro = intro?.Content;
 const Bio = bio?.Content;
+const charts = page ? await selected('charts', page.data.charts) : [];
 const sectionNames = ['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'] as const;
 const sections = await Promise.all(sectionNames.map(async (name) => ({
   name, entries: page ? await selected(name, page.data[name]) : [],
@@ -40,8 +42,15 @@ const labels = { experience: 'Experience', expertise: 'Expertise', projects: 'Se
             {Intro && <Intro />}
           </header>
           <nav aria-label="Page sections">
+            {charts.length > 0 && <a href="#section-casework">Case experience</a>}
             {sections.filter(({ entries }) => entries.length).map(({ name }) => <a href={`#section-${name}`}>{labels[name]}</a>)}
           </nav>
+          {charts.length > 0 && (
+            <section id="section-casework" aria-labelledby="heading-casework">
+              <h2 id="heading-casework">Case experience</h2>
+              <div class="case-chart-grid">{charts.map((entry) => <CaseChart entry={entry} />)}</div>
+            </section>
+          )}
           {Bio && <section aria-label="Biography"><Bio /></section>}
           {sections.filter(({ entries }) => entries.length).map(({ name, entries }) => (
             <section id={`section-${name}`} aria-labelledby={`heading-${name}`}>
@@ -56,3 +65,8 @@ const labels = { experience: 'Experience', expertise: 'Expertise', projects: 'Se
     </main>
   </body>
 </html>
+
+<style>
+  .case-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+  @media (max-width: 740px) { .case-chart-grid { grid-template-columns: 1fr; } }
+</style>

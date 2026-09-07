@@ -1,24 +1,63 @@
 ---
-publication_status: draft
-description_short: A short reusable description for this example.
 slug: home
-title: Content preview
-profile: example-profile
+publication_status: draft
+title: Reymundo Gómez | Blockchain investigator and expert witness
+profile: reymundo
+charts:
+  - criminal-investigations
+  - professional-investigations
 experience:
-  - example-role
-  - example-previous-role
+- cipherblade
+- go-crypto
+- bdo
+- aci-federal
+- us-army
+education:
+- texas-am-san-antonio
+- university-of-north-texas
+- united-states-military-academy
 credentials:
-  - example-training
+- trm-advanced-crypto-investigator
+- trm-certified-investigator
+- trm-crypto-fundamentals
+- certified-cryptocurrency-investigator
+- ethereum-investigations
+- chainalysis-reactor
+- chainalysis-investigation-specialist
+- plutus-pioneer
+- atala-prism-pioneer
+- alchemy-university
+- berkeleyx-blockchain-fundamentals
 expertise:
-  - example-expertise
+- blockchain-tracing
+- expert-witness-support
+- defi-investigations
+- blockchain-protocol-analysis
+- investigative-tooling
+- osint
+- forensic-reporting
 projects:
-  - example-project
+- ada-redemption-transparency
+- blockchain-investigation-tooling
+interests:
+- cycling
+- beer-brewing
+- 3d-printing
+- skiing
+- linux
+- dao-participation
+- homelab
+- puzzles
+- defi-hack-analysis
 callouts:
-  - example-callout
+- analytical-limitations
+- investigation-experience
+editorial_note: All imported entries are selected for the local content review. Curate these
+  lists when designing the public home page; a complete content inventory need not all appear
+  on that page.
+description_short: >-
+  Professional background, areas of expertise, selected work, training, and interests of Reymundo
+  Gómez.
 ---
 
-This is generic demonstration content. Replace this body with the full narrative
-for the subject of this file.
-
-The short description and named blocks above can be selected independently;
-this body supports **Markdown formatting**, lists, and links.
+I help attorneys, investigators, and clients understand cryptocurrency activity through blockchain analysis, forensic reporting, and expert witness work.
