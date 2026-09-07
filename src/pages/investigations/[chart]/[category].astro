@@ -3,7 +3,7 @@ import { getCollection, getEntry } from 'astro:content';
 import type { InferGetStaticPropsType } from 'astro';
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import CaseRecord from '../../../components/CaseRecord.astro';
-import { caseRoutes } from '../../../lib/cases';
+import { caseRoutes, caseSubcategories, subcategoryAnchor } from '../../../lib/cases';
 import { includeDrafts, isVisible } from '../../../lib/content';
 import { categoryUrl, formatShare, summarizeCases } from '../../../lib/charts';
 
@@ -34,7 +34,10 @@ const back = casework && isVisible(casework) ? { url: '/casework/#section-casewo
       <p class="page-lead">{count.count} {kind === 'example' ? 'example' : 'recorded'} {count.count === 1 ? 'case' : 'cases'}{share !== null ? ` · ${formatShare(share)} of ${total} in this dataset` : ''}</p>
       {kind === 'example' && <p class="notice">Illustrative examples, not actual engagements. These records are excluded from actual case statistics.</p>}
       {studies.length === 0 && <p>No {kind === 'example' ? 'examples' : 'case records'} have been added to this category yet.</p>}
-      {studies.map((entry) => <CaseRecord entry={entry} />)}
+      {caseSubcategories(studies).map((subcategory) => <section class="case-subcategory" id={subcategoryAnchor(kind, subcategory.id)} aria-labelledby={`${subcategoryAnchor(kind, subcategory.id)}-title`}>
+        <h3 class="case-subcategory-heading" id={`${subcategoryAnchor(kind, subcategory.id)}-title`}>{subcategory.label} · {subcategory.count} {subcategory.count === 1 ? 'case' : 'cases'}</h3>
+        {subcategory.studies.map((entry) => <CaseRecord entry={entry} heading="h4" />)}
+      </section>)}
     </section>;
   })}
   <p class="container back-link"><a href={back.url}>{back.label}</a></p>

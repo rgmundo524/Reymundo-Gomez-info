@@ -6,6 +6,7 @@ description_short: An illustrative investigation that falls outside the named cr
   categories.
 chart: criminal-investigations
 category: other
+subcategory: null
 content_kind: example
 blocks:
   chart_label: Example 06

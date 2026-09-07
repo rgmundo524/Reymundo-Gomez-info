@@ -6,6 +6,7 @@ description_short: An illustrative investigation of cryptocurrency sent to a sus
   fraudulent investment operation.
 chart: criminal-investigations
 category: pig-butchering
+subcategory: investment-platform
 content_kind: example
 blocks:
   chart_label: Example 01

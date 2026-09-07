@@ -6,6 +6,7 @@ description_short: An illustrative review of wallet transactions following a rep
   phishing incident.
 chart: criminal-investigations
 category: phishing
+subcategory: null
 content_kind: example
 blocks:
   chart_label: Example 04

@@ -17,7 +17,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
     return {
       url: `${categoryUrl(data.chart, data.category)}#${id}`,
       language: 'en',
-      content: [data.title, data.description_short, chart.data.title, category, statusLabels[data.case_status],
+      content: [data.title, data.description_short, chart.data.title, category, readable(data.subcategory ?? 'unspecified'), statusLabels[data.case_status],
         data.opened_on, data.closed_on, data.role, ...data.networks.map(readable), ...data.assets,
         ...data.jurisdictions, ...data.services.map(readable), data.blocks.investigative_question, file.endsWith('.mdx') ? mdxSearchText(body) : body,
         ...data.links.map(({ label }) => label)].filter(Boolean).join('\n'),
@@ -27,6 +27,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
       },
       filters: {
         Dataset: [dataset], Investigation: [chart.data.title], Category: [category],
+        Subcategory: [readable(data.subcategory ?? 'unspecified')],
         Network: data.networks.length ? data.networks.map(readable) : ['Not recorded'],
         Status: [statusLabels[data.case_status]],
       },

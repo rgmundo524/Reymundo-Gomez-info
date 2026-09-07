@@ -10,7 +10,7 @@ export function createCasePie(host: HTMLElement, figure: HTMLElement, data: Case
   let resize: ResizeObserver | undefined;
   try {
     const { dark, ink, tooltip } = caseChartStyle(root, figure);
-    let expanded = data.groups.some(({ id, total }) => id === saved.pieGroup && total > 0) ? saved.pieGroup! : null;
+    let expanded = data.categories.some(({ id, count }) => id === saved.pieCategory && count > 0) ? saved.pieCategory! : null;
     const chart = root.container.children.push(am5percent.PieChart.new(root, {
       radius: am5.percent(settings.pie.radius), innerRadius: 0,
       startAngle: -90, endAngle: 270, paddingTop: 28, paddingBottom: 28,
@@ -33,7 +33,7 @@ export function createCasePie(host: HTMLElement, figure: HTMLElement, data: Case
       const compact = host.clientWidth < 600;
       if (slice.percentage < (compact ? 6 : 3)) return '';
       const percentage = `${slice.percentage.toFixed(1)}%`;
-      return slice.level === 'category' && (compact || slice.percentage < 12)
+      return (slice.level === 'subcategory' && compact) || slice.percentage < (compact ? 18 : 12)
         ? percentage : `${slice.label}\n${percentage}`;
     });
     series.slices.template.setAll({
@@ -49,24 +49,24 @@ export function createCasePie(host: HTMLElement, figure: HTMLElement, data: Case
     series.slices.template.adapters.add('ariaLabel', (_text, slice) => (slice.dataItem?.dataContext as CasePieSlice)?.tooltip.replace(/\n/g, '. ') ?? 'Explore case types');
     series.slices.template.events.on('click', ({ target }) => {
       const slice = target.dataItem?.dataContext as CasePieSlice | undefined;
-      if (slice) select(slice.level === 'investigation' ? slice.group : null);
+      if (slice) select(slice.level === 'category' ? slice.category : null);
     });
     const controls = Array.from(figure.querySelectorAll<HTMLButtonElement>('[data-visual-action]'));
     const view = figure.querySelector<HTMLElement>('[data-pie-view]');
-    function select(group: string | null) {
-      expanded = data.groups.some(({ id, total }) => id === group && total > 0) ? group : null;
+    function select(category: string | null) {
+      expanded = data.categories.some(({ id, count }) => id === category && count > 0) ? category : null;
       // There is only one series. Never draw parent and child counts together.
       series.data.setAll(casePieSlices(data, expanded).map((slice) => ({
-        ...slice, sliceSettings: { fill: am5.color(dark ? slice.dark : slice.light), active: slice.level === 'category' },
+        ...slice, sliceSettings: { fill: am5.Color.brighten(am5.color(dark ? slice.dark : slice.light), slice.shade), active: slice.level === 'subcategory' },
       })));
       for (const button of controls) {
         const action = button.dataset.visualAction;
         if (action === 'pie-reset') button.disabled = expanded === null;
-        else button.setAttribute('aria-pressed', String(action === `pie-group:${expanded}`));
+        else button.setAttribute('aria-pressed', String(action === `pie-category:${expanded}`));
       }
       if (view) {
-        const title = data.groups.find(({ id }) => id === expanded)?.title;
-        view.textContent = `${title ? `Showing the ${title.toLowerCase()} breakdown` : 'Showing all investigation types'}. Slice percentages use all ${data.total} ${data.kind === 'example' ? 'example ' : ''}cases. Use the tables below to open case summaries.`;
+        const label = data.categories.find(({ id }) => id === expanded)?.label;
+        view.textContent = `${label ? `Showing subcategories of ${label}` : 'Showing all categories'}. Slice percentages use the ${data.total} ${data.kind === 'example' ? 'example ' : ''}cases in ${data.title.toLowerCase()}. Use the table below to open case summaries.`;
       }
     }
     select(expanded);
@@ -78,7 +78,7 @@ export function createCasePie(host: HTMLElement, figure: HTMLElement, data: Case
     });
     resize.observe(host);
     return {
-      state: () => ({ pieGroup: expanded }), visible() {},
+      state: () => ({ pieCategory: expanded }), visible() {},
       motion(enabled) {
         const duration = enabled ? settings.pie.transitionDuration : 0;
         series.set('interpolationDuration', duration);
@@ -86,9 +86,9 @@ export function createCasePie(host: HTMLElement, figure: HTMLElement, data: Case
       },
       action(action) {
         if (action === 'pie-reset') select(null);
-        else if (action.startsWith('pie-group:')) {
-          const group = action.slice('pie-group:'.length);
-          select(group === expanded ? null : group);
+        else if (action.startsWith('pie-category:')) {
+          const category = action.slice('pie-category:'.length);
+          select(category === expanded ? null : category);
         }
       },
       dispose() { resize?.disconnect(); root.dispose(); },

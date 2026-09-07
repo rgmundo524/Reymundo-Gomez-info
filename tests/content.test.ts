@@ -247,44 +247,83 @@ const makeCase = (id: string, overrides: Record<string, unknown> = {}) => ({ id,
 
 const descendantCases = (node: CaseNode): CaseNode[] => node.type === 'case' ? [node] : (node.children ?? []).flatMap(descendantCases);
 
-test('broken-down pie replaces exactly one parent while preserving all cases and the global denominator', () => {
+test('separate investigation pies expand categories without mixing denominators or double-counting', () => {
   const second = { id: 'professional', data: schemas.charts.parse({ ...chart, slug: 'professional', title: 'Professional', publication_status: 'published' }) };
-  const records = [makeCase('one'), makeCase('two'), makeCase('three', { category: 'other' }),
-    makeCase('four', { chart: 'professional' }), makeCase('five', { chart: 'professional' })];
+  const records = [makeCase('one', { subcategory: 'bridge-exploit' }), makeCase('two', { subcategory: 'bridge-exploit' }),
+    makeCase('three', { subcategory: 'protocol-exploit' }), makeCase('four', { category: 'other' }),
+    makeCase('five', { chart: 'professional', subcategory: 'bridge-exploit' }), makeCase('six', { chart: 'professional', category: 'other' })];
   const data = caseVisuals([makeChart(), second], records, 'case_study');
   const original = JSON.stringify(data);
-  const overview = casePieSlices(data);
-  assert.deepEqual(overview.map(({ count, percentage }) => [count, percentage]), [[3, 60], [2, 40]]);
-  const first = casePieSlices(data, 'example');
-  assert.deepEqual(first.map(({ id, count, percentage }) => [id, count, percentage]), [
-    ['category:example:fraud', 2, 40], ['category:example:other', 1, 20], ['investigation:professional', 2, 40],
+  const [criminal, professional] = data.groups;
+  assert.deepEqual([criminal.total, professional.total], [4, 2]);
+  assert.deepEqual(casePieSlices(criminal).map(({ count, percentage }) => [count, percentage]), [[3, 75], [1, 25]]);
+  assert.deepEqual(casePieSlices(professional).map(({ count, percentage }) => [count, percentage]), [[1, 50], [1, 50]]);
+  const expanded = casePieSlices(criminal, 'fraud');
+  assert.deepEqual(expanded.map(({ id, count, percentage }) => [id, count, percentage]), [
+    ['subcategory:example:fraud:bridge-exploit', 2, 50], ['subcategory:example:fraud:protocol-exploit', 1, 25], ['category:example:other', 1, 25],
   ]);
-  assert.match(first[0].tooltip, /40% of all cases/);
-  assert.match(first[0].tooltip, /66.7% of this investigation type/);
-  const next = casePieSlices(data, 'professional');
-  assert.deepEqual(next.map(({ id, count }) => [id, count]), [['investigation:example', 3], ['category:professional:fraud', 2]]);
-  for (const slices of [overview, first, next]) {
-    assert.equal(slices.reduce((sum, { count }) => sum + count, 0), data.total);
-    assert.ok(Math.abs(slices.reduce((sum, { percentage }) => sum + percentage, 0) - 100) < 1e-9);
-    assert.equal(new Set(slices.map(({ id }) => id)).size, slices.length);
+  assert.match(expanded[0].tooltip, /50% of this chart/);
+  assert.match(expanded[0].tooltip, /66.7% of Fraud/);
+  for (const group of data.groups) {
+    for (const selection of [null, ...group.categories.map(({ id }) => id)]) {
+      const slices = casePieSlices(group, selection);
+      assert.equal(slices.reduce((sum, { count }) => sum + count, 0), group.total);
+      assert.ok(Math.abs(slices.reduce((sum, { percentage }) => sum + percentage, 0) - 100) < 1e-9);
+      assert.equal(new Set(slices.map(({ id }) => id)).size, slices.length);
+    }
   }
-  assert.deepEqual(casePieSlices(data, null), overview);
-  assert.deepEqual(casePieSlices(data, 'missing'), overview);
-  assert.equal(JSON.stringify(data), original, 'Selection must not mutate the shared tree or count tables');
+  assert.deepEqual(casePieSlices(criminal, 'missing'), casePieSlices(criminal));
+  assert.equal(JSON.stringify(data), original, 'Selection must not mutate shared data or the other chart');
 });
 
-test('broken-down pie uses only visible dataset records and handles zero and single-case totals', () => {
-  const records = [makeCase('public-case'), makeCase('draft-case', { publication_status: 'draft' }),
-    makeCase('sample-case', { content_kind: 'example', publication_status: 'draft' })];
-  const publicData = caseVisuals([makeChart()], records, 'case_study');
+test('subcategory discovery is single-valued, retains unspecified cases, and follows Markdown reclassification', () => {
+  assert.equal(makeCase('legacy').data.subcategory, null);
+  assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory: ['bridge-exploit', 'protocol-exploit'] }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory: 'Bridge Exploit' }).success, false);
+  const records = [makeCase('one', { subcategory: 'bridge-exploit' }), makeCase('two'), makeCase('three', { category: 'other', subcategory: 'bridge-exploit' })];
+  const initial = caseVisuals([makeChart()], records, 'case_study').groups[0];
+  assert.deepEqual(initial.categories[0].subcategories.map(({ id, count }) => [id, count]), [['bridge-exploit', 1], ['unspecified', 1]]);
+  assert.equal(initial.categories[1].subcategories[0].count, 1, 'The same subcategory in another category stays separate');
+  assert.equal(initial.categories[0].subcategories[0].url, '/investigations/example/fraud/#subcategory-case_study-bridge-exploit');
+  records[1].data.subcategory = 'bridge-exploit';
+  let changed = caseVisuals([makeChart()], records, 'case_study').groups[0];
+  assert.deepEqual(changed.categories[0].subcategories.map(({ id, count }) => [id, count]), [['bridge-exploit', 2]]);
+  records[0].data.category = 'other';
+  changed = caseVisuals([makeChart()], records, 'case_study').groups[0];
+  assert.deepEqual(changed.categories.map(({ subcategories }) => subcategories[0].count), [1, 2]);
+  records.push(makeCase('new', { subcategory: 'newly-discovered-type' }));
+  changed = caseVisuals([makeChart()], records, 'case_study').groups[0];
+  assert.ok(changed.categories[0].subcategories.some(({ id }) => id === 'newly-discovered-type'));
+  assert.equal(changed.total, 4);
+});
+
+test('subcategory slices exclude drafts and examples in production and handle empty or single-case charts', () => {
+  const records = [makeCase('public-case', { subcategory: 'public-type' }), makeCase('draft-case', { publication_status: 'draft', subcategory: 'draft-type' }),
+    makeCase('sample-case', { content_kind: 'example', publication_status: 'draft', subcategory: 'sample-type' })];
+  const publicData = caseVisuals([makeChart()], records, 'case_study').groups[0];
   assert.equal(casePieSlices(publicData)[0].percentage, 100);
-  assert.deepEqual(casePieSlices(publicData, 'example').map(({ count }) => count), [1]);
-  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], records, 'example')), []);
-  assert.deepEqual(casePieSlices(caseVisuals([makeChart(false)], records, 'case_study')), []);
-  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], [], 'case_study'), 'example'), []);
-  const examples = caseVisuals([makeChart()], records, 'example', true);
-  assert.deepEqual(casePieSlices(examples, 'example').map(({ count }) => count), [1]);
-  assert.match(casePieSlices(examples, 'example')[0].tooltip, /1 example case/);
+  assert.deepEqual(casePieSlices(publicData, 'fraud').map(({ label, count }) => [label, count]), [['Public Type', 1]]);
+  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], records, 'example').groups[0]), []);
+  assert.deepEqual(caseVisuals([makeChart(false)], records, 'case_study').groups, []);
+  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], [], 'case_study').groups[0], 'fraud'), []);
+  const examples = caseVisuals([makeChart()], records, 'example', true).groups[0];
+  assert.deepEqual(casePieSlices(examples, 'fraud').map(({ label, count }) => [label, count]), [['Sample Type', 1]]);
+  assert.equal(examples.categories[0].subcategories[0].url, '/investigations/example/fraud/#subcategory-example-sample-type');
+});
+
+test('example Markdown subcategories appear in search and remain isolated to their parent chart', async () => {
+  const records = await loadContent();
+  const charts = records.filter((entry) => entry.collection === 'charts').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  const studies = records.filter((entry) => entry.collection === 'cases').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  const data = caseVisuals(charts, studies, 'example', true);
+  assert.deepEqual(data.groups.map(({ total }) => total), [8, 5]);
+  const hacks = data.groups[0].categories.find(({ id }) => id === 'hacks')!;
+  assert.deepEqual(hacks.subcategories.map(({ id, count }) => [id, count]), [['bridge-exploit', 1], ['protocol-exploit', 1]]);
+  const divorce = data.groups[1].categories.find(({ id }) => id === 'divorce')!;
+  assert.deepEqual(divorce.subcategories.map(({ id }) => id), ['asset-disclosure', 'historical-holdings']);
+  const found = caseSearchRecords(records, true).find(({ url }) => url.endsWith('#case-012'))!;
+  assert.deepEqual(found.filters.Subcategory, ['Bridge Exploit']);
+  assert.match(found.content, /Bridge Exploit/);
 });
 
 test('pie groups and tree count each case once and follow category changes without duplicating parent values', () => {

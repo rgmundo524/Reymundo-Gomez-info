@@ -6,6 +6,7 @@ description_short: An illustrative case record showing how structured facts supp
   the case tracker.
 chart: criminal-investigations
 category: hacks
+subcategory: bridge-exploit
 content_kind: example
 case_status: completed
 opened_on: '2025-09-08'

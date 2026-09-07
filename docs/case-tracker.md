@@ -9,6 +9,8 @@ upload it. There is no separate database, browser editing form, or scheduled job
 1. Copy `templates/cases.md` to `content/cases/case_001.md` (or another filename).
 2. Set a unique `slug`, such as `case-001`. Keep that identity stable.
 3. Choose an existing chart and one primary category from `content/charts/`.
+   Set `subcategory` to one lowercase hyphenated ID, such as `bridge-exploit`,
+   or leave it `null`. Subcategories are discovered directly from case files.
 4. Enter the facts you have and write the narrative sections. Leave unknown dates
    and numbers as `null`; an empty list means no details have been entered.
 5. Use `content_kind: case_study` for actual work or `example` for invented data.
@@ -26,6 +28,7 @@ to display. Keep confidential evidence and administrative records separately.
 | --- | --- |
 | `title`, `description_short` | Public-facing title and short scope summary |
 | `chart`, `category` | One investigation group and one primary classification |
+| `subcategory` | One more specific classification under that category; null/omitted becomes Unspecified |
 | `case_status` | `active`, `completed`, `on_hold`, or `unspecified` |
 | `opened_on`, `closed_on` | Quoted YYYY-MM-DD dates, or null; closing is for completed cases |
 | `role` | Your actual contribution or position in the engagement |
@@ -52,6 +55,7 @@ those phases as new cases. Files may live in subfolders; discovery is recursive.
 ## Derived statistics
 
 - Total records, active cases, completed cases, and distinct networks.
+- Separate criminal/professional chart totals, with category and subcategory counts.
 - Case counts by opening year, including an Undated bucket, and by status.
 - Counts by network and service. A case can appear in several of these groups,
   so these counts are not parts of one exclusive total.
@@ -76,3 +80,8 @@ All 13 examples remain drafts. Their dates, values, and engagement details are
 fictional and can be replaced or removed as real records are entered. To reuse
 an example for an actual case, replace its claims and metadata, change its slug,
 and set `content_kind: case_study`.
+
+The examples include `hacks → bridge-exploit / protocol-exploit` and
+`divorce → asset-disclosure / historical-holdings`. Some subcategories remain
+null to demonstrate how unclassified records stay in the totals. Primary
+categories remain centrally defined; adding a subcategory needs only the case file.

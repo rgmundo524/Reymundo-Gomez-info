@@ -6,6 +6,7 @@ description_short: An illustrative case record showing how structured facts supp
   the case tracker.
 chart: professional-investigations
 category: divorce
+subcategory: historical-holdings
 content_kind: example
 case_status: unspecified
 opened_on: null

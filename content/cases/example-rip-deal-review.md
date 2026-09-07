@@ -6,6 +6,7 @@ description_short: An illustrative reconstruction of digital asset movements in 
   reported RIP-deal incident.
 chart: criminal-investigations
 category: rip-deals
+subcategory: null
 content_kind: example
 blocks:
   chart_label: Example 02

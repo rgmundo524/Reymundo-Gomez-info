@@ -6,6 +6,7 @@ description_short: An illustrative reconstruction of transfers relevant to a ban
   proceeding.
 chart: professional-investigations
 category: bankruptcy
+subcategory: source-of-funds
 content_kind: example
 blocks:
   chart_label: Example 10

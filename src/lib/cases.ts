@@ -7,6 +7,23 @@ export type CaseKind = CaseStudy['data']['content_kind'];
 export const statusLabels = { active: 'Active', completed: 'Completed', on_hold: 'On hold', unspecified: 'Status not recorded' };
 export const readable = (value: string) => value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
+export const subcategoryId = (study: CaseStudy) => study.data.subcategory ?? 'unspecified';
+export const subcategoryAnchor = (kind: CaseKind, id: string) => `subcategory-${kind}-${id}`;
+
+// Call with one category/dataset. Subcategories are discovered from case files,
+// including legacy records, without maintaining another central category list.
+export function caseSubcategories<S extends CaseStudy>(studies: S[]) {
+  const groups = new Map<string, S[]>();
+  for (const study of studies) {
+    const id = subcategoryId(study);
+    const group = groups.get(id) ?? [];
+    group.push(study);
+    groups.set(id, group);
+  }
+  return [...groups].map(([id, records]) => ({ id, label: readable(id), count: records.length, studies: records }))
+    .sort((a, b) => a.id === 'unspecified' ? 1 : b.id === 'unspecified' ? -1 : a.label.localeCompare(b.label));
+}
+
 export function eligibleCases<C extends Chart, S extends CaseStudy>(charts: C[], studies: S[], includeDrafts = false): S[] {
   const chartIds = new Set(charts.filter(({ data }) => includeDrafts || data.publication_status === 'published').map(({ id }) => id));
   return studies.filter(({ data }) => chartIds.has(data.chart) && (includeDrafts || data.publication_status === 'published')

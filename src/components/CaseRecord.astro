@@ -2,15 +2,16 @@
 import { render, type CollectionEntry } from 'astro:content';
 import { statusLabels, readable } from '../lib/cases';
 import { Icon } from 'astro-icon/components';
-type Props = { entry: CollectionEntry<'cases'> };
-const { entry } = Astro.props;
+type Props = { entry: CollectionEntry<'cases'>; heading?: 'h3' | 'h4' };
+const { entry, heading: Heading = 'h3' } = Astro.props;
 const { Content } = await render(entry);
 ---
 <article class="case-study" id={entry.id} aria-labelledby={`${entry.id}-title`}>
         {entry.data.content_kind === 'example' && <p class="example-label">Illustrative case example</p>}
-        <h3 id={`${entry.id}-title`}>{entry.data.title}</h3><p class="lead">{entry.data.description_short}</p>
+        <Heading id={`${entry.id}-title`}>{entry.data.title}</Heading><p class="lead">{entry.data.description_short}</p>
         <dl class="case-facts">
           <div><dt>Status</dt><dd>{statusLabels[entry.data.case_status]}</dd></div>
+          <div><dt>Subcategory</dt><dd>{readable(entry.data.subcategory ?? 'unspecified')}</dd></div>
           <div><dt>Opened</dt><dd>{entry.data.opened_on ?? 'Not recorded'}</dd></div>
           {entry.data.closed_on && <div><dt>Completed</dt><dd>{entry.data.closed_on}</dd></div>}
           {entry.data.role && <div><dt>Role</dt><dd>{entry.data.role}</dd></div>}

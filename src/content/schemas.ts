@@ -117,6 +117,7 @@ export const schemas = {
     title: text,
     chart: slug,
     category: slug,
+    subcategory: slug.nullable().default(null),
     content_kind: z.enum(['example', 'case_study']).default('example'),
     case_status: z.enum(['active', 'completed', 'on_hold', 'unspecified']).default('unspecified'),
     opened_on: z.iso.date().nullable().default(null),

@@ -6,6 +6,7 @@ description_short: An illustrative review of wallet activity and asset disclosur
   in a divorce matter.
 chart: professional-investigations
 category: divorce
+subcategory: asset-disclosure
 content_kind: example
 blocks:
   chart_label: Example 07

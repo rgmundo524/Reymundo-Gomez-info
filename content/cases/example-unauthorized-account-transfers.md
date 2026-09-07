@@ -6,6 +6,7 @@ description_short: An illustrative review of cryptocurrency transfers following 
   reported account takeover.
 chart: criminal-investigations
 category: account-takeover
+subcategory: null
 content_kind: example
 blocks:
   chart_label: Example 03

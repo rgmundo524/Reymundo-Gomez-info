@@ -20,7 +20,7 @@ const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'curre
     <div><dt>Completed</dt><dd>{stats.completed}</dd></div>
     <div><dt>Networks involved</dt><dd>{stats.networks.length}</dd></div>
   </dl>
-  <CaseChart entries={charts} visual={{ kind, total: visuals.total, groups: visuals.groups }} />
+  <div class="case-chart-grid">{visuals.groups.map((visual) => <CaseChart entry={charts.find(({ id }) => id === visual.id)!} visual={visual} />)}</div>
   <CaseExplorer data={{ kind, total: visuals.total, tree: visuals.tree }} />
   {studies.length > 0 && <>
     <details class="statistics-details"><summary>Explore case statistics</summary>

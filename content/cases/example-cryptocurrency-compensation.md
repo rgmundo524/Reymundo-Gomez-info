@@ -6,6 +6,7 @@ description_short: An illustrative analysis of digital asset transfers and a dis
   compensation arrangement.
 chart: professional-investigations
 category: corporate-civil-lawsuits
+subcategory: compensation-dispute
 content_kind: example
 blocks:
   chart_label: Example 08

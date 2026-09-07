@@ -5,6 +5,7 @@ title: Descriptive case title
 description_short: The question examined and the scope of this case.
 chart: criminal-investigations
 category: pig-butchering
+subcategory: null
 content_kind: case_study
 case_status: unspecified
 opened_on: null

@@ -6,6 +6,7 @@ description_short: An illustrative review of cryptocurrency accounts and wallet 
   for an estate.
 chart: professional-investigations
 category: other
+subcategory: estate-assets
 content_kind: example
 blocks:
   chart_label: Example 09
