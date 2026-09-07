@@ -14,12 +14,17 @@ run these commands from this repository:
 
 ```sh
 devenv shell
-npm ci
 npm run dev
 ```
 
 Open the localhost URL printed by Astro, normally `http://127.0.0.1:4321`.
-After installing dependencies, `devenv up` also starts the configured site process.
+devenv supplies Node and npm, installs Astro and the other project dependencies
+from `package-lock.json`, and exposes the local commands inside the environment.
+The first activation needs network access to download any uncached dependencies.
+Subsequent activations reuse the installation while the dependency inputs match.
+
+You can also run `devenv up` to initialize the environment and start the configured
+site process in one command.
 
 Node 24 is selected in `devenv.nix`. The npm dependency versions are pinned in
 `package-lock.json`, and `devenv.yaml` pins the nixpkgs input to an exact revision.
@@ -43,8 +48,9 @@ The included `.envrc` is optional. If you use direnv, review it and run
 | `npm run preview:drafts` | Inspect the separate draft build locally |
 | `npm test` | Check important invalid-content cases |
 
-The devenv shell also provides `site-setup`, `site-check`, `site-build`, and
-`site-drafts` as shortcuts. All invoke the same npm commands.
+The devenv shell also provides `site-check`, `site-build`, and `site-drafts` as
+shortcuts. `site-setup` remains available to force a clean dependency reinstall
+when troubleshooting; it is not required for normal startup.
 
 All initial entries are drafts, so the ordinary build intentionally shows only
 “Site in preparation.” Use `npm run dev` to see the populated content preview.

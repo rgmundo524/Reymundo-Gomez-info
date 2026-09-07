@@ -6,7 +6,11 @@
   languages.javascript = {
     enable = true;
     package = pkgs.nodejs_24;
-    npm.enable = true;
+    npm = {
+      enable = true;
+      # Install Astro and the other locked project dependencies on activation.
+      install.enable = true;
+    };
   };
 
   scripts.site-setup.exec = "npm ci";

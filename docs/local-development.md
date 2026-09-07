@@ -1,7 +1,14 @@
 # Local development with devenv
 
-`devenv.nix` provides Node 24, npm, Git, and a foreground site process. No services,
-databases, container runtime, or deployment account are required.
+`devenv.nix` provides Node 24, npm, Git, and a foreground site process. It also
+enables `languages.javascript.npm.install.enable`, which installs Astro and the
+other project dependencies during environment activation. Astro is pinned in
+`package-lock.json` and installed into this project's `node_modules/` directory.
+devenv adds the local executables to the environment's PATH.
+
+Run `devenv shell`, then `npm run dev`, or run `devenv up` to initialize the
+environment and start the site process together. No manual `npm ci` step is
+required. The first activation needs network access for uncached dependencies.
 
 ## Reproducibility
 
@@ -10,10 +17,15 @@ activation. The existing `devenv.yaml` already selects an exact nixpkgs commit.
 Update the input deliberately when you want a newer Node/Nix package set; then
 regenerate and commit the lockfile. npm's separate lockfile is already included.
 
-Use `npm ci` after cloning or after `package-lock.json` changes. It installs the
-locked dependency graph. Do not enable automatic dependency updates on shell
-activation. For project changes, edit the manifest intentionally and use
-`npm install` to update the lockfile.
+On activation, devenv checks the dependency inputs and installs the locked graph
+when needed. With `package-lock.json` present, its npm integration uses
+`npm clean-install` (equivalent to `npm ci`). This installs the recorded versions;
+it does not upgrade dependencies. Re-enter the environment after pulling changes
+to the dependency files.
+
+For intentional dependency changes, edit the manifest and use `npm install`
+inside the devenv shell to update the lockfile. Commit both files together.
+The optional `site-setup` command forces a clean reinstall for troubleshooting.
 
 The example input is documented by [devenv's input guide](https://devenv.sh/inputs/).
 See [JavaScript options](https://devenv.sh/languages/javascript/) and
