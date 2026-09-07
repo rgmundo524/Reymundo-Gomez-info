@@ -1,13 +1,13 @@
 {
   "count": {
-    "desktop": 42,
-    "mobile": 22
+    "desktop": 100,
+    "mobile": 50
   },
   "size": {
-    "min": 1,
-    "max": 2.4
+    "min": 3,
+    "max": 6
   },
-  "connectionDistance": 140,
-  "hoverDistance": 160,
-  "speed": 0.35
+  "connectionDistance": 240,
+  "hoverDistance": 360,
+  "speed": 0.5
 }

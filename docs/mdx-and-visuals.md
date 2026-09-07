@@ -92,23 +92,24 @@ Adjust the animation in `src/config/particles.json`:
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `count.desktop` | `42` | Total nodes on screens wider than 760px |
-| `count.mobile` | `22` | Total nodes on screens up to 760px wide |
-| `size.min` | `1` | Smallest node radius in pixels |
-| `size.max` | `2.4` | Largest node radius in pixels |
-| `connectionDistance` | `140` | Maximum distance in pixels for ordinary connecting lines |
-| `hoverDistance` | `160` | Maximum cursor-to-node distance in pixels for hover connections |
-| `speed` | `0.35` | Relative movement speed |
+| `count.desktop` | `100` | Total nodes on screens wider than 760px |
+| `count.mobile` | `50` | Total nodes on screens up to 760px wide |
+| `size.min` | `3` | Smallest node radius in pixels |
+| `size.max` | `6` | Largest node radius in pixels |
+| `connectionDistance` | `240` | Maximum distance in pixels for ordinary connecting lines |
+| `hoverDistance` | `360` | Maximum cursor-to-node distance in pixels for hover connections |
+| `speed` | `0.5` | Relative movement speed |
 
 Each node gets a size in the configured range. Set min and max to the same value
-for equal-sized nodes. For example, min `2` and max `4` makes larger nodes;
-desktop `70` and mobile `30` makes a denser network. These are examples, not
+for equal-sized nodes. The current range produces nodes 6–12 pixels across.
+For example, min `2` and max `4` makes smaller nodes;
+desktop `70` and mobile `30` makes a sparser network. These are examples, not
 automatic presets. Counts currently stay fixed for each screen class because
 automatic area-based density is disabled. More nodes and longer connections
 increase the rendering work; keep mobile counts lower.
 
 `hoverDistance` controls the cursor's reach independently of connections between
-nodes. For example, `250` connects the cursor to nodes farther away, while `80`
+nodes. For example, `500` connects the cursor to nodes farther away, while `80`
 requires it to be closer. Hover connections are enabled on devices with hover
 support.
 
