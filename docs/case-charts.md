@@ -14,8 +14,9 @@ create another group.
 - One case record contributes one count to exactly one chart and primary category.
 - Slugs are unique. Renaming the file does not create another case; copying it
   with the same slug fails validation.
-- Category share is its record count divided by all records in that chart's
-  dataset. Stored counts and percentages are rejected.
+- Pie shares use all records in the selected dataset as the denominator.
+  The category tables show shares within each investigation type, explicitly
+  labeled in their captions. Stored counts and percentages are rejected.
 - Zero records means zero cases. Empty charts show a zero total without slices;
   empty categories remain navigable.
 - Chart slices, legend links, category counts, and case records share the same
@@ -25,42 +26,59 @@ create another group.
   added, the examples remain in an expandable section. They never augment real
   totals. Example records cannot be published.
 
-Chart links lead to `/investigations/<chart>/<category>/#dataset-<kind>`, so a
-slice opens the matching real or example group. Individual records also have
+Table links lead to `/investigations/<chart>/<category>/#dataset-<kind>`, opening
+the matching real or example group. Individual records also have
 stable anchors using their slug. Links work with keyboard, pointer, and touch.
 
 ## Interactive charts
 
-The two summary donuts use amCharts 5 with a radial gradient and subtle grain.
-Hover or keyboard focus shows the category, count, and share. Selecting a slice
-opens its category. Selecting a legend row navigates too; it never hides slices
-or changes the denominator. HTML count tables remain visible at all times.
+One amCharts 5 **Pie Chart with Broken Down Slices** replaces both previous donut
+charts. There is one canvas and one pie series per dataset. The original SVG
+donut markup and grainy donut renderer are removed.
 
-Below the donuts, **Explore cases** is a force-directed tree:
+The overview contains Criminal investigations and Professional investigations.
+Selecting either parent replaces that slice with its existing case types, while
+leaving the other investigation slice intact. Selecting a smaller slice returns
+to the overview. The buttons provide the same selection/reset controls using
+ordinary HTML. Hover or keyboard focus shows counts and shares.
+
+This uses the existing `chart` and `category` fields in case Markdown. It does not
+need a new subcategory field or duplicate records. For example, the Hacks slice
+is a subcategory of Criminal investigations. Individual cases remain accessible
+through the tables and case explorer.
+
+All displayed slices always sum to the full dataset total. A selected parent's
+count is replaced by its child counts; they are never added together. Pie
+percentages continue to use the full dataset after expansion. Tooltips also
+show each case type's share within its parent investigation type.
+
+Below the pie, **Explore cases** is a force-directed tree:
 
 `Casework → Investigation type → Primary category → Individual case`
 
 Investigation types and categories expand/collapse on selection. A case node
 opens its existing case details. Larger groups contain more records. Only case
 leaves have a numeric value of 1; amCharts aggregates parent values, so parent
-counts are not supplied a second time. Empty categories remain in donut tables
+counts are not supplied a second time. Empty categories remain in the tables
 but are omitted from the tree.
 
 The tree has zoom, reset, collapse, and pause controls. Drag nodes or the map to
-rearrange/explore it; touch devices can pinch to zoom. Scrolling the page does
-not capture wheel input. Animated dots travel along visible links. The animation
+rearrange/explore it; touch devices can pinch to zoom. The mouse wheel zooms while
+the pointer is over the explorer. Animated dots travel along visible links. The animation
 illustrates navigation relationships, not transactions, money flow, or case
 progress. Pause stops both dots and the force simulation. Reduced-motion system
 preferences disable automatic motion and use a settled layout. Offscreen charts
 and background tabs pause automatically.
 
-All broad chart surfaces are transparent, including in dark mode. Node/slice
+The pie background remains transparent. The case explorer has a solid,
+theme-matched background on its panel, canvas host, and zoom interaction surface.
+This gives wheel, pinch, and drag gestures a continuous hit area. Node/slice
 colors and tooltip colors follow the theme. The amCharts attribution remains
 visible under its existing license.
 
-Charts load when they approach the viewport. SVG donuts are the loading,
-no-JavaScript, failure, and print fallback. The expandable text case list stays
-available alongside the interactive tree. No client framework or remote chart
+Charts load when they approach the viewport. The HTML count tables remain visible
+while loading, without JavaScript, on failure, and in print. The expandable text
+case list stays available alongside the interactive tree. No client framework or remote chart
 service is required; the existing amCharts dependency supplies both chart types.
 
 ### Appearance settings
@@ -69,9 +87,8 @@ Edit `src/config/case-visuals.json`:
 
 | Setting | Meaning | Initial value |
 | --- | --- | --- |
-| `donut.innerRadius` | Hole radius, as a percentage of the outer radius | 60 |
-| `donut.grainDensity` | Grain density | 0.5 |
-| `donut.grainOpacity` | Maximum grain opacity | 0.18 |
+| `pie.radius` | Radius as a percentage of available chart space | 92 |
+| `pie.transitionDuration` | Slice transition duration in milliseconds; zero with reduced motion | 250 |
 | `tree.minRadius` / `tree.maxRadius` | Node radius range in pixels | 26 / 62 |
 | `tree.bulletDuration` | Milliseconds for a dot to travel along a link | 3500 |
 | `tree.initialDepth` | Initially visible levels below the root | 2 |
@@ -85,12 +102,12 @@ blocks:
 
 Otherwise the case slug is used. Full titles, short descriptions, status, dates,
 and networks appear in case tooltips; the text list always uses full titles.
-Adding or reclassifying a Markdown record updates the donuts, tree, tables, and
+Adding or reclassifying a Markdown record updates the pie, tree, tables, and
 destinations in the same build. `src/lib/case-visuals.ts` projects the display
 fields explicitly; editorial notes, unrelated blocks, and Markdown source are
 not copied into chart JSON.
 
-These charts adapt the [Grainy Gradient Pie](https://www.amcharts.com/demos/grained-gradient-pie/)
+These charts adapt the [Pie Chart with Broken Down Slices](https://www.amcharts.com/demos/pie-chart-broken-slices/)
 and [Force-Directed Tree with Animated Bullets](https://www.amcharts.com/demos/force-directed-tree-with-animated-bullets/)
 examples.
 

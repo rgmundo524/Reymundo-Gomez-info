@@ -10,14 +10,16 @@ export function createCaseTree(host: HTMLElement, figure: HTMLElement, data: Cas
   let series: am5hierarchy.ForceDirected | undefined;
   try {
     const { dark, ink, muted, tooltip } = caseChartStyle(root, figure);
+    const paper = am5.color(getComputedStyle(figure).getPropertyValue('--paper').trim());
     let enabled = motionEnabled;
     let visible = viewportVisible;
     let settle = true;
     let initialized = false;
     const duration = () => enabled ? 200 : 0;
     const zoom = root.container.children.push(am5.ZoomableContainer.new(root, {
-      width: am5.p100, height: am5.p100, wheelable: false, pinchZoom: true,
-      minZoomLevel: 1, maxZoomLevel: 5, animationDuration: duration(),
+      width: am5.p100, height: am5.p100, wheelable: true, pinchZoom: true,
+      minZoomLevel: 1, maxZoomLevel: 5, zoomStep: 1.2, animationDuration: duration(),
+      background: am5.Rectangle.new(root, { fill: paper, fillOpacity: 1 }),
     }));
     const tree = series = zoom.contents.children.push(am5hierarchy.ForceDirected.new(root, {
       width: am5.p100, height: am5.p100,
@@ -27,7 +29,9 @@ export function createCaseTree(host: HTMLElement, figure: HTMLElement, data: Cas
       nodePadding: 18, manyBodyStrength: -14, centerStrength: 0.6, velocityDecay: 0.6,
       showOnFrame: 0, animationDuration: duration(), stateAnimationDuration: duration(),
     }));
-    for (const surface of [zoom, zoom.contents, tree]) surface.get('background')?.setAll({ fillOpacity: 0, strokeOpacity: 0 });
+    // The ZoomableContainer's oversized background travels with its contents
+    // and provides a continuous hit area for wheel, pinch, and drag gestures.
+    zoom.contents.get('background')?.setAll({ fill: paper, fillOpacity: 1, strokeOpacity: 0 });
     const color = (node?: CaseNode) => node ? am5.color(dark ? node.dark : node.light) : muted;
     tree.nodes.template.setAll({
       interactive: true, focusable: true, hoverOnFocus: true, cursorOverStyle: 'pointer', role: 'button',

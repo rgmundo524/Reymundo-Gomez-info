@@ -1,85 +1,66 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { donutSlicePath, formatShare } from '../lib/charts';
-import type { CaseDonutData } from '../lib/case-visuals';
+import { formatShare } from '../lib/charts';
+import type { CasePieData } from '../lib/case-visuals';
 
-type Props = { entry: CollectionEntry<'charts'>; visual: CaseDonutData };
-const { entry, visual } = Astro.props;
-const { kind, total, categories: slices } = visual;
-const canPlot = total > 0;
-const { data } = entry;
-const { Content } = await render(entry);
-const titleId = `chart-${kind}-${entry.id}-title`;
-const summaryId = `chart-${kind}-${entry.id}-summary`;
-const chartId = `case-donut-${kind}-${entry.id}`;
+type Props = { entries: CollectionEntry<'charts'>[]; visual: CasePieData };
+const { entries, visual } = Astro.props;
+const { kind, total } = visual;
+const id = `case-pie-${kind}`;
+const sections = await Promise.all(visual.groups.map(async (group) => {
+  const entry = entries.find(({ id }) => id === group.id)!;
+  const { Content } = await render(entry);
+  return { group, entry, Content };
+}));
 ---
 
-<figure class="case-chart" data-case-visual="donut" aria-labelledby={titleId}>
+<figure class="case-chart" data-case-visual="pie" aria-labelledby={`${id}-title`}>
   <figcaption>
-    <h3 id={titleId}>{data.title}</h3>
-    <p class="chart-description">{data.description_short}</p>
+    <h3 id={`${id}-title`}>Casework by investigation type</h3>
+    <p class="chart-description">Select an investigation type to break its slice down into case types. Select a smaller slice to return to the overview.</p>
+    <p class="chart-total">{total.toLocaleString('en-US')} {kind === 'example' ? 'example cases' : 'recorded cases'}</p>
   </figcaption>
-  {kind === 'example' && <p class="sample-status">Example cases</p>}
-  <p class="chart-hint">Select a slice or case type to explore case summaries.</p>
-  {canPlot && <div data-visual-panel hidden><div id={chartId} class="case-donut-canvas" data-visual-host role="group" aria-labelledby={titleId}></div></div>}
+  {total > 0 ? <div data-visual-panel hidden>
+    <div class="case-visual-controls" role="group" aria-label="Pie chart breakdown">
+      <button type="button" data-visual-action="pie-reset" aria-controls={id}>All investigation types</button>
+      {visual.groups.filter(({ total }) => total > 0).map((group) => <button type="button" data-visual-action={`pie-group:${group.id}`} aria-pressed="false" aria-controls={id}>{group.title}</button>)}
+    </div>
+    <div id={id} class="case-pie-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-view`}></div>
+    <p class="chart-hint" id={`${id}-view`} data-pie-view role="status">Showing all investigation types. Slice percentages use all {total} cases.</p>
+  </div> : <p class="chart-hint">The pie chart will appear as case records are added.</p>}
   <p class="chart-hint" data-visual-status role="status" hidden></p>
-  <svg class="donut" data-visual-fallback viewBox="0 0 240 240" role="group" aria-labelledby={titleId} aria-describedby={summaryId}>
-    <desc id={summaryId}>{canPlot
-      ? `${total} cases. Each slice links to case summaries for its category. Counts and shares are also listed below.`
-      : 'No cases are recorded in this dataset yet.'}</desc>
-    <circle cx="120" cy="120" r="88" fill="none" stroke="var(--chart-track)" stroke-width="40" pointer-events="none" aria-hidden="true" />
-    {canPlot && (
-      <g>
-        {slices.map((slice) => slice.count > 0 && (
-          <a class="slice-link" href={slice.url} tabindex="0"
-            aria-label={`${slice.label}: ${slice.count} ${slice.count === 1 ? 'case' : 'cases'}, ${formatShare(slice.percentage)}. View case summaries.`}>
-            <title>{slice.label}: {slice.count} ({formatShare(slice.percentage)})</title>
-            <path d={donutSlicePath(slice.offset, slice.percentage!)} class="case-category-color" style={`--case-light:${slice.light};--case-dark:${slice.dark}`} />
-          </a>
-        ))}
-      </g>
-    )}
-    <text class:list={['chart-total', { pending: !canPlot }]} x="120" y="119" text-anchor="middle" aria-hidden="true">
-      {total!.toLocaleString('en-US')}
-    </text>
-    <text class="chart-unit" x="120" y="143" text-anchor="middle" aria-hidden="true">{kind === 'example' ? 'examples' : 'cases'}</text>
-  </svg>
-  <table class="chart-legend">
-    <caption class="sr-only">{data.title}: category counts and shares</caption>
-    <thead><tr><th scope="col">Case type</th><th scope="col">Cases</th><th scope="col">Share</th></tr></thead>
-    <tbody>
-      {slices.map((slice) => (
-        <tr>
-          <th scope="row"><a class="category-link" href={slice.url}><span class="swatch case-category-color" style={`--case-light:${slice.light};--case-dark:${slice.dark}`} aria-hidden="true"></span>{slice.label}</a></th>
-          <td>{slice.count === null ? 'Pending' : slice.count.toLocaleString('en-US')}</td>
-          <td>{canPlot ? formatShare(slice.percentage) : '—'}</td>
-        </tr>
-      ))}
-    </tbody>
-    {canPlot && <tfoot><tr><th scope="row">Total</th><td>{total!.toLocaleString('en-US')}</td><td>100%</td></tr></tfoot>}
-  </table>
-  <div class="chart-caption"><Content /></div>
-  {canPlot && <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(visual).replace(/</g, '\\u003c')}></script>}
+  <div class="case-chart-tables">
+    {sections.map(({ group, entry, Content }) => <section aria-labelledby={`${id}-${group.id}`}>
+      <h4 id={`${id}-${group.id}`}>{group.title}</h4>
+      <p class="chart-description">{entry.data.description_short}</p>
+      <table class="chart-legend">
+        <caption>Share within {group.title.toLowerCase()}</caption>
+        <thead><tr><th scope="col">Case type</th><th scope="col">Cases</th><th scope="col">Share</th></tr></thead>
+        <tbody>
+          {group.categories.map((category) => <tr>
+            <th scope="row"><a class="category-link" href={category.url}><span class="swatch case-category-color" style={`--case-light:${category.light};--case-dark:${category.dark}`} aria-hidden="true"></span>{category.label}</a></th>
+            <td>{category.count.toLocaleString('en-US')}</td>
+            <td>{group.total > 0 ? formatShare(category.percentage) : '—'}</td>
+          </tr>)}
+        </tbody>
+        <tfoot><tr><th scope="row">Total</th><td>{group.total.toLocaleString('en-US')}</td><td>{group.total > 0 ? '100%' : '—'}</td></tr></tfoot>
+      </table>
+      <div class="chart-caption"><Content /></div>
+    </section>)}
+  </div>
+  {total > 0 && <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(visual).replace(/</g, '\\u003c')}></script>}
 </figure>
 
 <style>
   .case-chart { margin: 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; background: transparent; min-width: 0; }
-  h3 { color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 1.7rem; }
+  h3 { color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 2rem; }
+  h4 { color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
   .chart-description { color: var(--muted); font-size: .95rem; margin: .75rem 0; }
-  .review-status { color: #6e4830; background: #fcf1e6; padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }
-  .sample-status { color: var(--muted); background: var(--surface); padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }
+  .chart-total { color: var(--ink); font-size: 1.1rem; font-weight: 600; }
   .chart-hint { color: var(--muted); font-size: .875rem; }
-  .donut { display: block; width: min(100%, 15rem); height: auto; margin: 1.25rem auto; overflow: visible; }
-  .slice-link { cursor: pointer; }
-  .slice-link path { pointer-events: visibleFill; }
-  .slice-link:hover path, .slice-link:focus-visible path { stroke: var(--ink); stroke-width: 3; filter: brightness(1.1); }
-  .slice-link:focus-visible { outline: none; }
-  .chart-total, .chart-unit { pointer-events: none; }
   .category-link { display: inline-block; padding: .3rem 0; color: var(--accent); text-decoration-thickness: 1px; }
-  .chart-total { fill: var(--accent); font: 600 2.5rem system-ui, sans-serif; }
-  .chart-total.pending { fill: var(--muted); font-size: 1.3rem; }
-  .chart-unit { fill: var(--muted); font: .875rem system-ui, sans-serif; }
   .chart-legend { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  caption { text-align: left; color: var(--muted); font-size: .875rem; padding-block: .5rem; }
   th, td { padding: .55rem .25rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { text-align: left; font-weight: 500; }
   th:first-child { padding-left: 0; }
@@ -87,9 +68,7 @@ const chartId = `case-donut-${kind}-${entry.id}`;
   td, thead th:not(:first-child) { text-align: right; white-space: nowrap; }
   tfoot th, tfoot td { font-weight: 650; border: 0; }
   .swatch { display: inline-block; width: .65rem; height: .65rem; margin-right: .45rem; border: 1px solid #0002; border-radius: 2px; }
-  .chart-source { margin: 1rem 0 .5rem; color: var(--muted); font-size: .75rem; }
   .chart-caption { color: var(--muted); font-size: .875rem; }
   .chart-caption :global(p:last-child) { margin-bottom: 0; }
-  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media (max-width: 380px) { .case-chart { padding: 1rem; } .chart-legend { font-size: .875rem; } }
 </style>

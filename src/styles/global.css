@@ -136,7 +136,6 @@ li + li { margin-top: .4rem; }
 .collection-interests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 2rem; }
 .collection-interests h3 { font-size: 1.05rem; }
 .collection-interests .content-entry { padding-block: 1.5rem; }
-.case-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; align-items: start; }
 .notice { background: var(--surface); color: var(--muted); border-left: 3px solid var(--accent); padding: .7rem 1rem; font-size: .875rem; margin-top: 1.5rem; max-width: 45rem; }
 .callout { border-left: 3px solid var(--accent); padding: .5rem 0 .5rem 1.2rem; max-width: 48rem; }
 .category-nav { display: flex; flex-wrap: wrap; gap: .6rem 1.8rem; padding-block: 1.3rem; border-bottom: 1px solid var(--line); }
@@ -160,7 +159,7 @@ li + li { margin-top: .4rem; }
   .hero { grid-template-columns: 1fr; padding-block: 3.25rem 2.5rem; gap: 2.5rem; }
   .portrait { justify-self: start; max-width: 21rem; }
   .experience-strip { align-items: start; flex-direction: column; gap: 1rem; }
-  .expertise-grid, .featured-inner, .bio-section, .case-chart-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .expertise-grid, .featured-inner, .bio-section { grid-template-columns: 1fr; gap: 2rem; }
   .collection-credentials { grid-template-columns: 1fr; }
   .collection-interests { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .featured-projects article { padding-left: 1.25rem; }
@@ -277,14 +276,15 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .case-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; max-width: 60rem; background: var(--surface); padding: 1.25rem; }
 .case-facts dt { color: var(--muted); font-size: .875rem; }
 .case-facts dd { margin: .3rem 0 0; overflow-wrap: anywhere; }
-.case-chart, .case-explorer { background: transparent; }
+.case-chart { background: transparent; }
 .case-category-color { fill: var(--case-light); background-color: var(--case-light); }
 :root[data-theme="dark"] .case-category-color { fill: var(--case-dark); background-color: var(--case-dark); }
-.case-donut-canvas { width: 100%; height: 20rem; max-width: 26rem; margin: .5rem auto; }
-.case-explorer { margin-block: 2.5rem; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; min-width: 0; }
+.case-pie-canvas { width: 100%; height: clamp(25rem, 60vw, 36rem); max-width: 64rem; margin: .5rem auto; }
+.case-chart-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-top: 2rem; }
+.case-explorer { margin-block: 2.5rem; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; min-width: 0; background: var(--paper); }
 .case-explorer-heading h3 { font-family: var(--serif); font-size: 2rem; font-weight: 400; margin-bottom: .65rem; }
 .case-explorer-heading p { color: var(--muted); max-width: 48rem; }
-.case-tree-canvas { width: 100%; height: clamp(35rem, 65vw, 46rem); overflow: hidden; }
+.case-tree-canvas { width: 100%; height: clamp(35rem, 65vw, 46rem); overflow: hidden; background: var(--paper); }
 .case-visual-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1.25rem .5rem; }
 .case-visual-controls button { font: inherit; font-size: .875rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: .25rem; padding: .65rem .85rem; cursor: pointer; }
 .case-visual-controls button:hover, .case-visual-controls button[aria-pressed="true"] { background: var(--surface); }
@@ -299,11 +299,11 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 @media (max-width: 480px) {
   .case-explorer { padding: 1rem; }
   .case-tree-canvas { height: 36rem; }
-  .case-donut-canvas { height: 18rem; }
+  .case-pie-canvas { height: 27rem; }
 }
+@media (max-width: 760px) { .case-chart-tables { grid-template-columns: 1fr; } }
 @media print {
   [data-case-visual] [data-visual-panel], [data-case-visual] [data-visual-status] { display: none !important; }
-  [data-case-visual="donut"] [data-visual-fallback][hidden] { display: block !important; }
 }
 @media (max-width: 1040px) { .theme-toggle { margin-left: auto; } .statistics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {

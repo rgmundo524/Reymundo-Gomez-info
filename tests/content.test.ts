@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { schemas, type ContentRecord } from '../src/content/schemas';
 import { loadContent, validateRecords } from '../scripts/content';
-import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src/lib/charts';
+import { categoryUrl, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
-import { caseVisuals, type CaseNode } from '../src/lib/case-visuals';
+import { casePieSlices, caseVisuals, type CaseNode } from '../src/lib/case-visuals';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
 import { groupCredentials } from '../src/lib/credentials';
@@ -206,7 +206,7 @@ test('examples cannot be published as actual work and case facts are validated',
   assert.equal(schemas.cases.safeParse({ ...data, metrics: { wallets_reviewed: -1 } }).success, false);
 });
 
-test('donut shares use the full count total and do not normalize incomplete data', () => {
+test('category shares use the full count total and do not normalize incomplete data', () => {
   const source = [21, 13, 5, 5, 4, 3].map((count, index) => ({ id: `type-${index}`, label: `Type ${index}`, count }));
   const summary = summarizeCases(source);
   assert.equal(summary.total, 51);
@@ -229,15 +229,6 @@ test('four sample cases produce exact quarter slices and matching category links
   assert.deepEqual(result.slices.map(({ percentage }) => percentage), [25, 25, 25, 25]);
   assert.deepEqual(result.slices.map(({ offset }) => offset), [0, 25, 50, 75]);
   assert.equal(categoryUrl('professional-investigations', categories[0].id), '/investigations/professional-investigations/divorce/');
-  assert.equal(donutSlicePath(0, 0), '');
-  assert.equal((donutSlicePath(0, 100).match(/ A /g) ?? []).length, 4);
-  assert.match(donutSlicePath(0, 75), /A 108 108 0 1 1/);
-  // Quarter-circle geometry begins at noon and ends at three o'clock.
-  const first = donutSlicePath(0, 25).split(' ');
-  assert.equal(Number(first[1]), 120);
-  assert.equal(Number(first[2]), 12);
-  assert.equal(Number(first[9]), 228);
-  assert.equal(Number(first[10]), 120);
 });
 
 test('case summaries validate their chart and category references', () => {
@@ -256,12 +247,52 @@ const makeCase = (id: string, overrides: Record<string, unknown> = {}) => ({ id,
 
 const descendantCases = (node: CaseNode): CaseNode[] => node.type === 'case' ? [node] : (node.children ?? []).flatMap(descendantCases);
 
-test('donuts and tree count each case once and follow category changes without duplicating parent values', () => {
+test('broken-down pie replaces exactly one parent while preserving all cases and the global denominator', () => {
+  const second = { id: 'professional', data: schemas.charts.parse({ ...chart, slug: 'professional', title: 'Professional', publication_status: 'published' }) };
+  const records = [makeCase('one'), makeCase('two'), makeCase('three', { category: 'other' }),
+    makeCase('four', { chart: 'professional' }), makeCase('five', { chart: 'professional' })];
+  const data = caseVisuals([makeChart(), second], records, 'case_study');
+  const original = JSON.stringify(data);
+  const overview = casePieSlices(data);
+  assert.deepEqual(overview.map(({ count, percentage }) => [count, percentage]), [[3, 60], [2, 40]]);
+  const first = casePieSlices(data, 'example');
+  assert.deepEqual(first.map(({ id, count, percentage }) => [id, count, percentage]), [
+    ['category:example:fraud', 2, 40], ['category:example:other', 1, 20], ['investigation:professional', 2, 40],
+  ]);
+  assert.match(first[0].tooltip, /40% of all cases/);
+  assert.match(first[0].tooltip, /66.7% of this investigation type/);
+  const next = casePieSlices(data, 'professional');
+  assert.deepEqual(next.map(({ id, count }) => [id, count]), [['investigation:example', 3], ['category:professional:fraud', 2]]);
+  for (const slices of [overview, first, next]) {
+    assert.equal(slices.reduce((sum, { count }) => sum + count, 0), data.total);
+    assert.ok(Math.abs(slices.reduce((sum, { percentage }) => sum + percentage, 0) - 100) < 1e-9);
+    assert.equal(new Set(slices.map(({ id }) => id)).size, slices.length);
+  }
+  assert.deepEqual(casePieSlices(data, null), overview);
+  assert.deepEqual(casePieSlices(data, 'missing'), overview);
+  assert.equal(JSON.stringify(data), original, 'Selection must not mutate the shared tree or count tables');
+});
+
+test('broken-down pie uses only visible dataset records and handles zero and single-case totals', () => {
+  const records = [makeCase('public-case'), makeCase('draft-case', { publication_status: 'draft' }),
+    makeCase('sample-case', { content_kind: 'example', publication_status: 'draft' })];
+  const publicData = caseVisuals([makeChart()], records, 'case_study');
+  assert.equal(casePieSlices(publicData)[0].percentage, 100);
+  assert.deepEqual(casePieSlices(publicData, 'example').map(({ count }) => count), [1]);
+  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], records, 'example')), []);
+  assert.deepEqual(casePieSlices(caseVisuals([makeChart(false)], records, 'case_study')), []);
+  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], [], 'case_study'), 'example'), []);
+  const examples = caseVisuals([makeChart()], records, 'example', true);
+  assert.deepEqual(casePieSlices(examples, 'example').map(({ count }) => count), [1]);
+  assert.match(casePieSlices(examples, 'example')[0].tooltip, /1 example case/);
+});
+
+test('pie groups and tree count each case once and follow category changes without duplicating parent values', () => {
   const records = [makeCase('one'), makeCase('two'), makeCase('three', { category: 'other' })];
   const before = caseVisuals([makeChart()], records, 'case_study');
   assert.equal(before.total, 3);
-  assert.deepEqual(before.donuts[0].categories.map(({ count }) => count), [2, 1]);
-  assert.deepEqual(before.donuts[0].categories.map(({ percentage }) => percentage), [2 / 3 * 100, 1 / 3 * 100]);
+  assert.deepEqual(before.groups[0].categories.map(({ count }) => count), [2, 1]);
+  assert.deepEqual(before.groups[0].categories.map(({ percentage }) => percentage), [2 / 3 * 100, 1 / 3 * 100]);
   function check(node: CaseNode) {
     assert.equal(node.count, descendantCases(node).length);
     assert.equal(node.value, node.type === 'case' ? 1 : undefined);
@@ -271,7 +302,7 @@ test('donuts and tree count each case once and follow category changes without d
   assert.equal(new Set(descendantCases(before.tree).map(({ id }) => id)).size, 3);
   records[1].data.category = 'other';
   const after = caseVisuals([makeChart()], records, 'case_study');
-  assert.deepEqual(after.donuts[0].categories.map(({ count }) => count), [1, 2]);
+  assert.deepEqual(after.groups[0].categories.map(({ count }) => count), [1, 2]);
   assert.deepEqual(after.tree.children![0].children!.map(({ count }) => count), [1, 2]);
   assert.equal(descendantCases(after.tree).find(({ id }) => id === 'case:two')?.url, '/investigations/example/other/#two');
   check(after.tree);
@@ -288,19 +319,19 @@ test('case visuals separate examples, drafts, and hidden investigations and proj
   ];
   const published = caseVisuals([makeChart(), hidden], records, 'case_study');
   assert.equal(published.total, 1);
-  assert.equal(published.donuts.length, 1);
+  assert.equal(published.groups.length, 1);
   const leaf = descendantCases(published.tree)[0];
   assert.equal(leaf.label, 'Case 001');
   assert.equal(leaf.url, '/investigations/example/fraud/#public-case');
   assert.match(leaf.tooltip, /A \[literal\] title\nScope <detail>/);
   assert.match(leaf.tooltip, /Active/);
   assert.match(leaf.tooltip, /Networks: Bitcoin/);
-  assert.equal(published.donuts[0].categories[0].url, '/investigations/example/fraud/#dataset-case_study');
+  assert.equal(published.groups[0].categories[0].url, '/investigations/example/fraud/#dataset-case_study');
   assert.doesNotMatch(JSON.stringify(published), /EDITORIAL_SECRET_SENTINEL|UNUSED_BLOCK_SENTINEL/);
   assert.equal(caseVisuals([makeChart(), hidden], records, 'case_study', true).total, 3);
   const examples = caseVisuals([makeChart(), hidden], records, 'example', true);
   assert.deepEqual(descendantCases(examples.tree).map(({ id }) => id), ['case:sample-case']);
-  assert.equal(examples.donuts[0].categories[0].url, '/investigations/example/fraud/#dataset-example');
+  assert.equal(examples.groups[0].categories[0].url, '/investigations/example/fraud/#dataset-example');
   assert.equal(caseVisuals([makeChart()], records, 'example').total, 0);
 });
 
@@ -308,9 +339,9 @@ test('empty case visuals preserve navigable zero categories without inventing br
   const empty = caseVisuals([makeChart()], [], 'case_study');
   assert.equal(empty.total, 0);
   assert.deepEqual(empty.tree.children, []);
-  assert.equal(empty.donuts[0].total, 0);
-  assert.deepEqual(empty.donuts[0].categories.map(({ count, percentage }) => [count, percentage]), [[0, null], [0, null]]);
-  assert.equal(empty.donuts[0].categories[1].url, '/investigations/example/other/#dataset-case_study');
+  assert.equal(empty.groups[0].total, 0);
+  assert.deepEqual(empty.groups[0].categories.map(({ count, percentage }) => [count, percentage]), [[0, null], [0, null]]);
+  assert.equal(empty.groups[0].categories[1].url, '/investigations/example/other/#dataset-case_study');
 });
 
 test('adding and reclassifying a case updates counts, shares, statistics, and routes together', () => {
