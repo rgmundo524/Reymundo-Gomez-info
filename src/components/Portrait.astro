@@ -1,0 +1,15 @@
+---
+import type { ImageMetadata } from 'astro';
+import type { CollectionEntry } from 'astro:content';
+type Props = { profile: CollectionEntry<'profile'> };
+const { profile } = Astro.props;
+const portrait = profile.data.portrait;
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/*.{png,jpg,jpeg,webp}');
+const loader = portrait ? files[`../assets/${portrait.image}`] : undefined;
+if (portrait && !loader) throw new Error(`Missing portrait asset: src/assets/${portrait.image}`);
+const source = loader ? (await loader()).default : undefined;
+---
+{portrait && source && <figure class="portrait">
+  <div class="portrait-mat"><img src={source.src} width={source.width} height={source.height} alt={portrait.alt} loading="eager" fetchpriority="high" decoding="async" /></div>
+  <figcaption><span>{profile.data.name}</span><span>Blockchain investigator</span></figcaption>
+</figure>}

@@ -1,6 +1,6 @@
 # Interactive case charts
 
-The home page displays Criminal investigations and Professional investigations.
+The Casework page displays Criminal investigations and Professional investigations.
 The professional chart covers non-criminal work: Divorce, Corporate civil
 lawsuits, Bankruptcy, and Other. It uses one sample case per category, giving
 four total cases and four 25% slices.
@@ -108,7 +108,7 @@ shows a clear message instead of a broken destination.
 | `src/lib/charts.ts` | Counts, shares, SVG geometry, and category URLs |
 | `src/lib/cases.ts` | Category routing and visible case selection |
 | `src/pages/investigations/[chart]/[category].astro` | Category pages and full case summaries |
-| `content/pages/home.md` | Selected charts and their order |
+| `content/pages/casework.md` | Selected charts and their order |
 | `templates/cases.md` | Starting point for a new summary |
 
 ## Checks and publication

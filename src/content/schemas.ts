@@ -46,6 +46,11 @@ export const schemas = {
   profile: z.strictObject({
     ...common, name: text, headline: text,
     public_email: z.email().optional(), location: text.optional(),
+    portrait: z.strictObject({
+      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from src/assets.'),
+      alt: text,
+      source_url: webUrl.optional(),
+    }).optional(),
   }),
   experience: z.strictObject({
     ...common, organization: text, role: text, location: text.optional(),

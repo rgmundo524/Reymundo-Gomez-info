@@ -3,9 +3,10 @@
 Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
-This first version establishes the content model and a simple content preview.
-The visual website design and public deployment come later. Resume-based content
-entries are drafts; an ordinary production build excludes them.
+This version has a focused professional landing page, a profile portrait, and
+supporting About, Expertise, Casework, and Credentials pages. Reusable Markdown
+supplies the content across all routes. Content entries remain drafts for local
+development; an ordinary production build excludes them.
 
 ## Start locally
 
@@ -81,8 +82,10 @@ from `templates/` into the matching collection under `content/`.
 | `src/components/` | Reusable rendering components |
 | `src/pages/` | Website routes |
 
-The home page selection lives in `content/pages/home.md`. Its lists determine
-which entries appear and in which order. Other content files supply the writing.
+Each file in `content/pages/` selects the entries for that page and their order.
+The home page presents a small selection; the supporting pages provide the full
+background and details. Other content files supply the writing. See
+[the page structure guide](docs/page-structure.md) for the route map and portrait.
 
 ## Access through Tailscale
 
@@ -113,10 +116,10 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 
 ## Resume content
 
-The content inventory contains 53 draft entries, including resume-based content
+The content inventory contains 57 draft entries, including resume-based content
 and illustrative case examples: one profile, five roles, eleven credentials and training records,
 three education records, seven expertise areas, two selected-work entries,
-nine interests, two callouts, two case charts, ten case examples, and the home page selection.
+nine interests, two callouts, two case charts, ten case examples, and five page selections.
 
 The interactive case charts use the same reusable SVG component without additional packages.
 Edit counts in `content/charts/criminal-investigations.md` and

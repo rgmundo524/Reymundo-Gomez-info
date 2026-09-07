@@ -1,78 +1,50 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import type { InferGetStaticPropsType } from 'astro';
+import SiteLayout from '../../../layouts/SiteLayout.astro';
 import { caseRoutes } from '../../../lib/cases';
-import { includeDrafts } from '../../../lib/content';
+import { includeDrafts, isVisible } from '../../../lib/content';
 import { categoryUrl, formatShare, summarizeCases } from '../../../lib/charts';
-import '../../../styles/global.css';
 
 export async function getStaticPaths() {
   const [charts, studies] = await Promise.all([getCollection('charts'), getCollection('cases')]);
   return caseRoutes(charts, studies, includeDrafts).map(({ chart, category, studies }) => ({
-    params: { chart: chart.id, category: category.id },
-    props: { chart, category, studies },
+    params: { chart: chart.id, category: category.id }, props: { chart, category, studies },
   }));
 }
-
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 const { chart, category, studies } = Astro.props;
 const { slices, total } = summarizeCases(chart.data.categories);
 const share = slices.find(({ id }) => id === category.id)?.percentage ?? null;
 const cases = await Promise.all(studies.map(async (entry) => ({ entry, rendered: await render(entry) })));
-const isSample = chart.data.data_status === 'sample';
+const casework = await getEntry('pages', 'casework');
+const back = casework && isVisible(casework) ? { url: '/casework/#section-casework', label: 'Back to case charts' } : { url: '/', label: 'Back to home' };
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>{category.label} | {chart.data.title} | Reymundo Gómez</title>
-    <meta name="description" content={`Selected ${category.label.toLowerCase()} case summaries in ${chart.data.title.toLowerCase()}.`} />
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <main id="main">
-      <a href="/#section-casework">← Back to case charts</a>
-      <header class="intro">
-        <p class="eyebrow">{chart.data.title}</p>
-        <h1>{category.label}</h1>
-        {category.count !== null && <p class="lead">{category.count} {category.count === 1 ? 'case' : 'cases'}{share !== null ? ` · ${formatShare(share)} of ${total}` : ''}</p>}
-        {category.count === null && <p>Case count not entered.</p>}
-        {isSample && <p class="notice">Sample data for this website preview.</p>}
-        {chart.data.data_status === 'needs_review' && <p class="notice">Draft counts, subject to review.</p>}
-      </header>
-      <nav aria-label={`Categories in ${chart.data.title}`}>
-        {chart.data.categories.map((item) => (
-          <a href={categoryUrl(chart.id, item.id)} aria-current={item.id === category.id ? 'page' : undefined}>{item.label}</a>
-        ))}
-      </nav>
-      <section aria-labelledby="case-summaries">
-        <h2 id="case-summaries">Selected case summaries</h2>
-        <p>Selected summaries may cover only part of the chart’s case count.</p>
-        {cases.length === 0 && <p>No case summaries are available for this category yet.</p>}
-        {cases.map(({ entry, rendered }) => {
-          const Content = rendered.Content;
-          return (
-            <article id={entry.id} aria-labelledby={`${entry.id}-title`}>
-              {entry.data.content_kind === 'example' && <p class="example-label">Illustrative case example</p>}
-              <h3 id={`${entry.id}-title`}>{entry.data.title}</h3>
-              <p class="lead">{entry.data.description_short}</p>
-              {entry.data.blocks.investigative_question && <p class="callout">{entry.data.blocks.investigative_question}</p>}
-              <div class="prose"><Content /></div>
-              {entry.data.links.length > 0 && <ul>{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
-            </article>
-          );
-        })}
-      </section>
-      <p class="back-link"><a href="/#section-casework">Return to case charts</a></p>
-    </main>
-  </body>
-</html>
-
-<style>
-  .example-label { color: #596271; font-size: .8rem; }
-  nav a[aria-current="page"] { font-weight: 700; text-decoration-thickness: 3px; }
-  .back-link { margin-top: 2rem; }
-  .prose :global(h2) { font-size: 1.15rem; margin: 1.5rem 0 .5rem; }
-</style>
+<SiteLayout title={`${category.label} | ${chart.data.title} | Reymundo Gómez`} description={`Selected ${category.label.toLowerCase()} case summaries in ${chart.data.title.toLowerCase()}.`}>
+  <header class="container page-intro">
+    <p class="back-link"><a href={back.url}>← {back.label}</a></p>
+    <p class="eyebrow">{chart.data.title}</p><h1>{category.label}</h1>
+    {category.count !== null && <p class="page-lead">{category.count} {category.count === 1 ? 'case' : 'cases'}{share !== null ? ` · ${formatShare(share)} of ${total}` : ''}</p>}
+    {category.count === null && <p>Case count not entered.</p>}
+    {chart.data.data_status === 'sample' && <p class="notice">Sample data for this website preview.</p>}
+    {chart.data.data_status === 'needs_review' && <p class="notice">Draft counts, subject to review.</p>}
+  </header>
+  <nav class="container category-nav" aria-label={`Categories in ${chart.data.title}`}>
+    {chart.data.categories.map((item) => <a href={categoryUrl(chart.id, item.id)} aria-current={item.id === category.id ? 'page' : undefined}>{item.label}</a>)}
+  </nav>
+  <section class="container content-section" aria-labelledby="case-summaries">
+    <h2 id="case-summaries">Selected case summaries</h2><p>Selected summaries may cover only part of the chart’s case count.</p>
+    {cases.length === 0 && <p>No case summaries are available for this category yet.</p>}
+    {cases.map(({ entry, rendered }) => {
+      const Content = rendered.Content;
+      return <article class="case-study" id={entry.id} aria-labelledby={`${entry.id}-title`}>
+        {entry.data.content_kind === 'example' && <p class="example-label">Illustrative case example</p>}
+        <h3 id={`${entry.id}-title`}>{entry.data.title}</h3><p class="lead">{entry.data.description_short}</p>
+        {entry.data.blocks.investigative_question && <p class="callout">{entry.data.blocks.investigative_question}</p>}
+        <div class="prose"><Content /></div>
+        {entry.data.links.length > 0 && <ul>{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
+      </article>;
+    })}
+    <p class="back-link"><a href={back.url}>{back.label}</a></p>
+  </section>
+</SiteLayout>

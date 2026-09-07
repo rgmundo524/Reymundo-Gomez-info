@@ -78,10 +78,12 @@ or build commands. During live editing, field schemas are rechecked automaticall
 but run `npm run check` after changing relationships. Missing page selections also
 raise an error in the preview instead of disappearing silently.
 
-`content/pages/home.md` selects entries and their order. Adding a file to an
-experience collection makes it available; adding its slug to the page selection
-makes it appear in this initial preview. A content entry does not automatically
-get its own public URL. Later page designs can reuse any of the same fields.
+Each record under `content/pages/` selects entries and their order. The home page
+is a curated introduction. About, Expertise, Casework, and Credentials select the
+fuller material. Adding a content entry makes it available; adding its slug to a
+page selection makes it appear there. Page records get their own route, while
+individual jobs, credentials, and other subjects appear within the selected page.
+See [the page structure guide](page-structure.md).
 
 ## Reuse from Astro components
 
@@ -118,7 +120,7 @@ status. Attending an institution must not implicitly display as earning a degree
 ## Case charts
 
 Each file under `content/charts/` supplies categories and integer case counts to
-the reusable interactive donut component. Add its slug to `charts` in the home page selection.
+the reusable interactive donut component. Add its slug to `charts` in `content/pages/casework.md`.
 Totals and percentages are derived; `null` means unknown and `0` means a confirmed
 zero. Charts with unknown counts display their categories without proportions.
 
@@ -142,7 +144,7 @@ draft visibility rules as the home page.
 
 1. Review the wording and any source claims.
 2. Change intended entries and their required references to `published`.
-3. Publish the home page entry when its selected content is ready.
+3. Publish each page entry when its selected content is ready.
 4. Run `npm run build` and inspect it with `npm run preview`.
 
 Keep drafts, templates, source PDFs, and administrative records outside `public/`.

@@ -2,7 +2,7 @@
 
 Source: the supplied resume, updated August 21, 2026. Content prepared September
 7, 2026. Wording is adapted for a personal website and expert witness directories;
-it has not been independently credential-verified. All 53 entries remain drafts.
+it has not been independently credential-verified. All 57 entries remain drafts.
 The current development version also includes ten explicitly illustrative case
 summaries and chart values accepted as sample data by the owner.
 
@@ -20,11 +20,12 @@ summaries and chart values accepted as sample data by the owner.
 | Callouts | 2 | Evidence limitations and investigative experience |
 | Charts | 2 | Criminal and professional non-criminal investigation breakdowns |
 | Cases | 10 | Illustrative summaries, one per chart category |
-| Pages | 1 | Home page introduction and ordered content selection |
+| Pages | 5 | Curated home page and four supporting page selections |
 
-The home page selects every entry for local review. Later, shorten its lists to
-curate the public page without deleting the underlying records. Templates remain
-generic and available for future additions.
+The home page now selects a short professional introduction, three expertise
+areas, three organizations, and one project. Supporting pages retain the full
+background, credentials, interests, and case material. Templates remain generic
+and available for future additions.
 
 ## Items to confirm
 
@@ -42,7 +43,7 @@ generic and available for future additions.
 | Custom investigation tools | Portfolio grouping of resume-described work | Which specific tools or examples can be described publicly |
 | Technical skills | Named technologies without numeric self-ratings | Which technologies should be featured and how to describe proficiency |
 | Interests | Minimal copy using only the named hobbies | Personal detail, examples, or stories to add later |
-| Public contact | No email, telephone, street address, or profile link selected | Preferred public contact method and links |
+| Public contact | LinkedIn link from the resume; no email or telephone selected | Preferred public email if direct email contact is wanted |
 
 The ADA report could not be retrieved when this update was prepared. Its linked
 URL comes from the resume; contributor attribution has not been checked against

@@ -3,6 +3,13 @@ slug: reymundo
 publication_status: draft
 name: Reymundo Gómez
 headline: Senior Blockchain Investigator · Expert Witness
+portrait:
+  image: reymundo-gomez.png
+  alt: Reymundo Gómez wearing a dark blazer and white shirt.
+  source_url: https://cipherblade.com/expert-witness/crypto-experts/
+links:
+  - label: LinkedIn
+    url: https://www.linkedin.com/in/reymundo-gomez-78663ab6/
 blocks:
   directory_bio_short: >-
     Reymundo Gómez is a senior blockchain investigator and expert witness with experience
@@ -19,8 +26,7 @@ blocks:
   professional_focus: >-
     Digital asset tracing, blockchain forensics, expert witness work, and clear communication
     of technical evidence.
-editorial_note: Drafted from the resume updated August 21, 2026. Public contact details and
-  external profile links await selection. No claim of current security clearance is made.
+editorial_note: Drafted from the resume updated August 21, 2026. The LinkedIn link comes from the resume and the portrait from the official CipherBlade expert page. A public email has not been selected. No claim of current security clearance is made.
 description_short: >-
   Senior blockchain investigator and expert witness working in digital asset tracing, forensic
   analysis, and litigation support.

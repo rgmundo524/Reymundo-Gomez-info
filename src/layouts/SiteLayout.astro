@@ -1,0 +1,57 @@
+---
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { contactLink, includeDrafts, isVisible, pageProfile } from '../lib/content';
+import '../styles/global.css';
+
+type Props = {
+  title: string;
+  description: string;
+  profile?: CollectionEntry<'profile'>;
+};
+const { title, description } = Astro.props;
+const profile = Astro.props.profile ?? await pageProfile(await getEntry('pages', 'home'));
+const contact = contactLink(profile);
+const visiblePages = await getCollection('pages', isVisible);
+const navigation = [
+  { id: 'about', label: 'About' }, { id: 'expertise', label: 'Expertise' },
+  { id: 'casework', label: 'Casework' }, { id: 'credentials', label: 'Credentials' },
+].filter(({ id }) => visiblePages.some((entry) => entry.id === id));
+const name = profile?.data.name ?? 'Reymundo Gómez';
+const currentPath = Astro.url.pathname;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="wordmark" href="/" aria-label={`${name}, home`}>
+          <span class="monogram" aria-hidden="true">RG</span>
+          <span>{name}</span>
+        </a>
+        {navigation.length > 0 && <nav class="site-nav" aria-label="Main navigation">
+          {navigation.map(({ id, label }) => <a href={`/${id}/`} aria-current={currentPath.startsWith(`/${id}/`) || (id === 'casework' && currentPath.startsWith('/investigations/')) ? 'page' : undefined}>{label}</a>)}
+        </nav>}
+        {contact && <a class="header-contact" href={contact.url}>{contact.label}</a>}
+      </div>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer">
+      <div class="container footer-main">
+        <div><a class="footer-name" href="/">{name}</a><p>Blockchain investigations &amp; expert witness work</p></div>
+        {contact && <div class="footer-contact"><span>Professional enquiries</span><a href={contact.url}>{contact.label}</a></div>}
+      </div>
+      <div class="container footer-bottom">
+        <span>© {new Date().getFullYear()} {name}</span>
+        {includeDrafts && <span>Development preview · Draft content included</span>}
+      </div>
+    </footer>
+  </body>
+</html>

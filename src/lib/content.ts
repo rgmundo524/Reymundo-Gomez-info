@@ -1,9 +1,21 @@
-import { getCollection, type CollectionEntry, type CollectionKey } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry, type CollectionKey } from 'astro:content';
 
 export const includeDrafts = import.meta.env.DEV || import.meta.env.CONTENT_PREVIEW === 'drafts';
 
 export function isVisible(entry: { data: { publication_status: string } }): boolean {
   return includeDrafts || entry.data.publication_status === 'published';
+}
+
+export async function pageProfile(page: CollectionEntry<'pages'> | undefined) {
+  if (!page || !isVisible(page)) return undefined;
+  const profile = await getEntry('profile', page.data.profile);
+  return profile && isVisible(profile) ? profile : undefined;
+}
+
+export function contactLink(profile: CollectionEntry<'profile'> | undefined) {
+  if (profile?.data.public_email) return { label: 'Email Reymundo', url: `mailto:${profile.data.public_email}` };
+  const linkedIn = profile?.data.links.find(({ label }) => label === 'LinkedIn');
+  return linkedIn ? { label: 'Connect on LinkedIn', url: linkedIn.url } : undefined;
 }
 
 export async function selected<K extends CollectionKey>(collection: K, ids: string[]): Promise<CollectionEntry<K>[]> {

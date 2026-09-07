@@ -26,12 +26,11 @@ expertise:
 projects:
 - ada-redemption-transparency
 blocks:
-  litigation_relevance: >-
-    Experience organizing transaction-level analysis into explanations and exhibits for discovery,
-    deposition preparation, and potential trial use.
-description_short: >-
-  Supported litigation and advisory matters with blockchain forensics, custom analysis tooling,
-  and clear explanations of digital asset activity.
+  litigation_relevance: Experience organizing transaction-level analysis into explanations
+    and exhibits for discovery, deposition preparation, and potential trial use.
+  organization_short: BDO
+description_short: Supported litigation and advisory matters with blockchain forensics, custom
+  analysis tooling, and clear explanations of digital asset activity.
 ---
 
 At BDO, I worked within the Digital Assets and Blockchain Forensics Team on litigation and advisory matters involving digital assets and DeFi protocols. I developed analytical workflows to examine on-chain representations independently and extend investigations to blockchains with limited coverage in commercial tools.

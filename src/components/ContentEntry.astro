@@ -1,31 +1,28 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { activePosition, formatPeriods } from '../lib/content';
+import { activePosition, formatMonth, formatPeriods } from '../lib/content';
 
-type Props = { entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases'>> };
-const { entry } = Astro.props;
+type Props = {
+  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases'>>;
+  expanded?: boolean;
+};
+const { entry, expanded = false } = Astro.props;
 const { Content } = await render(entry);
 const data = entry.data;
-const title = 'role' in data ? `${data.role} · ${data.organization}`
-  : 'title' in data ? data.title : 'name' in data ? data.name : data.program;
+const title = 'role' in data ? data.role : 'title' in data ? data.title : 'name' in data ? data.name : data.program;
 ---
-<article id={entry.id}>
+<article class="content-entry" id={entry.id}>
   <header>
+    {entry.collection === 'experience' && <p class="meta">{formatPeriods(entry.data.periods)}{activePosition(entry.data.periods) ? ' · Current role' : ''}</p>}
     <h3>{title}</h3>
-    {entry.collection === 'experience' && (
-      <p class="meta">{formatPeriods(entry.data.periods)}{activePosition(entry.data.periods) ? ' · Current role' : ''}</p>
-    )}
+    {entry.collection === 'experience' && <p class="entry-organization">{entry.data.organization}</p>}
     {entry.collection === 'credentials' && <p class="meta">{entry.data.issuer} · {entry.data.issued_year} · {entry.data.credential_type}</p>}
+    {entry.collection === 'education' && <p class="meta">{entry.data.institution} · {formatMonth(entry.data.start)} to {entry.data.end ? formatMonth(entry.data.end) : 'Present'}{entry.data.credential_type === 'attendance' ? ' · Attendance' : entry.data.completion_status === 'completed' ? '' : ' · Studies'}</p>}
     {entry.collection === 'projects' && <p class="meta">{entry.data.contribution}</p>}
   </header>
   <p>{data.description_short}</p>
-  {entry.collection === 'experience' && entry.data.highlights.length > 0 && (
-    <ul>{entry.data.highlights.map((highlight) => <li id={`${entry.id}-${highlight.id}`}>{highlight.text}</li>)}</ul>
-  )}
+  {entry.collection === 'experience' && entry.data.highlights.length > 0 && <ul>{entry.data.highlights.map((highlight) => <li id={`${entry.id}-${highlight.id}`}>{highlight.text}</li>)}</ul>}
   {data.blocks.litigation_relevance && <p class="callout">{data.blocks.litigation_relevance}</p>}
-  <details>
-    <summary>Full description</summary>
-    <div class="prose"><Content /></div>
-  </details>
+  {expanded ? <div class="prose"><Content /></div> : <details><summary>Read more</summary><div class="prose"><Content /></div></details>}
   {data.links.length > 0 && <ul class="links">{data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
 </article>
