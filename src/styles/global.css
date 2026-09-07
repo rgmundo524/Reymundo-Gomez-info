@@ -280,7 +280,7 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .case-category-color { fill: var(--case-light); background-color: var(--case-light); }
 :root[data-theme="dark"] .case-category-color { fill: var(--case-dark); background-color: var(--case-dark); }
 .case-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; align-items: start; }
-.case-pie-canvas { width: 100%; height: 28rem; max-width: 36rem; margin: .5rem auto; }
+.case-sunburst-canvas { width: 100%; height: 28rem; max-width: 36rem; margin: .5rem auto; }
 .case-subcategory { margin-top: 2rem; scroll-margin-top: 6rem; }
 .case-subcategory-heading { font-size: 1.3rem; border-bottom: 1px solid var(--line); padding-bottom: .75rem; }
 .case-explorer { margin-block: 2.5rem; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; min-width: 0; background: var(--paper); }
@@ -291,6 +291,7 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .case-visual-controls button { font: inherit; font-size: .875rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: .25rem; padding: .65rem .85rem; cursor: pointer; }
 .case-visual-controls button:hover, .case-visual-controls button[aria-pressed="true"] { background: var(--surface); }
 .case-visual-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.case-visual-controls button[aria-current="true"] { border-color: var(--accent); font-weight: 600; }
 .case-visual-controls button:disabled { color: var(--muted); cursor: default; }
 .case-tree-list { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1rem; }
 .case-tree-list summary { cursor: pointer; padding-block: .65rem; color: var(--ink); }
@@ -301,10 +302,12 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 @media (max-width: 480px) {
   .case-explorer { padding: 1rem; }
   .case-tree-canvas { height: 36rem; }
-  .case-pie-canvas { height: 27rem; }
+  .case-sunburst-canvas { height: 27rem; }
 }
 @media (max-width: 900px) { .case-chart-grid { grid-template-columns: 1fr; } }
 @media print {
+  [data-case-result][hidden] { display: list-item !important; }
+  [data-case-results-summary] { display: none !important; }
   [data-case-visual] [data-visual-panel], [data-case-visual] [data-visual-status] { display: none !important; }
 }
 @media (max-width: 1040px) { .theme-toggle { margin-left: auto; } .statistics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -1,31 +1,48 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import { readable } from '../lib/cases';
 import { formatShare } from '../lib/charts';
-import type { CasePieData } from '../lib/case-visuals';
+import type { CaseSunburstData } from '../lib/case-visuals';
 
-type Props = { entry: CollectionEntry<'charts'>; visual: CasePieData };
+type Props = { entry: CollectionEntry<'charts'>; visual: CaseSunburstData };
 const { entry, visual } = Astro.props;
 const { kind, total } = visual;
-const id = `case-pie-${kind}-${visual.id}`;
+const id = `case-sunburst-${kind}-${visual.id}`;
 const { Content } = await render(entry);
 ---
 
-<figure class="case-chart" data-case-visual="pie" aria-labelledby={`${id}-title`}>
+<figure class="case-chart" data-case-visual="sunburst" aria-labelledby={`${id}-title`}>
   <figcaption>
     <h3 id={`${id}-title`}>{visual.title}</h3>
     <p class="chart-description">{entry.data.description_short}</p>
-    <p class="chart-hint">Select a category to see its subcategories. Select a smaller slice to return to the overview.</p>
+    <p class="chart-hint">Select a category, then follow the outer layers to narrow the cases below.</p>
     <p class="chart-total">{total.toLocaleString('en-US')} {kind === 'example' ? 'example cases' : 'recorded cases'}</p>
   </figcaption>
   {total > 0 ? <div data-visual-panel hidden>
-    <div class="case-visual-controls" role="group" aria-label="Pie chart breakdown">
-      <button type="button" data-visual-action="pie-reset" aria-controls={id}>All categories</button>
-      {visual.categories.filter(({ count }) => count > 0).map((category) => <button type="button" data-visual-action={`pie-category:${category.id}`} aria-pressed="false" aria-controls={id}>{category.label}</button>)}
+    <div class="case-visual-controls">
+      <button type="button" data-visual-action="sunburst-reset" aria-controls={`${id} ${id}-results`}>Reset filters</button>
     </div>
-    <div id={id} class="case-pie-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-view`}></div>
-    <p class="chart-hint" id={`${id}-view`} data-pie-view role="status">Showing all categories. Slice percentages use the {total} cases in this chart.</p>
-  </div> : <p class="chart-hint">The pie chart will appear as case records are added.</p>}
+    <nav class="case-visual-controls sunburst-breadcrumbs" data-sunburst-breadcrumbs aria-label={`${visual.title} filter path`}></nav>
+    <div id={id} class="case-sunburst-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-hint`}></div>
+    <p class="chart-hint" id={`${id}-hint`} data-sunburst-hint>Choose a slice or group to narrow these results.</p>
+    <div class="case-visual-controls" data-sunburst-branches role="group" aria-label="Narrow results"></div>
+  </div> : <p class="chart-hint">The chart will appear as case records are added.</p>}
   <p class="chart-hint" data-visual-status role="status" hidden></p>
+  <section class="sunburst-results" id={`${id}-results`} aria-labelledby={`${id}-results-title`}>
+    <h4 id={`${id}-results-title`}>Matching cases</h4>
+    <p class="chart-hint" data-case-results-summary role="status" aria-atomic="true">Showing {total} of {total} {kind === 'example' ? 'example ' : ''}cases.</p>
+    <ul class="sunburst-case-list">
+      {visual.cases.map((study) => <li data-case-result={study.id}>
+        <article>
+          <h5><a href={study.url}>{study.title}</a></h5>
+          <p class="chart-hint">{study.path.map((part, index) => index === 0 ? visual.categories.find(({ id }) => id === part)?.label : readable(part)).join(' → ')}</p>
+          <p>{study.description}</p>
+        </article>
+      </li>)}
+    </ul>
+    {!total && <p>No case records yet.</p>}
+  </section>
+  <details class="chart-counts"><summary>All category counts and shares</summary>
       <table class="chart-legend">
         <caption>Counts and shares within {visual.title.toLowerCase()}</caption>
         <thead><tr><th scope="col">Case type</th><th scope="col">Cases</th><th scope="col">Share</th></tr></thead>
@@ -42,6 +59,7 @@ const { Content } = await render(entry);
         </tbody>
         <tfoot><tr><th scope="row">Total</th><td>{total.toLocaleString('en-US')}</td><td>{total > 0 ? '100%' : '—'}</td></tr></tfoot>
       </table>
+  </details>
       <div class="chart-caption"><Content /></div>
   {total > 0 && <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(visual).replace(/</g, '\\u003c')}></script>}
 </figure>
@@ -64,6 +82,15 @@ const { Content } = await render(entry);
   .swatch { display: inline-block; width: .65rem; height: .65rem; margin-right: .45rem; border: 1px solid #0002; border-radius: 2px; }
   .chart-caption { color: var(--muted); font-size: .875rem; }
   .chart-caption :global(p:last-child) { margin-bottom: 0; }
+  .chart-counts { margin-block: 1.5rem; }
+  .chart-counts > summary { cursor: pointer; padding-block: .75rem; }
+  .sunburst-results { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1.5rem; }
+  .sunburst-results h4 { font-size: 1.25rem; margin: 0 0 .5rem; }
+  .sunburst-case-list { list-style: none; padding: 0; margin: 0; }
+  .sunburst-case-list li { border-bottom: 1px solid var(--line); padding-block: 1.25rem; }
+  .sunburst-case-list h5 { font-size: 1.1rem; margin: 0; }
+  .sunburst-case-list h5 a { color: var(--accent); }
+  .sunburst-case-list p { margin-block: .5rem 0; overflow-wrap: anywhere; }
   .subcategory-list { font-size: .875rem; font-weight: 400; color: var(--muted); }
   .subcategory-list summary { cursor: pointer; padding-block: .4rem; }
   .subcategory-list ul { padding-left: 1rem; margin: .25rem 0 .5rem; }

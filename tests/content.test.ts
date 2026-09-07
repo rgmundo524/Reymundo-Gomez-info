@@ -4,7 +4,8 @@ import { schemas, type ContentRecord } from '../src/content/schemas';
 import { loadContent, validateRecords } from '../scripts/content';
 import { categoryUrl, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
-import { casePieSlices, caseVisuals, type CaseNode } from '../src/lib/case-visuals';
+import { caseVisuals, type CaseNode } from '../src/lib/case-visuals';
+import { caseSunburst, sunburstNodes, sunburstSelection } from '../src/lib/case-sunburst';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
 import { groupCredentials } from '../src/lib/credentials';
@@ -247,38 +248,50 @@ const makeCase = (id: string, overrides: Record<string, unknown> = {}) => ({ id,
 
 const descendantCases = (node: CaseNode): CaseNode[] => node.type === 'case' ? [node] : (node.children ?? []).flatMap(descendantCases);
 
-test('separate investigation pies expand categories without mixing denominators or double-counting', () => {
+test('sunbursts filter each depth independently, preserve exact counts, and reset to all cases', () => {
   const second = { id: 'professional', data: schemas.charts.parse({ ...chart, slug: 'professional', title: 'Professional', publication_status: 'published' }) };
-  const records = [makeCase('one', { subcategory: 'bridge-exploit' }), makeCase('two', { subcategory: 'bridge-exploit' }),
-    makeCase('three', { subcategory: 'protocol-exploit' }), makeCase('four', { category: 'other' }),
-    makeCase('five', { chart: 'professional', subcategory: 'bridge-exploit' }), makeCase('six', { chart: 'professional', category: 'other' })];
+  const records = [makeCase('one', { subcategory: ['platform', 'exchange', 'fee'] }),
+    makeCase('two', { subcategory: ['platform', 'exchange', 'freeze'] }),
+    makeCase('three', { subcategory: 'platform' }), makeCase('four', { category: 'other' }),
+    makeCase('five', { chart: 'professional', subcategory: ['platform', 'exchange', 'fee'] })];
   const data = caseVisuals([makeChart(), second], records, 'case_study');
   const original = JSON.stringify(data);
-  const [criminal, professional] = data.groups;
-  assert.deepEqual([criminal.total, professional.total], [4, 2]);
-  assert.deepEqual(casePieSlices(criminal).map(({ count, percentage }) => [count, percentage]), [[3, 75], [1, 25]]);
-  assert.deepEqual(casePieSlices(professional).map(({ count, percentage }) => [count, percentage]), [[1, 50], [1, 50]]);
-  const expanded = casePieSlices(criminal, 'fraud');
-  assert.deepEqual(expanded.map(({ id, count, percentage }) => [id, count, percentage]), [
-    ['subcategory:example:fraud:bridge-exploit', 2, 50], ['subcategory:example:fraud:protocol-exploit', 1, 25], ['category:example:other', 1, 25],
-  ]);
-  assert.match(expanded[0].tooltip, /50% of this chart/);
-  assert.match(expanded[0].tooltip, /66.7% of Fraud/);
-  for (const group of data.groups) {
-    for (const selection of [null, ...group.categories.map(({ id }) => id)]) {
-      const slices = casePieSlices(group, selection);
-      assert.equal(slices.reduce((sum, { count }) => sum + count, 0), group.total);
-      assert.ok(Math.abs(slices.reduce((sum, { percentage }) => sum + percentage, 0) - 100) < 1e-9);
-      assert.equal(new Set(slices.map(({ id }) => id)).size, slices.length);
+  const [criminal, professional] = data.groups.map(caseSunburst);
+  assert.deepEqual([criminal.count, professional.count], [4, 1]);
+  const selected = (id?: string) => sunburstSelection(criminal, id);
+  assert.deepEqual([...selected('example/fraud').caseIds], ['one', 'three', 'two']);
+  assert.deepEqual([...selected('example/fraud/platform/exchange').caseIds], ['one', 'two']);
+  const leaf = selected('example/fraud/platform/exchange/fee');
+  assert.deepEqual([...leaf.caseIds], ['one']);
+  assert.equal(leaf.focus.id, 'example/fraud/platform/exchange', 'Leaf filters keep the parent in view');
+  assert.deepEqual(leaf.ancestors.map(({ label }) => label), ['All categories', 'Fraud', 'Platform', 'Exchange', 'Fee']);
+  assert.deepEqual([...selected('example/fraud/platform/@unclassified').caseIds], ['three']);
+  assert.equal(selected(criminal.id).caseIds.size, 4, 'Reset restores this investigation');
+  assert.equal(sunburstSelection(professional).caseIds.size, 1, 'The other investigation is unchanged');
+  assert.equal(selected('professional/fraud/platform/exchange/fee').node, criminal, 'Unknown or foreign selections reset safely');
+  for (const root of [criminal, professional]) {
+    const nodes = sunburstNodes(root);
+    assert.equal(new Set(nodes.map(({ id }) => id)).size, nodes.length);
+    for (const node of nodes) {
+      const selection = sunburstSelection(root, node.id);
+      assert.equal(selection.caseIds.size, node.count);
+      assert.equal(node.value, node.children ? undefined : node.count);
+      if (node.children) {
+        assert.equal(node.children.reduce((sum, child) => sum + child.count, 0), node.count);
+        assert.deepEqual(node.children.flatMap(({ caseIds }) => caseIds).sort(), [...node.caseIds].sort());
+      }
     }
+    assert.equal(nodes.reduce((sum, node) => sum + (node.value ?? 0), 0), root.count);
   }
-  assert.deepEqual(casePieSlices(criminal, 'missing'), casePieSlices(criminal));
-  assert.equal(JSON.stringify(data), original, 'Selection must not mutate shared data or the other chart');
+  assert.equal(JSON.stringify(data), original, 'Selections must not mutate shared data');
 });
 
-test('subcategory discovery is single-valued, retains unspecified cases, and follows Markdown reclassification', () => {
+test('subcategory paths accept legacy scalars, retain unspecified cases, and follow Markdown reclassification', () => {
   assert.equal(makeCase('legacy').data.subcategory, null);
-  assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory: ['bridge-exploit', 'protocol-exploit'] }).success, false);
+  for (const subcategory of [[], ['valid', null], ['valid', ''], ['UPPER'], [['nested']]]) {
+    assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory }).success, false);
+  }
+  assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory: ['bridge-exploit', 'protocol-exploit'] }).success, true);
   assert.equal(schemas.cases.safeParse({ ...makeCase('bad').data, subcategory: 'Bridge Exploit' }).success, false);
   const records = [makeCase('one', { subcategory: 'bridge-exploit' }), makeCase('two'), makeCase('three', { category: 'other', subcategory: 'bridge-exploit' })];
   const initial = caseVisuals([makeChart()], records, 'case_study').groups[0];
@@ -297,17 +310,22 @@ test('subcategory discovery is single-valued, retains unspecified cases, and fol
   assert.equal(changed.total, 4);
 });
 
-test('subcategory slices exclude drafts and examples in production and handle empty or single-case charts', () => {
+test('sunbursts exclude drafts and examples in production and handle empty or single-case charts', () => {
   const records = [makeCase('public-case', { subcategory: 'public-type' }), makeCase('draft-case', { publication_status: 'draft', subcategory: 'draft-type' }),
     makeCase('sample-case', { content_kind: 'example', publication_status: 'draft', subcategory: 'sample-type' })];
   const publicData = caseVisuals([makeChart()], records, 'case_study').groups[0];
-  assert.equal(casePieSlices(publicData)[0].percentage, 100);
-  assert.deepEqual(casePieSlices(publicData, 'fraud').map(({ label, count }) => [label, count]), [['Public Type', 1]]);
-  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], records, 'example').groups[0]), []);
+  const root = caseSunburst(publicData);
+  assert.deepEqual(root.caseIds, ['public-case']);
+  assert.deepEqual(root.children?.[0].children?.map(({ label, count }) => [label, count]), [['Public Type', 1]]);
+  assert.doesNotMatch(JSON.stringify(root), /draft-type|sample-type/);
+  assert.deepEqual(caseSunburst(caseVisuals([makeChart()], records, 'example').groups[0]).caseIds, []);
   assert.deepEqual(caseVisuals([makeChart(false)], records, 'case_study').groups, []);
-  assert.deepEqual(casePieSlices(caseVisuals([makeChart()], [], 'case_study').groups[0], 'fraud'), []);
+  const empty = caseSunburst(caseVisuals([makeChart()], [], 'case_study').groups[0]);
+  assert.equal(empty.count, 0);
+  assert.equal(empty.children, undefined);
+  assert.equal(sunburstSelection(empty).caseIds.size, 0);
   const examples = caseVisuals([makeChart()], records, 'example', true).groups[0];
-  assert.deepEqual(casePieSlices(examples, 'fraud').map(({ label, count }) => [label, count]), [['Sample Type', 1]]);
+  assert.deepEqual(caseSunburst(examples).caseIds, ['sample-case']);
   assert.equal(examples.categories[0].subcategories[0].url, '/investigations/example/fraud/#subcategory-example-sample-type');
 });
 
@@ -324,6 +342,12 @@ test('example Markdown subcategories appear in search and remain isolated to the
   const found = caseSearchRecords(records, true).find(({ url }) => url.endsWith('#case-012'))!;
   assert.deepEqual(found.filters.Subcategory, ['Bridge Exploit']);
   assert.match(found.content, /Bridge Exploit/);
+  const deepSearch = caseSearchRecords(records, true).find(({ url }) => url.endsWith('#case-011'))!;
+  assert.deepEqual(deepSearch.filters.Subcategory, ['Investment Platform', 'Fake Exchange', 'Withdrawal Fee']);
+  const criminal = caseSunburst(data.groups[0]);
+  assert.equal(sunburstSelection(criminal, 'criminal-investigations/pig-butchering').caseIds.size, 2);
+  assert.deepEqual([...sunburstSelection(criminal, 'criminal-investigations/pig-butchering/investment-platform/fake-exchange/withdrawal-fee').caseIds], ['case-011']);
+
 });
 
 test('pie groups and tree count each case once and follow category changes without duplicating parent values', () => {

@@ -1,50 +1,36 @@
 # Case charts and the case tracker
 
-Charts now derive every count from `content/cases/*.md`. The former manual
-category counts, `data_status`, and `source_date` fields have been removed.
-Chart Markdown holds category IDs, labels, and explanatory copy only.
+Every count comes from `content/cases/*.md`. Chart Markdown defines primary
+category IDs, labels, and explanatory copy. Case Markdown supplies each case’s
+classification path. No stored counts or percentages are needed.
 
-The two groups remain Criminal investigations and Professional investigations
-(non-criminal). Add a category to the appropriate chart file before assigning a
-case to it. Add a new chart slug to the Casework page's `charts` selection if you
-create another group.
+## Two independent sunburst filters
 
-## Counting rules
+Criminal investigations and Professional investigations each have an amCharts 5
+[drill-down sunburst](https://www.amcharts.com/demos/drill-down-sunburst-chart/)
+and their own matching case list directly below it. These replace the earlier
+broken-slice pies. Each investigation has one canvas, with no SVG overlay.
 
-- One case record contributes one count to exactly one chart and primary category.
-- Slugs are unique. Renaming the file does not create another case; copying it
-  with the same slug fails validation.
-- Each pie and its table use that investigation type's records as the denominator.
-  Criminal and professional cases have independent totals. Subcategory slices
-  keep their chart's denominator during expansion. Stored counts and percentages
-  are rejected.
-- Zero records means zero cases. Empty charts show a zero total without slices;
-  empty categories remain navigable.
-- Chart slices, legend links, category counts, and case records share the same
-  calculation and visibility rules.
-- Real records (`case_study`) and examples (`example`) are separate datasets.
-  Development shows examples when there are no real cases; once real cases are
-  added, the examples remain in an expandable section. They never augment real
-  totals. Example records cannot be published.
+- The inner ring shows primary categories, such as Pig butchering or Divorce.
+- The next ring shows subcategories. Each further path level adds another ring.
+- Selecting a branch zooms into it and shows all its descendant cases below.
+- Selecting a terminal slice filters to that exact classification; its parent
+  remains in view because there are no deeper layers to reveal.
+- Breadcrumbs return to any ancestor. The group buttons provide the same
+  filtering as the slices, including keyboard access and small-screen use.
+- **Reset filters** returns that investigation to its initial chart and all its
+  cases. Selecting one investigation never changes the other.
+- Theme changes retain the current selection. System reduced-motion preferences
+  disable chart transitions.
 
-Table links lead to `/investigations/<chart>/<category>/#dataset-<kind>`, opening
-the matching real or example group. Individual records also have
-stable anchors using their slug. Links work with keyboard, pointer, and touch.
+The sunburst results and Pagefind search are separate ways to browse the same
+eligible case records. Sunburst selections update their own lists; they do not
+change the Pagefind query or its dropdowns. Each case title links to its full
+existing case details. The force-directed explorer below remains available.
 
-## Interactive charts
+## Markdown classification paths
 
-There are two separate amCharts 5 **Pie Charts with Broken Down Slices**: Criminal
-investigations and Professional investigations. Each chart has one canvas and
-one series. The original SVG donuts and grainy renderer remain removed.
-
-The criminal pie starts with Hacks, Pig butchering, Phishing, and the other
-categories from its chart Markdown. The professional pie starts with Divorce,
-Corporate civil lawsuits, Bankruptcy, and Other. Selecting a category replaces
-only that slice with its subcategories. The other categories stay visible.
-Selecting a smaller slice returns to categories. Each chart's buttons, selection,
-and total are independent. Hover or keyboard focus shows counts and shares.
-
-Each case supplies a single optional `subcategory` in its frontmatter:
+Existing single-level entries still work:
 
 ```yaml
 chart: criminal-investigations
@@ -52,104 +38,95 @@ category: hacks
 subcategory: bridge-exploit
 ```
 
-Or, for example:
+For deeper classifications, use an ordered list under the same field:
 
 ```yaml
-chart: professional-investigations
-category: divorce
-subcategory: asset-disclosure
+chart: criminal-investigations
+category: pig-butchering
+subcategory:
+  - investment-platform
+  - fake-exchange
+  - withdrawal-fee
 ```
 
-Use lowercase words separated by hyphens. Labels are generated automatically
-(`bridge-exploit` becomes “Bridge Exploit”). Add or change a value in a case file
-to create/reclassify a subcategory; no second list needs updating. The same ID
-under a different category or investigation type remains a separate group.
-Use `subcategory: null`, or omit the field, for unknown classifications. These
-records appear under “Unspecified” and still contribute to the parent total.
-Lists are rejected because one case must have exactly one primary subcategory.
+This means **Pig butchering → Investment Platform → Fake Exchange → Withdrawal
+Fee**. A list is one parent-to-child path, not several unrelated tags. Add more
+items for more levels. Use lowercase words separated by hyphens; display labels
+are generated automatically. No central subcategory registry needs updating.
+The same ID under different parents or investigation types stays separate.
 
-The expandable subcategory lists below each pie link to the matching records
-on the category page. Their counts and percentages use the same chart total.
-Category pages group cases by subcategory; existing individual case anchors
-remain stable. Pagefind also indexes and filters by subcategory.
+`subcategory: null` or an omitted field becomes **Unspecified**. Empty lists,
+blank items, nested lists, and invalid slugs fail validation.
 
-All displayed slices always sum to their chart's total. A selected parent's
-count is replaced by its child counts; they are never added together. Pie
-percentages continue to use that investigation type after expansion. Tooltips
-also show each subcategory's share within its parent category.
+Cases can stop at different depths. If some end at Investment Platform while
+others go deeper, a **No further classification** bucket holds those shorter
+paths. This prevents them from disappearing or being counted again. Selecting
+Investment Platform still shows both the shorter and deeper cases.
 
-Below the pies, **Explore cases** is a force-directed tree:
+Category pages group cases by the first subcategory and display the complete
+classification path in each case’s facts. Existing category and case anchors
+remain stable. Pagefind indexes every level of the path.
 
-`Casework → Investigation type → Primary category → Individual case`
+## Counting and publication rules
 
-Investigation types and categories expand/collapse on selection. A case node
-opens its existing case details. Larger groups contain more records. Only case
-leaves have a numeric value of 1; amCharts aggregates parent values, so parent
-counts are not supplied a second time. Empty categories remain in the tables
-but are omitted from the tree.
+- One case contributes one count to one investigation and one classification
+  path. Slugs remain unique even if files are renamed or copied.
+- Parent counts equal the sum of their children. Only terminal buckets supply
+  numeric values to amCharts, preventing parent/child double counting.
+- Each investigation has its own denominator. Tooltips explicitly show shares
+  of the entire investigation and the parent group. Zoom changes the visible
+  branch, while the result summary shows the selected count out of the full
+  investigation count. The count tables always describe the entire investigation.
+- Zero cases means zero slices. Empty primary categories remain in the count
+  tables, with links to their category pages.
+- Real case studies and illustrative examples stay in separate datasets.
+  Examples remain drafts and cannot be published as actual work.
+- Production includes only published real cases in published charts. Draft
+  preview includes the illustrative records. Chart JSON contains only explicitly
+  selected display fields, never editorial notes or unused content blocks.
 
-The tree has zoom, reset, collapse, and pause controls. Drag nodes or the map to
-rearrange/explore it; touch devices can pinch to zoom. The mouse wheel zooms while
-the pointer is over the explorer. Animated dots travel along visible links. The animation
-illustrates navigation relationships, not transactions, money flow, or case
-progress. Pause stops both dots and the force simulation. Reduced-motion system
-preferences disable automatic motion and use a settled layout. Offscreen charts
-and background tabs pause automatically.
+The fictional examples include two paths below Pig butchering and a deep
+professional path below Divorce. They demonstrate navigation, not real findings.
 
-The pie backgrounds remain transparent. The case explorer has a solid,
-theme-matched background on its panel, canvas host, and zoom interaction surface.
-This gives wheel, pinch, and drag gestures a continuous hit area. Node/slice
-colors and tooltip colors follow the theme. The amCharts attribution remains
-visible under its existing license.
+## Appearance and fallback
 
-Charts load when they approach the viewport. The HTML count tables remain visible
-while loading, without JavaScript, on failure, and in print. The expandable text
-case list stays available alongside the interactive tree. No client framework or remote chart
-service is required; the existing amCharts dependency supplies both chart types.
+The sunbursts remain transparent so the particle background shows through.
+The force-directed explorer retains a solid theme-matched background for wheel,
+pinch, and drag interaction. amCharts attribution remains visible.
 
-### Appearance settings
+Charts load near the viewport. Case summaries and expandable count tables are
+server-rendered and available without JavaScript or when chart loading fails.
+Printing includes all case summaries, even if the on-screen list was filtered.
+Small slices retain tooltip and equivalent HTML button navigation.
 
 Edit `src/config/case-visuals.json`:
 
-| Setting | Meaning | Initial value |
+| Setting | Meaning | Default |
 | --- | --- | --- |
-| `pie.radius` | Radius as a percentage of available chart space | 92 |
-| `pie.transitionDuration` | Slice transition duration in milliseconds; zero with reduced motion | 250 |
-| `tree.minRadius` / `tree.maxRadius` | Node radius range in pixels | 26 / 62 |
-| `tree.bulletDuration` | Milliseconds for a dot to travel along a link | 3500 |
-| `tree.initialDepth` | Initially visible levels below the root | 2 |
+| `sunburst.radius` | Percentage of available chart radius | 96 |
+| `sunburst.innerRadius` | Center hole as a percentage of radius | 12 |
+| `sunburst.visibleLevels` | Visible descendant depth; null shows all available layers | null |
+| `sunburst.transitionDuration` | Drill transition milliseconds, zero with reduced motion | 350 |
+| `tree.minRadius` / `tree.maxRadius` | Force-tree node radius range in pixels | 26 / 62 |
+| `tree.bulletDuration` | Milliseconds per traveling dot | 3500 |
+| `tree.initialDepth` | Initially visible levels below the tree root | 2 |
 
-An individual case can optionally provide a short node label:
+## Force-directed case explorer
 
-```yaml
-blocks:
-  chart_label: Case 001
-```
+The explorer still follows **Casework → Investigation → Primary category → Case**.
+Parents expand and collapse; individual cases open their details. Node size uses
+case counts. Only case leaves have a numeric value of 1. Its text list remains
+available alongside the canvas.
 
-Otherwise the case slug is used. Full titles, short descriptions, status, dates,
-and networks appear in case tooltips; the text list always uses full titles.
-Adding or reclassifying a Markdown record updates the pie, tree, tables, and
-destinations in the same build. `src/lib/case-visuals.ts` projects the display
-fields explicitly; editorial notes, unrelated blocks, and Markdown source are
-not copied into chart JSON.
+Zoom, reset, collapse, and pause controls remain available. Animated dots show
+navigation relationships, not transactions or money movement. Pause stops both
+the dots and simulation. Reduced motion produces a settled layout; offscreen
+explorers and background tabs pause automatically.
 
-These charts adapt the [Pie Chart with Broken Down Slices](https://www.amcharts.com/demos/pie-chart-broken-slices/)
-and [Force-Directed Tree with Animated Bullets](https://www.amcharts.com/demos/force-directed-tree-with-animated-bullets/)
-examples.
+`blocks.chart_label` optionally provides a short case-node label. Tooltips retain
+full titles, summaries, status, classification, dates, and networks. This explorer
+adapts the [Force-Directed Tree with Animated Bullets](https://www.amcharts.com/demos/force-directed-tree-with-animated-bullets/).
 
-### Other donut and hierarchy options
-
-These options can all use the existing amCharts 5 dependency and the same case
-classifications. Each would remain separate for criminal and professional work.
-
-| Option | Interaction and tradeoff |
-| --- | --- |
-| [Broken-down slices](https://www.amcharts.com/demos/pie-chart-broken-slices/) | Current behavior: expand one category in place. Can be styled with a donut hole; the full chart denominator stays unchanged. |
-| [Drill-down sunburst](https://www.amcharts.com/demos/drill-down-sunburst-chart/) | Best alternative for this hierarchy: categories and subcategories occupy concentric rings; select a branch to focus. A hollow center is supported. |
-| [Two-level pie](https://www.amcharts.com/demos/two-level-pie-chart/) | Two series can be adapted into aligned category/subcategory rings, showing both levels at once. Small subcategories can become crowded. |
-| [Pie of a pie](https://www.amcharts.com/demos/pie-of-a-pie/) | A selected category opens in a separate detail pie. It provides more room for detail but needs more space for two investigation charts, and detail shares use the selected category's total. |
-
-These are alternatives for review, not additional charts loaded into the page.
-
-Read [the case record guide](case-tracker.md) for a copyable workflow, field
-meanings, financial coverage rules, and the example files.
+Read [the case record guide](case-tracker.md) for field definitions and publishing
+rules. All visualizations use the existing amCharts dependency without a new
+client framework, database, or remote chart service.

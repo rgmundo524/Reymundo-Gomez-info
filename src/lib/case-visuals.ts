@@ -1,5 +1,5 @@
 import { categoryUrl, formatShare, summarizeCases } from './charts';
-import { caseSubcategories, chartCategories, eligibleCases, readable, statusLabels, subcategoryAnchor, type Chart, type CaseStudy, type CaseKind } from './cases';
+import { subcategoryPath, caseSubcategories, chartCategories, eligibleCases, readable, statusLabels, subcategoryAnchor, type Chart, type CaseStudy, type CaseKind } from './cases';
 
 const palette = [
   ['#8b3049', '#efa5b6'], ['#386b94', '#91c9ee'], ['#30786f', '#8bd7c6'],
@@ -34,7 +34,12 @@ export function caseVisuals(charts: Chart[], studies: CaseStudy[], kind: CaseKin
       };
     });
     const [light, dark] = palette[index % palette.length];
-    return { id: chart.id, title: chart.data.title, kind, total: summary.total ?? 0, light, dark, categories };
+    const cases = records.filter(({ data }) => data.chart === chart.id).map((study) => ({
+      id: study.id, title: study.data.title, description: study.data.description_short,
+      path: [study.data.category, ...subcategoryPath(study)],
+      url: `${categoryUrl(study.data.chart, study.data.category)}#${study.id}`,
+    }));
+    return { id: chart.id, title: chart.data.title, kind, total: summary.total ?? 0, light, dark, categories, cases };
   });
   const investigations: CaseNode[] = groups.filter(({ total }) => total > 0).map((group) => {
     return { id: `investigation:${group.id}`, label: group.title, title: group.title, type: 'investigation', count: group.total,
@@ -48,7 +53,7 @@ export function caseVisuals(charts: Chart[], studies: CaseStudy[], kind: CaseKin
           type: 'case', count: 1, value: 1, light: category.light, dark: category.dark,
           url: `${categoryUrl(data.chart, data.category)}#${id}`,
           tooltip: [data.title, data.description_short, statusLabels[data.case_status],
-            `Subcategory: ${readable(data.subcategory ?? 'unspecified')}`,
+            `Classification: ${subcategoryPath({ id, data }).map(readable).join(' → ')}`,
             `Opened: ${data.opened_on ?? 'Not recorded'}`, data.closed_on ? `Completed: ${data.closed_on}` : '',
             data.networks.length ? `Networks: ${data.networks.map(readable).join(', ')}` : '',
             'Open case details.'].filter(Boolean).join('\n'),
@@ -63,36 +68,10 @@ export function caseVisuals(charts: Chart[], studies: CaseStudy[], kind: CaseKin
   return { kind, total: records.length, groups, tree };
 }
 
-export type CasePieData = ReturnType<typeof caseVisuals>['groups'][number];
+export type CaseSunburstData = ReturnType<typeof caseVisuals>['groups'][number];
 export type CaseTreeData = Pick<ReturnType<typeof caseVisuals>, 'kind' | 'total' | 'tree'>;
-export type CaseVisualState = { pieCategory?: string | null; expanded?: string[]; zoom?: { x: number; y: number; scale: number } };
+export type CaseVisualState = { sunburstNode?: string; expanded?: string[]; zoom?: { x: number; y: number; scale: number } };
 export type CaseVisual = {
   dispose(): void; state(): CaseVisualState; motion(enabled: boolean): void;
   visible(visible: boolean): void; action?(action: string): void;
 };
-
-export type CasePieSlice = {
-  id: string; category: string; level: 'category' | 'subcategory'; label: string; shade: number;
-  count: number; percentage: number; light: string; dark: string; tooltip: string;
-};
-
-// Replace only the selected parent with its children, preserving the same full
-// investigation denominator and leaving every other category slice in place.
-export function casePieSlices(data: CasePieData, expanded: string | null = null): CasePieSlice[] {
-  if (!data.total) return [];
-  const countText = (count: number) => `${count} ${data.kind === 'example' ? 'example ' : ''}${count === 1 ? 'case' : 'cases'}`;
-  return data.categories.filter(({ count }) => count > 0).flatMap<CasePieSlice>((category) => {
-    if (category.id === expanded) return category.subcategories.map((subcategory, index) => {
-      return { id: `subcategory:${data.id}:${category.id}:${subcategory.id}`, category: category.id, level: 'subcategory',
-        label: subcategory.label, count: subcategory.count, percentage: subcategory.percentage,
-        light: category.light, dark: category.dark, shade: (index % 3 - 1) * 0.12,
-        tooltip: `${subcategory.label}\n${category.label} · ${data.title}\n${countText(subcategory.count)} · ${formatShare(subcategory.percentage)} of this chart\n${formatShare(subcategory.categoryPercentage)} of ${category.label}\nSelect to return to categories.`,
-      };
-    });
-    const percentage = category.count / data.total * 100;
-    return [{ id: `category:${data.id}:${category.id}`, category: category.id, level: 'category',
-      label: category.label, count: category.count, percentage, light: category.light, dark: category.dark, shade: 0,
-      tooltip: `${category.label}\n${data.title}\n${countText(category.count)} · ${formatShare(percentage)} of this chart\nSelect to break down by subcategory.`,
-    }];
-  });
-}

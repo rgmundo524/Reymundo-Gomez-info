@@ -5,6 +5,11 @@ title: Descriptive case title
 description_short: The question examined and the scope of this case.
 chart: criminal-investigations
 category: pig-butchering
+# One ID, null, or an ordered path from broad to specific:
+# subcategory:
+#   - investment-platform
+#   - fake-exchange
+#   - withdrawal-fee
 subcategory: null
 content_kind: case_study
 case_status: unspecified

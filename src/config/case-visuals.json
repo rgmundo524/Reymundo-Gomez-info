@@ -1,4 +1,4 @@
 {
-  "pie": { "radius": 92, "transitionDuration": 250 },
+  "sunburst": { "radius": 96, "innerRadius": 12, "visibleLevels": null, "transitionDuration": 350 },
   "tree": { "minRadius": 26, "maxRadius": 62, "bulletDuration": 3500, "initialDepth": 2 }
 }

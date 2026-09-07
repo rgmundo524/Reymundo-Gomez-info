@@ -6,7 +6,10 @@ description_short: An illustrative case record showing how structured facts supp
   the case tracker.
 chart: criminal-investigations
 category: pig-butchering
-subcategory: investment-platform
+subcategory:
+  - investment-platform
+  - fake-exchange
+  - withdrawal-fee
 content_kind: example
 case_status: active
 opened_on: '2026-07-14'

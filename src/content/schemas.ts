@@ -117,7 +117,8 @@ export const schemas = {
     title: text,
     chart: slug,
     category: slug,
-    subcategory: slug.nullable().default(null),
+    // A scalar is one level; a list is one ordered path, never parallel tags.
+    subcategory: z.union([slug, z.array(slug).min(1)]).nullable().default(null),
     content_kind: z.enum(['example', 'case_study']).default('example'),
     case_status: z.enum(['active', 'completed', 'on_hold', 'unspecified']).default('unspecified'),
     opened_on: z.iso.date().nullable().default(null),

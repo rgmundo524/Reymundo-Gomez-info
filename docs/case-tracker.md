@@ -9,8 +9,9 @@ upload it. There is no separate database, browser editing form, or scheduled job
 1. Copy `templates/cases.md` to `content/cases/case_001.md` (or another filename).
 2. Set a unique `slug`, such as `case-001`. Keep that identity stable.
 3. Choose an existing chart and one primary category from `content/charts/`.
-   Set `subcategory` to one lowercase hyphenated ID, such as `bridge-exploit`,
-   or leave it `null`. Subcategories are discovered directly from case files.
+   Set `subcategory` to a lowercase hyphenated ID, such as `bridge-exploit`,
+   an ordered list of IDs for deeper levels, or `null`. Each list is a single
+   parent-to-child path. Subcategories are discovered directly from case files.
 4. Enter the facts you have and write the narrative sections. Leave unknown dates
    and numbers as `null`; an empty list means no details have been entered.
 5. Use `content_kind: case_study` for actual work or `example` for invented data.
@@ -28,7 +29,7 @@ to display. Keep confidential evidence and administrative records separately.
 | --- | --- |
 | `title`, `description_short` | Public-facing title and short scope summary |
 | `chart`, `category` | One investigation group and one primary classification |
-| `subcategory` | One more specific classification under that category; null/omitted becomes Unspecified |
+| `subcategory` | A classification ID or ordered list from broad to specific; null/omitted becomes Unspecified |
 | `case_status` | `active`, `completed`, `on_hold`, or `unspecified` |
 | `opened_on`, `closed_on` | Quoted YYYY-MM-DD dates, or null; closing is for completed cases |
 | `role` | Your actual contribution or position in the engagement |
@@ -85,3 +86,10 @@ The examples include `hacks → bridge-exploit / protocol-exploit` and
 `divorce → asset-disclosure / historical-holdings`. Some subcategories remain
 null to demonstrate how unclassified records stay in the totals. Primary
 categories remain centrally defined; adding a subcategory needs only the case file.
+
+The sunbursts filter their matching case lists at every level. See the
+[chart guide](case-charts.md#markdown-classification-paths) for a copyable nested
+path. `case_011.md` and `example-investment-scam-tracing.md` share Investment
+Platform → Fake Exchange, then split into Withdrawal Fee and Account Freeze.
+`case_013.md` shows Historical Holdings → Wallet Ownership → Self Custody under
+Divorce. These classifications are illustrative, like the rest of the examples.

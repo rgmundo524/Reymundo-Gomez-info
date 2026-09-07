@@ -1,4 +1,4 @@
-import type { CasePieData, CaseTreeData, CaseVisual, CaseVisualState } from '../lib/case-visuals';
+import type { CaseSunburstData, CaseTreeData, CaseVisual, CaseVisualState } from '../lib/case-visuals';
 
 export function mountCaseVisuals() {
   const abort = new AbortController();
@@ -20,7 +20,7 @@ export function mountCaseVisuals() {
     const status = figure.querySelector<HTMLElement>('[data-visual-status]');
     const json = figure.querySelector('[data-visual-data]')?.textContent;
     if (!host || !panel || !json) continue;
-    const data: CasePieData | CaseTreeData = JSON.parse(json);
+    const data: CaseSunburstData | CaseTreeData = JSON.parse(json);
     const isTree = figure.dataset.caseVisual === 'tree';
     const button = figure.querySelector<HTMLButtonElement>('[data-visual-action="motion"]');
     let chart: CaseVisual | undefined;
@@ -50,19 +50,22 @@ export function mountCaseVisuals() {
       loading = true;
       try {
         const factory = isTree ? (await import('../lib/case-tree-chart')).createCaseTree
-          : (await import('../lib/case-pie-chart')).createCasePie;
+          : (await import('../lib/case-sunburst-chart')).createCaseSunburst;
         if (revision !== generation || suspended || abort.signal.aborted) return;
         panel.hidden = false;
         // The discriminant selects the matching factory and serialized payload.
         chart = isTree
           ? (factory as typeof import('../lib/case-tree-chart').createCaseTree)(host, figure, data as CaseTreeData, enabled(), inViewport && !document.hidden, saved)
-          : (factory as typeof import('../lib/case-pie-chart').createCasePie)(host, figure, data as CasePieData, enabled(), saved);
+          : (factory as typeof import('../lib/case-sunburst-chart').createCaseSunburst)(host, figure, data as CaseSunburstData, enabled(), saved);
         if (status) status.hidden = true;
         motion();
       } catch (error) {
         if (revision !== generation || abort.signal.aborted) return;
         chart?.dispose(); chart = undefined;
         panel.hidden = true;
+        for (const result of figure.querySelectorAll<HTMLElement>('[data-case-result]')) result.hidden = false;
+        const summary = figure.querySelector<HTMLElement>('[data-case-results-summary]');
+        if (summary) summary.textContent = `Showing all ${data.total} cases in this investigation.`;
         if (status) {
           status.hidden = false;
           status.textContent = 'The interactive chart is unavailable. Use the case links below.';

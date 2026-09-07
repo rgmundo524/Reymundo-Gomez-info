@@ -7,7 +7,11 @@ export type CaseKind = CaseStudy['data']['content_kind'];
 export const statusLabels = { active: 'Active', completed: 'Completed', on_hold: 'On hold', unspecified: 'Status not recorded' };
 export const readable = (value: string) => value.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-export const subcategoryId = (study: CaseStudy) => study.data.subcategory ?? 'unspecified';
+export const subcategoryPath = (study: CaseStudy): string[] => {
+  const value = study.data.subcategory;
+  return Array.isArray(value) ? [...value] : [value ?? 'unspecified'];
+};
+export const subcategoryId = (study: CaseStudy) => subcategoryPath(study)[0];
 export const subcategoryAnchor = (kind: CaseKind, id: string) => `subcategory-${kind}-${id}`;
 
 // Call with one category/dataset. Subcategories are discovered from case files,

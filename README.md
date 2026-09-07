@@ -81,7 +81,7 @@ from `templates/` into the matching collection under `content/`.
 | `content/projects/` | Selected work and public project references |
 | `content/interests/` | Personal interests |
 | `content/callouts/` | Independently reusable passages |
-| `content/charts/` | Category definitions for record-derived donut charts |
+| `content/charts/` | Category definitions for case-filtering sunburst charts |
 | `content/cases/` | One structured record per case, driving charts and statistics |
 | `content/articles/` | Articles with dates, topics, takeaways, and related cases |
 | `content/pages/` | Page introductions and selected content IDs |
