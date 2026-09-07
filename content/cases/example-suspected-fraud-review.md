@@ -8,6 +8,7 @@ chart: criminal-investigations
 category: other
 content_kind: example
 blocks:
+  chart_label: Example 06
   investigative_question: What can the supplied transaction records establish about
     the reported loss?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

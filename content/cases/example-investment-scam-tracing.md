@@ -8,6 +8,7 @@ chart: criminal-investigations
 category: pig-butchering
 content_kind: example
 blocks:
+  chart_label: Example 01
   investigative_question: Where did the reported transfers move after leaving the
     identified sending wallets?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

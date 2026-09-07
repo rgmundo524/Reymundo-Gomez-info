@@ -1,11 +1,14 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import CaseChart from './CaseChart.astro';
-import { caseStatistics, readable, statusLabels, type CaseStudy, type CaseKind } from '../lib/cases';
-import { categoryUrl } from '../lib/charts';
+import CaseExplorer from './CaseExplorer.astro';
+import { caseStatistics, readable, type CaseStudy, type CaseKind } from '../lib/cases';
+import { caseVisuals } from '../lib/case-visuals';
+import { includeDrafts } from '../lib/content';
 type Props = { charts: CollectionEntry<'charts'>[]; studies: CaseStudy[]; kind: CaseKind };
 const { charts, studies, kind } = Astro.props;
 const stats = caseStatistics(studies);
+const visuals = caseVisuals(charts, studies, kind, includeDrafts);
 const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
 ---
 <div class="case-dataset" data-dataset={kind}>
@@ -17,7 +20,8 @@ const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'curre
     <div><dt>Completed</dt><dd>{stats.completed}</dd></div>
     <div><dt>Networks involved</dt><dd>{stats.networks.length}</dd></div>
   </dl>
-  <div class="case-chart-grid">{charts.map((entry) => <CaseChart entry={entry} studies={studies} kind={kind} />)}</div>
+  <div class="case-chart-grid">{visuals.donuts.map((visual) => <CaseChart entry={charts.find(({ id }) => id === visual.id)!} visual={visual} />)}</div>
+  <CaseExplorer data={{ kind, total: visuals.total, tree: visuals.tree }} />
   {studies.length > 0 && <>
     <details class="statistics-details"><summary>Explore case statistics</summary>
       <div class="statistics-grid">
@@ -32,12 +36,10 @@ const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'curre
       </div>)}</div>
       <p class="meta">Reported losses and assets reviewed measure different things. They are not combined and do not describe recoveries.</p>
     </details>
-    <div class="case-index">
-      <h3>{kind === 'example' ? 'Example case records' : 'Case records'}</h3>
-      <ul>{studies.map(({ id, data }) => <li>
-        <a href={`${categoryUrl(data.chart, data.category)}#${id}`}>{data.title}</a>
-        <span>{statusLabels[data.case_status]} · {data.opened_on ?? 'Date not recorded'}</span>
-      </li>)}</ul>
-    </div>
   </>}
 </div>
+<script>
+  import { mountCaseVisuals } from '../scripts/case-visuals';
+  const cleanup = mountCaseVisuals();
+  if (import.meta.hot) import.meta.hot.dispose(cleanup);
+</script>

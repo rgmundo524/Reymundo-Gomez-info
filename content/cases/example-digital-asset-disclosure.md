@@ -8,6 +8,7 @@ chart: professional-investigations
 category: divorce
 content_kind: example
 blocks:
+  chart_label: Example 07
   investigative_question: Which digital asset activity is relevant to the parties’
     disclosures?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

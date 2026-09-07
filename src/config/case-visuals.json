@@ -1,0 +1,4 @@
+{
+  "donut": { "innerRadius": 60, "grainDensity": 0.5, "grainOpacity": 0.18 },
+  "tree": { "minRadius": 26, "maxRadius": 62, "bulletDuration": 3500, "initialDepth": 2 }
+}

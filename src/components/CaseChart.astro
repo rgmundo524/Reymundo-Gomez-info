@@ -1,39 +1,40 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../lib/charts';
-import { chartCategories, type CaseStudy, type CaseKind } from '../lib/cases';
+import { donutSlicePath, formatShare } from '../lib/charts';
+import type { CaseDonutData } from '../lib/case-visuals';
 
-type Props = { entry: CollectionEntry<'charts'>; studies: CaseStudy[]; kind: CaseKind };
-const { entry, studies, kind } = Astro.props;
+type Props = { entry: CollectionEntry<'charts'>; visual: CaseDonutData };
+const { entry, visual } = Astro.props;
+const { kind, total, categories: slices } = visual;
+const canPlot = total > 0;
 const { data } = entry;
 const { Content } = await render(entry);
-const { total, slices, canPlot } = summarizeCases(chartCategories(entry, studies));
 const titleId = `chart-${kind}-${entry.id}-title`;
 const summaryId = `chart-${kind}-${entry.id}-summary`;
-const destination = (category: string) => `${categoryUrl(entry.id, category)}#dataset-${kind}`;
-const colors = ['#801c2b', '#ac4756', '#cb7884', '#dca5ae', '#ebc6cc', '#f2dde1'];
-const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 40% 45%)`;
+const chartId = `case-donut-${kind}-${entry.id}`;
 ---
 
-<figure class="case-chart" aria-labelledby={titleId}>
+<figure class="case-chart" data-case-visual="donut" aria-labelledby={titleId}>
   <figcaption>
     <h3 id={titleId}>{data.title}</h3>
     <p class="chart-description">{data.description_short}</p>
   </figcaption>
   {kind === 'example' && <p class="sample-status">Example cases</p>}
   <p class="chart-hint">Select a slice or case type to explore case summaries.</p>
-  <svg class="donut" viewBox="0 0 240 240" role="group" aria-labelledby={titleId} aria-describedby={summaryId}>
+  {canPlot && <div data-visual-panel hidden><div id={chartId} class="case-donut-canvas" data-visual-host role="group" aria-labelledby={titleId}></div></div>}
+  <p class="chart-hint" data-visual-status role="status" hidden></p>
+  <svg class="donut" data-visual-fallback viewBox="0 0 240 240" role="group" aria-labelledby={titleId} aria-describedby={summaryId}>
     <desc id={summaryId}>{canPlot
       ? `${total} cases. Each slice links to case summaries for its category. Counts and shares are also listed below.`
       : 'No cases are recorded in this dataset yet.'}</desc>
     <circle cx="120" cy="120" r="88" fill="none" stroke="var(--chart-track)" stroke-width="40" pointer-events="none" aria-hidden="true" />
     {canPlot && (
       <g>
-        {slices.map((slice, index) => slice.count! > 0 && (
-          <a class="slice-link" href={destination(slice.id)} tabindex="0"
+        {slices.map((slice) => slice.count > 0 && (
+          <a class="slice-link" href={slice.url} tabindex="0"
             aria-label={`${slice.label}: ${slice.count} ${slice.count === 1 ? 'case' : 'cases'}, ${formatShare(slice.percentage)}. View case summaries.`}>
             <title>{slice.label}: {slice.count} ({formatShare(slice.percentage)})</title>
-            <path d={donutSlicePath(slice.offset, slice.percentage!)} fill={color(index)} />
+            <path d={donutSlicePath(slice.offset, slice.percentage!)} class="case-category-color" style={`--case-light:${slice.light};--case-dark:${slice.dark}`} />
           </a>
         ))}
       </g>
@@ -47,9 +48,9 @@ const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 
     <caption class="sr-only">{data.title}: category counts and shares</caption>
     <thead><tr><th scope="col">Case type</th><th scope="col">Cases</th><th scope="col">Share</th></tr></thead>
     <tbody>
-      {slices.map((slice, index) => (
+      {slices.map((slice) => (
         <tr>
-          <th scope="row"><a class="category-link" href={destination(slice.id)}><span class="swatch" style={`background-color: ${color(index)}`} aria-hidden="true"></span>{slice.label}</a></th>
+          <th scope="row"><a class="category-link" href={slice.url}><span class="swatch case-category-color" style={`--case-light:${slice.light};--case-dark:${slice.dark}`} aria-hidden="true"></span>{slice.label}</a></th>
           <td>{slice.count === null ? 'Pending' : slice.count.toLocaleString('en-US')}</td>
           <td>{canPlot ? formatShare(slice.percentage) : '—'}</td>
         </tr>
@@ -58,10 +59,11 @@ const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 
     {canPlot && <tfoot><tr><th scope="row">Total</th><td>{total!.toLocaleString('en-US')}</td><td>100%</td></tr></tfoot>}
   </table>
   <div class="chart-caption"><Content /></div>
+  {canPlot && <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(visual).replace(/</g, '\\u003c')}></script>}
 </figure>
 
 <style>
-  .case-chart { margin: 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; background: var(--paper); min-width: 0; }
+  .case-chart { margin: 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; background: transparent; min-width: 0; }
   h3 { color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 1.7rem; }
   .chart-description { color: var(--muted); font-size: .95rem; margin: .75rem 0; }
   .review-status { color: #6e4830; background: #fcf1e6; padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }

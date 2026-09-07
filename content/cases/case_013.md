@@ -30,6 +30,7 @@ metrics:
   assets_reviewed_usd: null
   valuation_date: null
 blocks:
+  chart_label: Example 13
   investigative_question: Which records establish the relevant digital asset movements
     and ownership claims?
 editorial_note: Every detail is fictional. case-013 intentionally illustrates unknown

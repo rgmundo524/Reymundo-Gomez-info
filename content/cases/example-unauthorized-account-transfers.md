@@ -8,6 +8,7 @@ chart: criminal-investigations
 category: account-takeover
 content_kind: example
 blocks:
+  chart_label: Example 03
   investigative_question: Which transfers are associated with the period of reported
     unauthorized access?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

@@ -8,6 +8,7 @@ chart: professional-investigations
 category: other
 content_kind: example
 blocks:
+  chart_label: Example 09
   investigative_question: Which digital assets and transactions can be identified
     from the records supplied for the estate?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

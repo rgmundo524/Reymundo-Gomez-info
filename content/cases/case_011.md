@@ -31,6 +31,7 @@ metrics:
   amount_note: Fictional valuation for an illustrative record; it is not a recovery
     amount.
 blocks:
+  chart_label: Example 11
   investigative_question: Which records establish the relevant digital asset movements
     and ownership claims?
 editorial_note: Every detail is fictional. case-013 intentionally illustrates unknown

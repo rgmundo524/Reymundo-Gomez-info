@@ -20,7 +20,8 @@ metrics:
   reported_loss_usd: null
   assets_reviewed_usd: null
   valuation_date: null
-blocks: {}
+blocks:
+  chart_label: Case 001
 links: []
 editorial_note: Replace the guidance with reviewed case information. Use content_kind example for invented records.
 ---

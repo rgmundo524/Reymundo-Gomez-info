@@ -8,6 +8,7 @@ chart: criminal-investigations
 category: rip-deals
 content_kind: example
 blocks:
+  chart_label: Example 02
   investigative_question: How do the documented transfers relate to the exchange described
     by the reporting party?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

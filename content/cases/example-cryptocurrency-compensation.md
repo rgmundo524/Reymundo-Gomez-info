@@ -8,6 +8,7 @@ chart: professional-investigations
 category: corporate-civil-lawsuits
 content_kind: example
 blocks:
+  chart_label: Example 08
   investigative_question: How do the observed transfers compare with the compensation
     described in the supplied agreement?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

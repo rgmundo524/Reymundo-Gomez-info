@@ -8,6 +8,7 @@ chart: criminal-investigations
 category: phishing
 content_kind: example
 blocks:
+  chart_label: Example 04
   investigative_question: What transactions followed the reported interaction, and
     where did the affected assets move?
 editorial_note: All dates, status, metrics, and other case details are fictional examples

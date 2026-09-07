@@ -1,0 +1,35 @@
+---
+import type { CaseTreeData } from '../lib/case-visuals';
+type Props = { data: CaseTreeData };
+const { data } = Astro.props;
+const id = `case-explorer-${data.kind}`;
+---
+<section class="case-explorer" data-case-visual="tree" aria-labelledby={`${id}-title`}>
+  <header class="case-explorer-heading"><h3 id={`${id}-title`}>Explore {data.kind === 'example' ? 'example ' : ''}cases</h3><p>Expand an investigation type or category, then select a case to read its details.</p></header>
+  {data.total > 0 ? <>
+    <div data-visual-panel hidden>
+      <div class="case-visual-controls" role="group" aria-label="Case explorer controls">
+        <button type="button" data-visual-action="zoom-in" aria-controls={id}>Zoom in</button>
+        <button type="button" data-visual-action="zoom-out" aria-controls={id}>Zoom out</button>
+        <button type="button" data-visual-action="reset" aria-controls={id}>Reset view</button>
+        <button type="button" data-visual-action="collapse" aria-controls={id}>Collapse cases</button>
+        <button type="button" data-visual-action="motion" aria-pressed="false" aria-controls={id}>Pause chart motion</button>
+      </div>
+      <div id={id} class="case-tree-canvas" data-visual-host role="region" aria-label="Cases grouped by investigation type and category" aria-describedby={`${id}-help`}></div>
+      <p class="meta" id={`${id}-help`}>Larger categories contain more cases. Hover or focus a node for details. Use the controls to zoom, or drag the map on desktop.</p>
+    </div>
+    <p class="meta" data-visual-status role="status" hidden></p>
+    <details class="case-tree-list" data-visual-fallback>
+      <summary>Browse the case list ({data.total})</summary>
+      {data.tree.children?.map((investigation) => <section>
+        <h4>{investigation.title}</h4>
+        {investigation.children?.map((category) => <details>
+          <summary>{category.title} ({category.count})</summary>
+          <ul>{category.children?.map((study) => <li><a href={study.url}>{study.title}</a></li>)}</ul>
+          <a class="case-category-page" href={category.url}>View category summary</a>
+        </details>)}
+      </section>)}
+    </details>
+    <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(data).replace(/</g, '\\u003c')}></script>
+  </> : <p class="meta">The case explorer will appear as case records are added.</p>}
+</section>
