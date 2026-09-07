@@ -7,17 +7,32 @@
     "node": ">=24 <25"
   },
   "scripts": {
+    "postinstall": "node scripts/ensure-dependencies.mjs --record",
+    "predev": "node scripts/ensure-dependencies.mjs",
     "dev": "astro dev",
+    "precheck:content": "node scripts/ensure-dependencies.mjs",
     "check:content": "node --import tsx scripts/check-content.ts",
     "check": "npm run check:content && astro check",
     "build": "npm run check && astro build",
     "preview": "astro preview",
+    "prepreview": "node scripts/ensure-dependencies.mjs",
     "build:drafts": "node --import tsx scripts/build-drafts.ts",
     "preview:drafts": "astro preview --outDir dist-drafts",
+    "prepreview:drafts": "node scripts/ensure-dependencies.mjs",
+    "prebuild:drafts": "node scripts/ensure-dependencies.mjs",
+    "pretest": "node scripts/ensure-dependencies.mjs",
     "test": "node --import tsx --test tests/content.test.ts"
   },
   "dependencies": {
+    "@astrojs/mdx": "8.0.0",
+    "@fontsource/inter": "5.3.0",
+    "@iconify-json/lucide": "1.2.129",
+    "@mdx-js/mdx": "3.1.1",
+    "@tsparticles/engine": "4.4.0",
+    "@tsparticles/slim": "4.4.0",
     "astro": "7.3.1",
+    "astro-icon": "1.2.0",
+    "astro-og-canvas": "0.13.1",
     "pagefind": "1.5.2"
   },
   "devDependencies": {

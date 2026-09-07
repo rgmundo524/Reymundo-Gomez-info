@@ -1,0 +1,97 @@
+# MDX and visual integrations
+
+## Reusable content with MDX
+
+All collections accept `.md` and `.mdx` files with the same frontmatter schema,
+reference checks, draft rules, and slug-based URLs. No existing Markdown file
+needs converting unless it benefits from components. Duplicate slugs across
+formats are rejected. Keep imports below the closing frontmatter separator.
+
+The draft `content/articles/investigation-notes.mdx` demonstrates two components:
+
+```mdx
+import Callout from '@components/Callout.astro';
+import Disclosure from '@components/Disclosure.astro';
+
+<Callout title="Key finding">
+
+Explain the main point with **Markdown** formatting.
+
+</Callout>
+
+<Disclosure title="Method and limitations">
+
+Supporting details can be expanded with a mouse, touch, or keyboard.
+
+</Disclosure>
+```
+
+`Callout` accepts `title` and `tone="note"` or `tone="caution"`. `Disclosure`
+accepts a required `title` and uses native HTML details, with no JavaScript needed.
+Both are reusable in case records and articles. Use `templates/articles.mdx`
+for another entry. The `@components/` alias works from content subfolders.
+
+MDX compiles as code, so author it as part of the trusted project source. Content
+validation parses its syntax without executing it; Astro renders it during the
+normal build. Interactive Astro components can bring their own scripts without
+requiring a React integration. Case search extracts literal MDX prose and omits
+imports, expressions, and component attributes. Keep important searchable facts
+in the normal summary and body text, even when a component also displays them.
+
+## Astro Icon
+
+Navigation, actions, dark mode, article callouts, and case source links use Lucide
+icons through `astro-icon`. The selected names are listed in `astro.config.mjs`.
+The installed `@iconify-json/lucide` package supplies the SVGs locally; there are
+no remote icon requests. Add another icon name to the include list before using it.
+Navigation mappings are in `src/lib/icons.ts`. Icons supplement visible labels
+and are hidden from screen readers when decorative.
+
+## OpenGraph Canvas
+
+`src/pages/open-graph/[...route].ts` generates 1200 × 630 PNG cards for visible
+pages, articles, and case categories. For example:
+
+- `/open-graph/home.png`
+- `/open-graph/articles/investigation-notes.png`
+- `/open-graph/investigations/professional-investigations/divorce.png`
+
+Titles and summaries come from the content, with navy/burgundy styling and the
+site name. Very long text is shortened only on the card to fit its dimensions.
+The shared layout supplies matching absolute Open Graph and X image URLs, title,
+description, and canonical metadata. Article pages also include their dates.
+
+The Inter fonts come from the pinned `@fontsource/inter` npm dependency under
+its OFL-1.1 license. CanvasKit generates images using WebAssembly. Generation
+does not fetch remote fonts, and Cloudflare can serve the generated PNGs as
+ordinary static assets. Builds still need the installed npm packages.
+
+Production cards obey the same draft filtering as pages. With the current draft
+content, production contains only a “Site in preparation” homepage and card.
+Draft cards stay in `dist-drafts/`. Metadata points at `https://reymundo-gomez.info`;
+social platforms can fetch it once the matching build is publicly hosted. Current
+`noindex` metadata is preserved. An anchor link to a case shares its category
+page's card because URL fragments are not separate pages.
+
+## tsParticles
+
+The homepage introduction contains a decorative network of connected particles.
+Pointer movement highlights nearby connections. The canvas does not intercept
+links or text selection. The animation follows light/dark mode, pauses outside
+the viewport or when the browser loses focus, and runs at a capped 30 frames
+per second. Small screens use fewer particles.
+
+The Pause animation button remembers the choice in browser storage. Users with
+reduced motion enabled receive no animation or particle-engine download. The
+engine also loads only on the homepage when animation is enabled.
+
+Adjust colors, count, connection distance, and movement in `src/lib/particles.ts`.
+The lifecycle and pause control live in `src/components/ParticleBackground.astro`.
+For tsParticles 4, particle colors are under `particles.paint.color`; older
+`particles.color` examples do not apply. The network is decorative and uses no
+real case data. No tracking or external particle service is involved.
+
+References: [Astro MDX](https://docs.astro.build/en/guides/integrations-guide/mdx/),
+[Astro Icon](https://www.astroicon.dev/getting-started/),
+[OpenGraph Canvas](https://github.com/delucis/astro-og-canvas/tree/latest/packages/astro-og-canvas),
+[tsParticles](https://particles.js.org/docs/).

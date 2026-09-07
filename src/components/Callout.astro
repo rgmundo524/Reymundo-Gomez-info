@@ -1,0 +1,9 @@
+---
+import { Icon } from 'astro-icon/components';
+type Props = { title?: string; tone?: 'note' | 'caution' };
+const { title = 'Key point', tone = 'note' } = Astro.props;
+---
+<aside class:list={['mdx-callout', tone]}>
+  <p class="mdx-callout-title"><Icon name={tone === 'caution' ? 'lucide:circle-alert' : 'lucide:lightbulb'} aria-hidden="true" /><strong>{title}</strong></p>
+  <div><slot /></div>
+</aside>

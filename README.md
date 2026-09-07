@@ -24,6 +24,13 @@ from `package-lock.json`, and exposes the local commands inside the environment.
 The first activation needs network access to download any uncached dependencies.
 Subsequent activations reuse the installation while the dependency inputs match.
 
+After `git pull`, you can keep using the same devenv shell. `npm run dev` now
+checks the dependency fingerprint before starting Astro and runs `npm ci` when
+the lockfile, declared dependencies, or Node runtime has changed. The checker
+uses only Node built-ins, so it also works when a newly added package is missing.
+The same check runs before content checks, tests, and previews. If installation
+fails, startup stops with the installation error; `npm ci` is the manual repair.
+
 You can also run `devenv up` to initialize the environment and start the configured
 site process in one command.
 
@@ -129,8 +136,15 @@ cases and examples use separate datasets. Charts store no manual counts.
 
 Pagefind adds case search with per-case filters and direct links into summaries.
 Search refreshes from Markdown in local development and is generated with static
-builds. The Articles section automatically discovers `content/articles/*.md`.
+builds. Content collections accept both `.md` and `.mdx`. The Articles section
+automatically discovers both formats, including files in subfolders.
 See [articles, search, and future editor storage](docs/articles-and-search.md).
+
+Astro Icon supplies locally bundled Lucide icons. OpenGraph Canvas generates
+social sharing images from visible page, article, and case category content, using
+locally installed Inter fonts. The homepage has an optional tsParticles network
+background with a remembered pause control and support for reduced motion.
+See [MDX and visual integrations](docs/mdx-and-visuals.md) for editing examples and settings.
 
 Start with [the case record guide](docs/case-tracker.md) and `templates/cases.md`.
 See [page structure](docs/page-structure.md) for job ordering, timeline behavior,

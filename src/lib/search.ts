@@ -1,6 +1,7 @@
 import type { ContentRecord } from '../content/schemas';
 import { eligibleCases, readable, statusLabels } from './cases';
 import { categoryUrl } from './charts';
+import { mdxSearchText } from './mdx-text';
 
 // Explicitly select rendered fields. Editorial notes and unused blocks never enter search.
 export function caseSearchRecords(records: ContentRecord[], includeDrafts: boolean) {
@@ -9,7 +10,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
   const charts = records.filter((record) => record.collection === 'charts').filter((record) => page.data.charts.includes(record.data.slug))
     .map((record) => ({ ...record, id: record.data.slug }));
   const cases = records.filter((record) => record.collection === 'cases').map((record) => ({ ...record, id: record.data.slug }));
-  return eligibleCases(charts, cases, includeDrafts).map(({ id, data, body }) => {
+  return eligibleCases(charts, cases, includeDrafts).map(({ id, data, body, file }) => {
     const chart = charts.find((chart) => chart.id === data.chart)!;
     const category = chart.data.categories.find(({ id }) => id === data.category)!.label;
     const dataset = data.content_kind === 'example' ? 'Illustrative examples' : 'Case studies';
@@ -18,7 +19,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
       language: 'en',
       content: [data.title, data.description_short, chart.data.title, category, statusLabels[data.case_status],
         data.opened_on, data.closed_on, data.role, ...data.networks.map(readable), ...data.assets,
-        ...data.jurisdictions, ...data.services.map(readable), data.blocks.investigative_question, body,
+        ...data.jurisdictions, ...data.services.map(readable), data.blocks.investigative_question, file.endsWith('.mdx') ? mdxSearchText(body) : body,
         ...data.links.map(({ label }) => label)].filter(Boolean).join('\n'),
       meta: {
         title: `${data.content_kind === 'example' ? 'Example: ' : ''}${data.title}`,

@@ -2,7 +2,8 @@
 
 ## Add an article
 
-Copy `templates/articles.md` into `content/articles/your-article.md`. Its `slug`
+Copy `templates/articles.md` into `content/articles/your-article.md`, or use
+`templates/articles.mdx` for reusable components. Its `slug`
 sets `/articles/<slug>/`; the filename is only for organizing source files.
 The Articles listing discovers files automatically, including subfolders.
 
@@ -19,7 +20,7 @@ The Articles listing discovers files automatically, including subfolders.
 | `links` | Optional labeled sources displayed under Further reading |
 | `editorial_note` | Source-only editing notes, omitted from rendered pages |
 
-Write the article body below the frontmatter in ordinary Markdown. Articles sort
+Write the article body below the frontmatter in Markdown or MDX. Articles sort
 by `published_on`, newest first, then slug. Undated drafts appear last. The date
 does not schedule publication: `publication_status` controls visibility.
 Published articles cannot reference draft case records. Publish the Articles
@@ -43,6 +44,11 @@ named blocks are excluded from search. Search indexes summaries, narrative,
 displayed investigative questions, dates, role, networks, assets, jurisdictions,
 services, and link labels. Numeric metrics remain available in the case details
 and statistics; they are not full-text search fields.
+
+MDX case bodies contribute literal prose, including text inside components.
+Imports, exports, JavaScript expressions, and component attributes are omitted.
+If a component generates important text from props or code, describe that content
+in the case's summary or body as well so readers can find it through search.
 
 `npm run dev` serves an in-memory index. Content edits, additions, and removals
 invalidate it; the next search asset request rebuilds it. Reload the Casework
@@ -79,11 +85,10 @@ admin. The public site can remain static on Cloudflare regardless of where the
 editor runs. Uploaded assets should likewise use configured repository paths
 initially; larger media storage can be introduced when it is needed.
 
-MDX and Markdoc are optional authoring formats, not storage services. MDX permits
-JSX, imports, and expressions within content. Markdoc uses configured declarative
-tags with rendering kept in code. Markdoc is a good candidate for editor-friendly
-case diagrams and article callouts. Existing `.md` records can remain unchanged;
-adding either format requires extending the current loader and validation rules.
+MDX is now enabled for reusable components, imports, and expressions in content.
+Existing `.md` files remain supported. Markdoc is not installed. A future Keystatic
+configuration will need to map the supported editor components to these MDX
+components; arbitrary MDX code is not automatically editable through its visual UI.
 
 Sources: [Keystatic local mode](https://keystatic.com/docs/local-mode),
 [GitHub mode](https://keystatic.com/docs/github-mode),

@@ -9,8 +9,63 @@ import { formatPeriods } from '../src/lib/dates';
 import { visibleArticles } from '../src/lib/articles';
 import { caseSearchRecords } from '../src/lib/search';
 import { createSearchCache } from '../scripts/search-index';
+import { mdxSearchText } from '../src/lib/mdx-text';
+import { mkdtemp, mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const base = { slug: 'example', description_short: 'A short description.' };
+
+test('startup installs once, refreshes after a changed lockfile, and propagates installation failure', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'site-startup-'));
+  try {
+    await mkdir(path.join(root, 'scripts'));
+    await mkdir(path.join(root, 'bin'));
+    await copyFile('scripts/ensure-dependencies.mjs', path.join(root, 'scripts/ensure-dependencies.mjs'));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ dependencies: { example: '1.0.0' } }));
+    await writeFile(path.join(root, 'package-lock.json'), 'lock-one');
+    await writeFile(path.join(root, 'bin/npm'), `#!/usr/bin/env node\nconst fs = require('node:fs');\nif (process.argv[2] !== 'ci') process.exit(9);\nif (fs.existsSync('fail-install')) process.exit(7);\nfs.mkdirSync('node_modules', {recursive:true});\nfs.appendFileSync('install-count', '1');\n`, { mode: 0o755 });
+    const run = () => spawnSync(process.execPath, [path.join(root, 'scripts/ensure-dependencies.mjs')], { cwd: root, env: { ...process.env, PATH: `${path.join(root, 'bin')}${path.delimiter}${process.env.PATH}` }, encoding: 'utf8' });
+    assert.equal(run().status, 0);
+    assert.equal(run().status, 0);
+    assert.equal(await readFile(path.join(root, 'install-count'), 'utf8'), '1');
+    await writeFile(path.join(root, 'package-lock.json'), 'lock-two');
+    assert.equal(run().status, 0);
+    assert.equal(await readFile(path.join(root, 'install-count'), 'utf8'), '11');
+    await writeFile(path.join(root, 'package-lock.json'), 'lock-three');
+    await writeFile(path.join(root, 'fail-install'), '');
+    assert.equal(run().status, 7);
+    await rm(path.join(root, 'fail-install'));
+    assert.equal(run().status, 0);
+    assert.equal(await readFile(path.join(root, 'install-count'), 'utf8'), '111');
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('MDX shares Markdown validation and cannot hide duplicate IDs behind a new extension', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'site-mdx-'));
+  const source = '---\nslug: example\ntitle: Example\ndescription_short: Summary\n---\n\nimport Callout from "@components/Callout.astro";\n\n<Callout>Visible prose</Callout>\n';
+  try {
+    await mkdir(path.join(root, 'articles'));
+    await writeFile(path.join(root, 'articles/example.mdx'), source);
+    const [entry] = await loadContent(root);
+    assert.equal(entry.data.publication_status, 'draft');
+    assert.equal(entry.file.endsWith('.mdx'), true);
+    await writeFile(path.join(root, 'articles/example.md'), source);
+    await assert.rejects(loadContent(root), /duplicate slug articles\/example/);
+    await rm(path.join(root, 'articles/example.md'));
+    await writeFile(path.join(root, 'articles/example.mdx'), source + '\n<Callout>Unclosed');
+    await assert.rejects(loadContent(root), /closing tag|Expected/);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('MDX search indexes prose inside components without imports, expressions, or hidden attributes', () => {
+  const body = 'import Callout from "internal-module-name";\n\nexport const notes = "private-variable";\n\n# Visible heading\n\n<Callout title="component-attribute">\n\nSearchable **investigation** prose.\n\n</Callout>\n\n{notes}\n';
+  const text = mdxSearchText(body);
+  assert.match(text, /Visible heading/);
+  assert.match(text, /Searchable investigation prose/);
+  assert.doesNotMatch(text, /internal-module-name|private-variable|component-attribute|notes|Callout/);
+});
 
 test('articles validate dates, sort newest first, and exclude drafts from publication', () => {
   const article = { ...base, title: 'Article' };

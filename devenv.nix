@@ -8,7 +8,8 @@
     package = pkgs.nodejs_24;
     npm = {
       enable = true;
-      # Install Astro and the other locked project dependencies on activation.
+      # Install locked packages on activation. npm's predev also checks for
+      # lockfile changes when git pull happens inside an already-open shell.
       install.enable = true;
     };
   };

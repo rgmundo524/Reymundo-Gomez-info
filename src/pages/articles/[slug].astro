@@ -17,7 +17,7 @@ const { Content } = await render(entry);
 const related = await selected('cases', entry.data.related_cases);
 const articlePageExists = (await getCollection('pages')).some(({ id, data }) => id === 'articles' && (includeDrafts || data.publication_status === 'published'));
 ---
-<SiteLayout title={`${entry.data.title} | Reymundo Gómez`} description={entry.data.description_short}>
+<SiteLayout title={`${entry.data.title} | Reymundo Gómez`} description={entry.data.description_short} article={entry.data}>
   <article class="container article-detail">
     <header class="page-intro">
       <p class="eyebrow">Articles</p>

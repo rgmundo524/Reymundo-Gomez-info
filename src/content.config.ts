@@ -8,7 +8,7 @@ await loadContent();
 
 function loader(name: CollectionName) {
   return glob({
-    pattern: '**/*.md', base: `./content/${name}`,
+    pattern: '**/*.{md,mdx}', base: `./content/${name}`,
     generateId: ({ data }) => String(data.slug),
   });
 }

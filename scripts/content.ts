@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseDocument } from 'yaml';
+import { createProcessor } from '@mdx-js/mdx';
 import { schemas, relationships, type CollectionName, type ContentRecord } from '../src/content/schemas';
 
 export async function loadContent(root = path.resolve('content')): Promise<ContentRecord[]> {
@@ -18,6 +19,7 @@ export async function loadContent(root = path.resolve('content')): Promise<Conte
       }
       const body = source.slice(match[0].length).trim();
       if (!body) throw new Error(`${file}: add the long description below the frontmatter.`);
+      if (file.endsWith('.mdx')) createProcessor().parse({ path: file, value: body });
       records.push({ collection, data: parsed.data, body, file } as ContentRecord);
     }
   }
@@ -32,7 +34,7 @@ async function markdownFiles(directory: string): Promise<string[]> {
   const files = await Promise.all(entries.map(async (entry) => {
     const file = path.join(directory, entry.name);
     if (entry.isDirectory()) return markdownFiles(file);
-    return entry.isFile() && entry.name.endsWith('.md') ? [file] : [];
+    return entry.isFile() && /\.mdx?$/.test(entry.name) ? [file] : [];
   }));
   return files.flat().sort();
 }

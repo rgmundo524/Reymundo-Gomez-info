@@ -1,0 +1,9 @@
+---
+import { Icon } from 'astro-icon/components';
+type Props = { title: string };
+const { title } = Astro.props;
+---
+<details class="mdx-disclosure">
+  <summary><span>{title}</span><Icon name="lucide:chevron-down" aria-hidden="true" /></summary>
+  <div><slot /></div>
+</details>
