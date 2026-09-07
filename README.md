@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This version has a focused professional landing page, a profile portrait, and
-supporting About, Expertise, Casework, and Credentials pages. Reusable Markdown
+supporting Work History, Casework, Credentials, Expertise, and Contact pages. Reusable Markdown
 supplies the content across all routes. Content entries remain drafts for local
 development; an ordinary production build excludes them.
 
@@ -74,15 +74,16 @@ from `templates/` into the matching collection under `content/`.
 | `content/projects/` | Selected work and public project references |
 | `content/interests/` | Personal interests |
 | `content/callouts/` | Independently reusable passages |
-| `content/charts/` | Case categories and counts for reusable donut charts |
-| `content/cases/` | Individual case summaries linked to a chart category |
+| `content/charts/` | Category definitions for record-derived donut charts |
+| `content/cases/` | One structured record per case, driving charts and statistics |
 | `content/pages/` | Page introductions and selected content IDs |
 | `templates/` | Copyable examples; never loaded into the site |
 | `src/content/schemas.ts` | Shared authoring rules |
 | `src/components/` | Reusable rendering components |
 | `src/pages/` | Website routes |
 
-Each file in `content/pages/` selects the entries for that page and their order.
+Each file in `content/pages/` controls navigation, section order, and selections.
+Work History automatically discovers job files and uses their `display_order`.
 The home page presents a small selection; the supporting pages provide the full
 background and details. Other content files supply the writing. See
 [the page structure guide](docs/page-structure.md) for the route map and portrait.
@@ -116,20 +117,18 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 
 ## Resume content
 
-The content inventory contains 57 draft entries, including resume-based content
-and illustrative case examples: one profile, five roles, eleven credentials and training records,
-three education records, seven expertise areas, two selected-work entries,
-nine interests, two callouts, two case charts, ten case examples, and five page selections.
+The content inventory contains 62 draft entries: one profile, six roles, eleven
+credentials and training records, three education records, seven expertise areas,
+two selected-work entries, nine interests, two callouts, two case charts,
+thirteen example cases, and six page selections.
 
-The interactive case charts use the same reusable SVG component without additional packages.
-Edit counts in `content/charts/criminal-investigations.md` and
-`content/charts/professional-investigations.md`; totals and percentages are calculated.
-The professional chart covers non-criminal investigations, with one sample case
-in each of four categories (four total, 25% each). The criminal chart retains
-varied sample counts to exercise unequal slices. Slice and legend links open
-category pages populated from `content/cases/`. Aggregate counts stay independent
-of the number of selected summaries. See
-[case chart authoring](docs/case-charts.md) for the fields and review workflow.
+Casework is a Markdown-backed tracker. Add a record under `content/cases/` and
+its chart count, category share, and statistics update from that record. Real
+cases and examples use separate datasets. Charts store no manual counts.
+
+Start with [the case record guide](docs/case-tracker.md) and `templates/cases.md`.
+See [page structure](docs/page-structure.md) for job ordering, timeline behavior,
+navigation, the Contact page, portrait replacement, and dark mode.
 
 See [the resume review notes](docs/resume-content-review.md) for source ambiguities
 and details that still need confirmation. The supplied PDF, personal contact

@@ -2,16 +2,38 @@
 slug: example-phishing-transfer-review
 publication_status: draft
 title: Phishing transfer reconstruction
-description_short: An illustrative review of wallet transactions following a reported phishing
-  incident.
+description_short: An illustrative review of wallet transactions following a reported
+  phishing incident.
 chart: criminal-investigations
 category: phishing
 content_kind: example
 blocks:
-  investigative_question: What transactions followed the reported interaction, and where did
-    the affected assets move?
-editorial_note: Illustrative content created for website development. This is not a description
-  of an actual client, engagement, finding, or outcome.
+  investigative_question: What transactions followed the reported interaction, and
+    where did the affected assets move?
+editorial_note: All dates, status, metrics, and other case details are fictional examples
+  for developing the tracker. Replace with reviewed information for a real case.
+case_status: on_hold
+opened_on: '2026-03-10'
+closed_on: null
+role: Blockchain investigator
+networks:
+- ethereum
+assets:
+- ETH
+- USDC
+jurisdictions:
+- United States
+services:
+- tracing
+- forensic-report
+metrics:
+  wallets_reviewed: 47
+  transactions_reviewed: 755
+  reported_loss_usd: null
+  assets_reviewed_usd: null
+  valuation_date: '2026-03-10'
+  amount_note: Fictional USD valuation for this illustrative record. Not an actual
+    client amount.
 ---
 
 ## Approach

@@ -6,6 +6,7 @@ blocks: {}
 links: []
 organization: Organization name
 role: Position title
+display_order: 70
 periods:
   - start: "2026-01"
     end: null

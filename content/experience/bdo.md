@@ -1,6 +1,7 @@
 ---
 slug: bdo
 publication_status: draft
+display_order: 40
 organization: BDO Digital Assets and Blockchain Forensics Team
 role: Senior Associate Blockchain Investigator
 location: Boulder, Colorado / Remote

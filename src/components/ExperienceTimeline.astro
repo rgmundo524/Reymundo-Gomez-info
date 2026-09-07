@@ -1,0 +1,37 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatPeriods } from '../lib/content';
+import { isCurrentPosition } from '../lib/experience';
+type Props = { entries: CollectionEntry<'experience'>[] };
+const { entries } = Astro.props;
+---
+<nav class="experience-timeline" aria-label="Explore work history">
+  <ol>{entries.map((entry) => <li>
+    <a href={`#${entry.id}`} data-position-link>
+      <span class="timeline-dates">{entry.data.periods.length ? formatPeriods(entry.data.periods) : isCurrentPosition(entry) ? 'Current role' : 'Earlier role'}</span>
+      <strong>{entry.data.organization}</strong>
+      <span>{entry.data.role}</span>
+      {entry.data.periods.length > 0 && isCurrentPosition(entry) && <span class="timeline-current">Current</span>}
+    </a>
+  </li>)}</ol>
+</nav>
+<script>
+  function selectPosition() {
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-position-link]')) {
+      if (link.hash === window.location.hash) {
+        link.setAttribute('aria-current', 'location');
+        const details = document.getElementById(link.hash.slice(1))?.querySelector('details');
+        if (details) details.open = true;
+      }
+      else link.removeAttribute('aria-current');
+    }
+  }
+  document.querySelectorAll<HTMLAnchorElement>('[data-position-link]').forEach((link) => link.addEventListener('click', () => {
+    const article = document.getElementById(link.hash.slice(1));
+    const details = article?.querySelector('details');
+    if (details) details.open = true;
+    article?.focus({ preventScroll: true });
+  }));
+  window.addEventListener('hashchange', selectPosition);
+  selectPosition();
+</script>

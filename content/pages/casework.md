@@ -1,6 +1,9 @@
 ---
 slug: casework
 publication_status: draft
+navigation:
+  label: Casework
+  order: 30
 title: Casework & selected projects
 profile: reymundo
 description_short: Explore criminal and professional investigations, case summaries, and selected

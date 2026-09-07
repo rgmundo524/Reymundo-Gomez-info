@@ -1,6 +1,9 @@
 ---
 slug: home
 publication_status: draft
+navigation:
+  label: Home
+  order: 10
 title: Reymundo Gómez | Blockchain Investigator & Expert Witness
 profile: reymundo
 description_short: 'Reymundo Gómez: blockchain investigations, digital asset analysis, forensic

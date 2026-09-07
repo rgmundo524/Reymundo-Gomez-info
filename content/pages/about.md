@@ -1,18 +1,19 @@
 ---
 slug: about
 publication_status: draft
-title: About Reymundo
+navigation:
+  label: Work History
+  order: 20
+title: Work history
 profile: reymundo
-description_short: The professional background and personal interests of Reymundo Gómez.
+description_short: Explore Reymundo Gómez’s roles in blockchain investigations, federal background investigations, and military intelligence.
 blocks:
   eyebrow: Professional background
   bio_heading: An investigator’s perspective.
-experience:
-- cipherblade
-- go-crypto
-- bdo
-- aci-federal
-- us-army
+experience_source: all
+section_order:
+- experience
+- interests
 interests:
 - cycling
 - beer-brewing

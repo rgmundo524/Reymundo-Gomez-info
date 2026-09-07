@@ -1,24 +1,46 @@
 ---
-slug: new-case-summary
+slug: case-001
 publication_status: draft
-title: Case summary title
-description_short: A short summary of the investigative question.
-chart: professional-investigations
-category: divorce
-content_kind: example
+title: Descriptive case title
+description_short: The question examined and the scope of this case.
+chart: criminal-investigations
+category: pig-butchering
+content_kind: case_study
+case_status: unspecified
+opened_on: null
+closed_on: null
+role: Blockchain investigator
+networks: []
+assets: []
+jurisdictions: []
+services: []
+metrics:
+  wallets_reviewed: null
+  transactions_reviewed: null
+  reported_loss_usd: null
+  assets_reviewed_usd: null
+  valuation_date: null
 blocks: {}
 links: []
-editorial_note: Replace sample wording with reviewed case information when ready.
+editorial_note: Replace the guidance with reviewed case information. Use content_kind example for invented records.
 ---
 
 ## Investigative question
 
-Describe the question being examined.
+What question was the engagement intended to answer?
 
-## Approach
+## Evidence and approach
 
-Describe the analysis and the evidence considered.
+What records were available? What analysis did you perform, and over what scope?
 
-## Deliverable
+## Findings
 
-Describe the findings or work product without inventing an outcome.
+What did the evidence establish? Separate verified facts from hypotheses.
+
+## Deliverables
+
+Describe the report, exhibits, testimony, or other work actually delivered.
+
+## Limitations and follow-up
+
+What remained unknown, and what additional records or analysis were needed?

@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import { schemas, type ContentRecord } from '../src/content/schemas';
 import { loadContent, validateRecords } from '../scripts/content';
 import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src/lib/charts';
-import { caseRoutes } from '../src/lib/cases';
+import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
+import { sortExperience, isCurrentPosition } from '../src/lib/experience';
 
 const base = { slug: 'example', description_short: 'A short description.' };
 const job = { ...base, organization: 'Example', role: 'Investigator', periods: [{ start: '2022-09', end: '2025-06' }, { start: '2026-01', end: null }] };
@@ -45,23 +46,26 @@ test('the actual Markdown collection has valid fields and relationships', async 
 });
 
 const chart = {
-  ...base, title: 'Case types', source_date: '2026-08-21',
-  categories: [{ id: 'fraud', label: 'Fraud', count: 3 }, { id: 'other', label: 'Other', count: 1 }],
+  ...base, title: 'Case types',
+  categories: [{ id: 'fraud', label: 'Fraud' }, { id: 'other', label: 'Other' }],
 };
 
-test('chart counts reject invalid totals, duplicate categories, and stored percentages', () => {
-  for (const count of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
-    assert.equal(schemas.charts.safeParse({ ...chart, categories: [{ id: 'a', label: 'A', count }] }).success, false);
-  }
-  assert.equal(schemas.charts.safeParse({ ...chart, categories: [{ id: 'a', label: 'A', count: 0 }] }).success, false);
+test('chart definitions reject manual counts, duplicate categories, and stored percentages', () => {
+  assert.equal(schemas.charts.safeParse({ ...chart, categories: [{ ...chart.categories[0], count: 3 }] }).success, false);
   assert.equal(schemas.charts.safeParse({ ...chart, categories: [chart.categories[0], chart.categories[0]] }).success, false);
   assert.equal(schemas.charts.safeParse({ ...chart, categories: [{ ...chart.categories[0], percentage: 75 }] }).success, false);
+  assert.equal(schemas.charts.safeParse({ ...chart, publication_status: 'published' }).success, true);
 });
 
-test('incomplete or unreviewed chart data cannot be published', () => {
-  assert.equal(schemas.charts.safeParse({ ...chart, publication_status: 'published' }).success, false);
-  assert.equal(schemas.charts.safeParse({ ...chart, data_status: 'confirmed', categories: [{ id: 'a', label: 'A', count: null }] }).success, false);
-  assert.equal(schemas.charts.safeParse({ ...chart, publication_status: 'published', data_status: 'confirmed' }).success, true);
+test('examples cannot be published as actual work and case facts are validated', () => {
+  const data = { ...base, title: 'Case', chart: 'example', category: 'fraud' };
+  assert.equal(schemas.cases.safeParse({ ...data, publication_status: 'published' }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...data, publication_status: 'published', content_kind: 'case_study' }).success, true);
+  assert.equal(schemas.cases.safeParse({ ...data, networks: ['bitcoin', 'bitcoin'] }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...data, case_status: 'completed', opened_on: '2026-02-01', closed_on: '2026-01-01' }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...data, case_status: 'active', closed_on: '2026-01-01' }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...data, metrics: { reported_loss_usd: 100 } }).success, false);
+  assert.equal(schemas.cases.safeParse({ ...data, metrics: { wallets_reviewed: -1 } }).success, false);
 });
 
 test('donut shares use the full count total and do not normalize incomplete data', () => {
@@ -109,18 +113,68 @@ test('case summaries validate their chart and category references', () => {
   assert.throws(() => validateRecords([chartEntry, study]), /references missing charts\/missing/);
 });
 
-test('category routes filter drafts and preserve aggregate counts independently of summaries', () => {
-  const charts = [{ id: 'criminal', data: { publication_status: 'published', categories: [{ id: 'fraud', label: 'Fraud', count: 21 }] } },
-    { id: 'professional', data: { publication_status: 'draft', categories: [{ id: 'other', label: 'Other', count: 1 }] } }];
-  const studies = [
-    { id: 'public-case', data: { publication_status: 'published', chart: 'criminal', category: 'fraud' } },
-    { id: 'draft-case', data: { publication_status: 'draft', chart: 'criminal', category: 'fraud' } },
-    { id: 'other-case', data: { publication_status: 'draft', chart: 'professional', category: 'other' } },
-  ];
-  const routes = caseRoutes(charts, studies);
-  assert.equal(routes.length, 1);
-  assert.deepEqual(routes[0].studies.map(({ id }) => id), ['public-case']);
-  assert.equal(routes[0].category.count, 21);
-  const preview = caseRoutes(charts, studies, true);
-  assert.deepEqual(preview.map(({ studies }) => studies.map(({ id }) => id)), [['public-case', 'draft-case'], ['other-case']]);
+const makeChart = (published = true) => ({ id: 'example', data: schemas.charts.parse({ ...chart, publication_status: published ? 'published' : 'draft' }) });
+const makeCase = (id: string, overrides: Record<string, unknown> = {}) => ({ id, data: schemas.cases.parse({ ...base, slug: id, title: id, chart: 'example', category: 'fraud', content_kind: 'case_study', publication_status: 'published', ...overrides }) });
+
+test('adding and reclassifying a case updates counts, shares, statistics, and routes together', () => {
+  const definition = makeChart();
+  const records = [makeCase('one'), makeCase('two', { category: 'other' })];
+  const before = summarizeCases(chartCategories(definition, records));
+  assert.equal(before.total, 2);
+  assert.deepEqual(before.slices.map(({ percentage }) => percentage), [50, 50]);
+  records.push(makeCase('three'));
+  const after = summarizeCases(chartCategories(definition, records));
+  assert.equal(after.total, 3);
+  assert.equal(caseStatistics(records).total, 3);
+  assert.deepEqual(after.slices.map(({ count }) => count), [2, 1]);
+  assert.equal(after.slices[0].percentage, 2 / 3 * 100);
+  assert.equal(caseRoutes([definition], records)[0].category.count, 2);
+  records[2].data.category = 'other';
+  assert.deepEqual(chartCategories(definition, records).map(({ count }) => count), [1, 2]);
+});
+
+test('production excludes drafts and examples; preview keeps datasets separate', () => {
+  const definition = makeChart();
+  const records = [makeCase('public-case'), makeCase('draft-case', { publication_status: 'draft' }), makeCase('sample-case', { content_kind: 'example', publication_status: 'draft' })];
+  assert.deepEqual(eligibleCases([definition], records).map(({ id }) => id), ['public-case']);
+  const routes = caseRoutes([definition], records, true);
+  assert.equal(routes[0].primaryKind, 'case_study');
+  assert.equal(routes[0].category.count, 2);
+  assert.equal(routes[0].studies.length, 3);
+  assert.deepEqual(routes[0].datasets.map(({ kind, category, studies }) => [kind, category.count, studies.length]), [['case_study', 2, 2], ['example', 1, 1]]);
+  const examplesOnly = caseRoutes([definition], [records[2]], true);
+  assert.equal(examplesOnly[0].primaryKind, 'example');
+  assert.equal(examplesOnly[0].category.count, 1);
+  assert.deepEqual(caseRoutes([makeChart(false)], records), []);
+});
+
+test('empty datasets have known zero totals and no plotted proportions', () => {
+  const routes = caseRoutes([makeChart()], []);
+  assert.deepEqual(routes.map(({ category }) => category.count), [0, 0]);
+  const summary = summarizeCases(routes[0].categories);
+  assert.equal(summary.total, 0);
+  assert.equal(summary.canPlot, false);
+  assert.equal(caseStatistics([]).total, 0);
+});
+
+test('unknown metrics remain unknown and financial coverage distinguishes zero from missing', () => {
+  const records = [makeCase('unknown'), makeCase('known', { opened_on: '2025-03-01', networks: ['bitcoin', 'ethereum'], case_status: 'active', metrics: { reported_loss_usd: 2500, valuation_date: '2025-03-01', amount_note: 'Documented reported loss.' } }), makeCase('zero', { metrics: { reported_loss_usd: 0, valuation_date: '2025-03-01', amount_note: 'Known zero.' }, networks: ['bitcoin'] })];
+  const stats = caseStatistics(records);
+  assert.deepEqual(stats.reportedLoss, { total: 2500, coverage: 2 });
+  assert.deepEqual(stats.assetsReviewed, { total: 0, coverage: 0 });
+  assert.equal(stats.active, 1);
+  assert.equal(stats.networks.find(({ label }) => label === 'bitcoin')?.count, 2);
+  assert.equal(stats.years.find(({ label }) => label === 'Undated')?.count, 2);
+});
+
+test('job frontmatter controls order and supports a confirmed current role with unknown dates', () => {
+  const position = (id: string, overrides: Record<string, unknown> = {}) => ({ id, data: schemas.experience.parse({ ...job, slug: id, ...overrides }) });
+  const past = position('past', { periods: [{ start: '2024-01', end: '2025-01' }] });
+  const current = position('current');
+  const adc = position('adc', { periods: [], active_position: true, display_order: 10 });
+  assert.equal(isCurrentPosition(adc, '2026-09'), true);
+  assert.deepEqual(sortExperience([past, current, adc], '2026-09').map(({ id }) => id), ['adc', 'current', 'past']);
+  past.data.display_order = 5;
+  assert.deepEqual(sortExperience([current, adc, past], '2026-09').map(({ id }) => id), ['past', 'adc', 'current']);
+  assert.equal(schemas.experience.safeParse({ ...job, periods: [] }).success, false);
 });

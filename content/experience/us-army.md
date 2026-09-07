@@ -1,6 +1,7 @@
 ---
 slug: us-army
 publication_status: draft
+display_order: 60
 organization: U.S. Army Military Intelligence
 role: Intelligence Analyst
 location: Fort Bliss, El Paso, Texas

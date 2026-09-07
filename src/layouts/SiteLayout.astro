@@ -12,10 +12,9 @@ const { title, description } = Astro.props;
 const profile = Astro.props.profile ?? await pageProfile(await getEntry('pages', 'home'));
 const contact = contactLink(profile);
 const visiblePages = await getCollection('pages', isVisible);
-const navigation = [
-  { id: 'about', label: 'About' }, { id: 'expertise', label: 'Expertise' },
-  { id: 'casework', label: 'Casework' }, { id: 'credentials', label: 'Credentials' },
-].filter(({ id }) => visiblePages.some((entry) => entry.id === id));
+const navigation = visiblePages.filter(({ data }) => data.navigation)
+  .sort((a, b) => a.data.navigation!.order - b.data.navigation!.order || a.id.localeCompare(b.id))
+  .map(({ id, data }) => ({ id, label: data.navigation!.label, url: id === 'home' ? '/' : `/${id}/` }));
 const name = profile?.data.name ?? 'Reymundo Gómez';
 const currentPath = Astro.url.pathname;
 ---
@@ -27,6 +26,14 @@ const currentPath = Astro.url.pathname;
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <script is:inline>
+      (() => {
+        let preference;
+        try { preference = localStorage.getItem('reymundo-theme'); } catch {}
+        const dark = preference === 'dark' || (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -37,9 +44,9 @@ const currentPath = Astro.url.pathname;
           <span>{name}</span>
         </a>
         {navigation.length > 0 && <nav class="site-nav" aria-label="Main navigation">
-          {navigation.map(({ id, label }) => <a href={`/${id}/`} aria-current={currentPath.startsWith(`/${id}/`) || (id === 'casework' && currentPath.startsWith('/investigations/')) ? 'page' : undefined}>{label}</a>)}
+          {navigation.map(({ id, label, url }) => <a href={url} aria-current={(id === 'home' ? currentPath === '/' : currentPath.startsWith(url)) || (id === 'casework' && currentPath.startsWith('/investigations/')) ? 'page' : undefined}>{label}</a>)}
         </nav>}
-        {contact && <a class="header-contact" href={contact.url}>{contact.label}</a>}
+        <button class="theme-toggle" type="button" aria-pressed="false" hidden>Dark mode</button>
       </div>
     </header>
     <main id="main"><slot /></main>
@@ -53,5 +60,32 @@ const currentPath = Astro.url.pathname;
         {includeDrafts && <span>Development preview · Draft content included</span>}
       </div>
     </footer>
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
+      const system = window.matchMedia('(prefers-color-scheme: dark)');
+      let explicit = false;
+      try { explicit = ['light', 'dark'].includes(localStorage.getItem('reymundo-theme') ?? ''); } catch {}
+      function applyTheme(dark: boolean) {
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        toggle?.setAttribute('aria-pressed', String(dark));
+        toggle?.setAttribute('title', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      }
+      if (toggle) {
+        toggle.hidden = false;
+        applyTheme(document.documentElement.dataset.theme === 'dark');
+        toggle.addEventListener('click', () => {
+          const dark = document.documentElement.dataset.theme !== 'dark';
+          explicit = true;
+          applyTheme(dark);
+          try { localStorage.setItem('reymundo-theme', dark ? 'dark' : 'light'); } catch {}
+        });
+        system.addEventListener('change', (event) => { if (!explicit) applyTheme(event.matches); });
+        window.addEventListener('storage', (event) => {
+          if (event.key !== 'reymundo-theme' && event.key !== null) return;
+          explicit = event.newValue === 'light' || event.newValue === 'dark';
+          applyTheme(explicit ? event.newValue === 'dark' : system.matches);
+        });
+      }
+    </script>
   </body>
 </html>

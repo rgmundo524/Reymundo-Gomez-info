@@ -1,6 +1,9 @@
 ---
 slug: expertise
 publication_status: draft
+navigation:
+  label: Expertise
+  order: 50
 title: Areas of expertise
 profile: reymundo
 description_short: Blockchain tracing, litigation support, protocol analysis, and investigative

@@ -19,7 +19,7 @@ export const periodSchema = z.strictObject({ start: month, end: month.nullable()
   .refine((period) => period.end === null || period.end >= period.start,
     { message: 'End month must be on or after start month.', path: ['end'] });
 
-const periods = z.array(periodSchema).min(1).superRefine((items, ctx) => {
+const periods = z.array(periodSchema).superRefine((items, ctx) => {
   const sorted = [...items].sort((a, b) => a.start.localeCompare(b.start));
   for (let index = 1; index < sorted.length; index++) {
     const previous = sorted[index - 1];
@@ -36,7 +36,6 @@ const highlights = z.array(z.strictObject({ id: slug, text })).default([])
 const caseCategories = z.array(z.strictObject({
   id: slug,
   label: text,
-  count: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).nullable(),
 })).min(1).refine((items) => new Set(items.map(({ id }) => id)).size === items.length,
   'Each chart category must have a unique id.')
   .refine((items) => new Set(items.map(({ label }) => label.toLowerCase())).size === items.length,
@@ -55,6 +54,11 @@ export const schemas = {
   experience: z.strictObject({
     ...common, organization: text, role: text, location: text.optional(),
     periods, highlights, expertise: refs(), projects: refs(),
+    display_order: z.number().int().min(0).optional(),
+    active_position: z.boolean().optional(),
+  }).superRefine((entry, ctx) => {
+    if (!entry.periods.length && entry.active_position === undefined) ctx.addIssue({ code: 'custom', path: ['periods'], message: 'Supply employment periods, or active_position when dates are unknown.' });
+    if (entry.periods.length && entry.active_position !== undefined) ctx.addIssue({ code: 'custom', path: ['active_position'], message: 'Current status is derived from known periods. Use active_position only when periods is empty.' });
   }),
   education: z.strictObject({
     ...common, institution: text, program: text,
@@ -80,21 +84,7 @@ export const schemas = {
   charts: z.strictObject({
     ...common,
     title: text,
-    data_status: z.enum(['sample', 'needs_review', 'confirmed']).default('needs_review'),
-    source_date: z.iso.date(),
     categories: caseCategories,
-  }).superRefine((entry, ctx) => {
-    const complete = entry.categories.every(({ count }) => count !== null);
-    const total = entry.categories.reduce((sum, { count }) => sum + (count ?? 0), 0);
-    if (!Number.isSafeInteger(total) || (complete && total === 0)) {
-      ctx.addIssue({ code: 'custom', path: ['categories'], message: 'A complete chart must have a positive, safe integer total.' });
-    }
-    if (entry.data_status === 'confirmed' && !complete) {
-      ctx.addIssue({ code: 'custom', path: ['categories'], message: 'Confirmed charts require a count for every category. Use zero only for a known zero.' });
-    }
-    if (entry.publication_status === 'published' && entry.data_status !== 'confirmed') {
-      ctx.addIssue({ code: 'custom', path: ['data_status'], message: 'Confirm chart counts before publishing.' });
-    }
   }),
   cases: z.strictObject({
     ...common,
@@ -102,11 +92,36 @@ export const schemas = {
     chart: slug,
     category: slug,
     content_kind: z.enum(['example', 'case_study']).default('example'),
+    case_status: z.enum(['active', 'completed', 'on_hold', 'unspecified']).default('unspecified'),
+    opened_on: z.iso.date().nullable().default(null),
+    closed_on: z.iso.date().nullable().default(null),
+    role: text.optional(),
+    networks: z.array(slug).default([]).refine((items) => new Set(items).size === items.length, 'Use each network once per case.'),
+    assets: z.array(text).default([]),
+    jurisdictions: z.array(text).default([]),
+    services: z.array(z.enum(['tracing', 'osint', 'forensic-report', 'expert-report', 'deposition', 'testimony'])).default([]),
+    metrics: z.strictObject({
+      wallets_reviewed: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable().default(null),
+      transactions_reviewed: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable().default(null),
+      reported_loss_usd: z.number().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable().default(null),
+      assets_reviewed_usd: z.number().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable().default(null),
+      valuation_date: z.iso.date().nullable().default(null),
+      amount_note: text.optional(),
+    }).default({ wallets_reviewed: null, transactions_reviewed: null, reported_loss_usd: null, assets_reviewed_usd: null, valuation_date: null }),
+  }).superRefine((entry, ctx) => {
+    if (entry.closed_on && entry.opened_on && entry.closed_on < entry.opened_on) ctx.addIssue({ code: 'custom', path: ['closed_on'], message: 'Closing date cannot precede opening date.' });
+    if (entry.closed_on && entry.case_status !== 'completed') ctx.addIssue({ code: 'custom', path: ['closed_on'], message: 'Only completed cases can have a closing date.' });
+    if (entry.content_kind === 'example' && entry.publication_status === 'published') ctx.addIssue({ code: 'custom', path: ['content_kind'], message: 'Examples remain drafts and cannot be published as real cases.' });
+    if ((entry.metrics.reported_loss_usd !== null || entry.metrics.assets_reviewed_usd !== null) && (!entry.metrics.amount_note || !entry.metrics.valuation_date)) ctx.addIssue({ code: 'custom', path: ['metrics'], message: 'Recorded USD amounts require an amount_note and valuation_date.' });
   }),
   pages: z.strictObject({
     ...common, title: text, profile: slug,
     experience: refs(), education: refs(), credentials: refs(),
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
+    navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
+    experience_source: z.enum(['selected', 'all']).default('selected'),
+    section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+      .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };
 

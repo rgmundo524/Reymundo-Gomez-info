@@ -1,17 +1,16 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
 import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../lib/charts';
+import { chartCategories, type CaseStudy, type CaseKind } from '../lib/cases';
 
-type Props = { entry: CollectionEntry<'charts'> };
-const { entry } = Astro.props;
+type Props = { entry: CollectionEntry<'charts'>; studies: CaseStudy[]; kind: CaseKind };
+const { entry, studies, kind } = Astro.props;
 const { data } = entry;
 const { Content } = await render(entry);
-const { total, slices, canPlot } = summarizeCases(data.categories);
-const titleId = `chart-${entry.id}-title`;
-const summaryId = `chart-${entry.id}-summary`;
-const dateLabel = new Intl.DateTimeFormat('en-US', {
-  year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC',
-}).format(new Date(`${data.source_date}T00:00:00Z`));
+const { total, slices, canPlot } = summarizeCases(chartCategories(entry, studies));
+const titleId = `chart-${kind}-${entry.id}-title`;
+const summaryId = `chart-${kind}-${entry.id}-summary`;
+const destination = (category: string) => `${categoryUrl(entry.id, category)}#dataset-${kind}`;
 const colors = ['#801c2b', '#ac4756', '#cb7884', '#dca5ae', '#ebc6cc', '#f2dde1'];
 const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 40% 45%)`;
 ---
@@ -21,20 +20,17 @@ const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 
     <h3 id={titleId}>{data.title}</h3>
     <p class="chart-description">{data.description_short}</p>
   </figcaption>
-  {data.data_status === 'sample' && <p class="sample-status">Sample data</p>}
-  {data.data_status === 'needs_review' && (
-    <p class="review-status">{canPlot ? 'Draft counts · Awaiting confirmation' : 'Breakdown awaiting confirmation'}</p>
-  )}
+  {kind === 'example' && <p class="sample-status">Example cases</p>}
   <p class="chart-hint">Select a slice or case type to explore case summaries.</p>
   <svg class="donut" viewBox="0 0 240 240" role="group" aria-labelledby={titleId} aria-describedby={summaryId}>
     <desc id={summaryId}>{canPlot
       ? `${total} cases. Each slice links to case summaries for its category. Counts and shares are also listed below.`
-      : 'Case counts have not been confirmed. No proportions are shown.'}</desc>
-    <circle cx="120" cy="120" r="88" fill="none" stroke="#eee9ea" stroke-width="40" pointer-events="none" aria-hidden="true" />
+      : 'No cases are recorded in this dataset yet.'}</desc>
+    <circle cx="120" cy="120" r="88" fill="none" stroke="var(--chart-track)" stroke-width="40" pointer-events="none" aria-hidden="true" />
     {canPlot && (
       <g>
         {slices.map((slice, index) => slice.count! > 0 && (
-          <a class="slice-link" href={categoryUrl(entry.id, slice.id)} tabindex="0"
+          <a class="slice-link" href={destination(slice.id)} tabindex="0"
             aria-label={`${slice.label}: ${slice.count} ${slice.count === 1 ? 'case' : 'cases'}, ${formatShare(slice.percentage)}. View case summaries.`}>
             <title>{slice.label}: {slice.count} ({formatShare(slice.percentage)})</title>
             <path d={donutSlicePath(slice.offset, slice.percentage!)} fill={color(index)} />
@@ -43,9 +39,9 @@ const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 
       </g>
     )}
     <text class:list={['chart-total', { pending: !canPlot }]} x="120" y="119" text-anchor="middle" aria-hidden="true">
-      {canPlot ? total!.toLocaleString('en-US') : 'Pending'}
+      {total!.toLocaleString('en-US')}
     </text>
-    <text class="chart-unit" x="120" y="143" text-anchor="middle" aria-hidden="true">{canPlot ? 'cases' : 'case counts'}</text>
+    <text class="chart-unit" x="120" y="143" text-anchor="middle" aria-hidden="true">{kind === 'example' ? 'examples' : 'cases'}</text>
   </svg>
   <table class="chart-legend">
     <caption class="sr-only">{data.title}: category counts and shares</caption>
@@ -53,45 +49,44 @@ const color = (index: number) => colors[index] ?? `hsl(${(index * 137.5) % 360} 
     <tbody>
       {slices.map((slice, index) => (
         <tr>
-          <th scope="row"><a class="category-link" href={categoryUrl(entry.id, slice.id)}><span class="swatch" style={`background-color: ${color(index)}`} aria-hidden="true"></span>{slice.label}</a></th>
+          <th scope="row"><a class="category-link" href={destination(slice.id)}><span class="swatch" style={`background-color: ${color(index)}`} aria-hidden="true"></span>{slice.label}</a></th>
           <td>{slice.count === null ? 'Pending' : slice.count.toLocaleString('en-US')}</td>
-          <td>{formatShare(slice.percentage)}</td>
+          <td>{canPlot ? formatShare(slice.percentage) : '—'}</td>
         </tr>
       ))}
     </tbody>
     {canPlot && <tfoot><tr><th scope="row">Total</th><td>{total!.toLocaleString('en-US')}</td><td>100%</td></tr></tfoot>}
   </table>
-  <p class="chart-source">{data.data_status === 'sample' ? 'Sample updated' : 'Source updated'} <time datetime={data.source_date}>{dateLabel}</time></p>
   <div class="chart-caption"><Content /></div>
 </figure>
 
 <style>
-  .case-chart { margin: 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; background: white; min-width: 0; }
+  .case-chart { margin: 0; padding: 1.75rem; border: 1px solid var(--line); border-radius: .25rem; background: var(--paper); min-width: 0; }
   h3 { color: var(--ink); font-family: var(--serif); font-weight: 400; font-size: 1.7rem; }
-  .chart-description { color: #4d5b6d; font-size: .95rem; margin: .75rem 0; }
+  .chart-description { color: var(--muted); font-size: .95rem; margin: .75rem 0; }
   .review-status { color: #6e4830; background: #fcf1e6; padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }
-  .sample-status { color: #49566a; background: #eef1f6; padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }
-  .chart-hint { color: #596271; font-size: .875rem; }
+  .sample-status { color: var(--muted); background: var(--surface); padding: .4rem .6rem; font-size: .8rem; border-radius: .25rem; }
+  .chart-hint { color: var(--muted); font-size: .875rem; }
   .donut { display: block; width: min(100%, 15rem); height: auto; margin: 1.25rem auto; overflow: visible; }
   .slice-link { cursor: pointer; }
   .slice-link path { pointer-events: visibleFill; }
-  .slice-link:hover path, .slice-link:focus-visible path { stroke: #182639; stroke-width: 3; filter: brightness(1.1); }
+  .slice-link:hover path, .slice-link:focus-visible path { stroke: var(--ink); stroke-width: 3; filter: brightness(1.1); }
   .slice-link:focus-visible { outline: none; }
   .chart-total, .chart-unit { pointer-events: none; }
-  .category-link { display: inline-block; padding: .3rem 0; color: #651725; text-decoration-thickness: 1px; }
-  .chart-total { fill: #651725; font: 600 2.5rem system-ui, sans-serif; }
-  .chart-total.pending { fill: #66707d; font-size: 1.3rem; }
-  .chart-unit { fill: #596271; font: .875rem system-ui, sans-serif; }
+  .category-link { display: inline-block; padding: .3rem 0; color: var(--accent); text-decoration-thickness: 1px; }
+  .chart-total { fill: var(--accent); font: 600 2.5rem system-ui, sans-serif; }
+  .chart-total.pending { fill: var(--muted); font-size: 1.3rem; }
+  .chart-unit { fill: var(--muted); font: .875rem system-ui, sans-serif; }
   .chart-legend { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
-  th, td { padding: .55rem .25rem; border-bottom: 1px solid #eee3e5; vertical-align: top; }
+  th, td { padding: .55rem .25rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { text-align: left; font-weight: 500; }
   th:first-child { padding-left: 0; }
-  thead th { font-size: .875rem; color: #586170; font-weight: 600; }
+  thead th { font-size: .875rem; color: var(--muted); font-weight: 600; }
   td, thead th:not(:first-child) { text-align: right; white-space: nowrap; }
   tfoot th, tfoot td { font-weight: 650; border: 0; }
   .swatch { display: inline-block; width: .65rem; height: .65rem; margin-right: .45rem; border: 1px solid #0002; border-radius: 2px; }
-  .chart-source { margin: 1rem 0 .5rem; color: #596271; font-size: .75rem; }
-  .chart-caption { color: #596271; font-size: .875rem; }
+  .chart-source { margin: 1rem 0 .5rem; color: var(--muted); font-size: .75rem; }
+  .chart-caption { color: var(--muted); font-size: .875rem; }
   .chart-caption :global(p:last-child) { margin-bottom: 0; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media (max-width: 380px) { .case-chart { padding: 1rem; } .chart-legend { font-size: .875rem; } }

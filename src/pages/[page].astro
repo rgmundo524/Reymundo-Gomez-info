@@ -3,8 +3,10 @@ import { getCollection, render } from 'astro:content';
 import type { InferGetStaticPropsType } from 'astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ContentEntry from '../components/ContentEntry.astro';
-import CaseChart from '../components/CaseChart.astro';
-import { isVisible, pageProfile, selected } from '../lib/content';
+import CaseDashboard from '../components/CaseDashboard.astro';
+import ExperienceTimeline from '../components/ExperienceTimeline.astro';
+import { contactLink, isVisible, pageProfile, selected } from '../lib/content';
+import { sortExperience } from '../lib/experience';
 
 export async function getStaticPaths() {
   const pages = await getCollection('pages', (entry) => entry.id !== 'home' && isVisible(entry));
@@ -17,8 +19,10 @@ const { Content: Intro } = await render(page);
 const biography = page.id === 'about' && profile ? await render(profile) : undefined;
 const Bio = biography?.Content;
 const charts = await selected('charts', page.data.charts);
+const contact = contactLink(profile);
+const experience = sortExperience(page.data.experience_source === 'all' ? await getCollection('experience', isVisible) : await selected('experience', page.data.experience));
 const sectionNames = ['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'] as const;
-const sections = await Promise.all(sectionNames.map(async (name) => ({ name, entries: await selected(name, page.data[name]) })));
+const sections = await Promise.all(sectionNames.map(async (name) => ({ name, entries: name === 'experience' ? experience : await selected(name, page.data[name]) })));
 const labels = { experience: 'Professional experience', expertise: 'Areas of expertise', projects: 'Selected projects', credentials: 'Certifications & training', education: 'Education', interests: 'Outside work', callouts: 'Approach' };
 ---
 <SiteLayout title={`${page.data.title} | Reymundo Gómez`} description={page.data.description_short} profile={profile}>
@@ -27,13 +31,17 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     <h1>{page.data.title}</h1>
     <div class="page-lead"><Intro /></div>
   </header>
+  {page.data.section_order.map((name) => {
+    if (name === 'charts') return charts.length > 0 && <section class="container content-section" id="section-casework" aria-labelledby="chart-heading">
+      <div class="section-heading"><h2 id="chart-heading">Case experience</h2></div><CaseDashboard charts={charts} />
+    </section>;
+    const section = sections.find((section) => section.name === name)!;
+    return section.entries.length > 0 && <section class="container content-section" id={`section-${name}`} aria-labelledby={`heading-${name}`}>
+      <div class="section-heading"><h2 id={`heading-${name}`}>{labels[name]}</h2></div>
+      {name === 'experience' && <ExperienceTimeline entries={experience} />}
+      <div class:list={['entry-list', `collection-${name}`]}>{section.entries.map((entry) => <ContentEntry entry={entry} expanded={name === 'expertise' || name === 'projects'} />)}</div>
+    </section>;
+  })}
   {Bio && <section class="container bio-section"><div><p class="eyebrow">Background</p><h2>{page.data.blocks.bio_heading}</h2></div><div class="reading-copy"><Bio /></div></section>}
-  {charts.length > 0 && <section class="container content-section" id="section-casework" aria-labelledby="chart-heading">
-    <div class="section-heading"><div><p class="eyebrow">Investigation types</p><h2 id="chart-heading">Case experience</h2></div></div>
-    <div class="case-chart-grid">{charts.map((entry) => <CaseChart entry={entry} />)}</div>
-  </section>}
-  {sections.filter(({ entries }) => entries.length > 0).map(({ name, entries }) => <section class="container content-section" id={`section-${name}`} aria-labelledby={`heading-${name}`}>
-    <div class="section-heading"><h2 id={`heading-${name}`}>{labels[name]}</h2></div>
-    <div class:list={['entry-list', `collection-${name}`]}>{entries.map((entry) => <ContentEntry entry={entry} expanded={name === 'expertise' || name === 'projects'} />)}</div>
-  </section>)}
+  {page.id === 'contact' && <section class="container contact-band"><div><h2>{page.data.blocks.contact_heading}</h2><p>Blockchain investigations · Expert witness work · Professional collaboration</p></div>{contact && <a class="button button-primary" href={contact.url}>{contact.label}</a>}</section>}
 </SiteLayout>

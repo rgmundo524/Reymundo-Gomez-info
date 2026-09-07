@@ -1,4 +1,5 @@
 import { getCollection, getEntry, type CollectionEntry, type CollectionKey } from 'astro:content';
+export { activePosition } from './experience';
 
 export const includeDrafts = import.meta.env.DEV || import.meta.env.CONTENT_PREVIEW === 'drafts';
 
@@ -27,10 +28,6 @@ export async function selected<K extends CollectionKey>(collection: K, ids: stri
     return entry;
   });
   return entries.filter(isVisible);
-}
-
-export function activePosition(periods: { start: string; end: string | null }[], asOf = new Date().toISOString().slice(0, 7)): boolean {
-  return periods.some(({ start, end }) => start <= asOf && (end === null || end >= asOf));
 }
 
 export function formatMonth(value: string): string {

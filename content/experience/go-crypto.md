@@ -1,6 +1,7 @@
 ---
 slug: go-crypto
 publication_status: draft
+display_order: 30
 organization: Go-Crypto
 role: Blockchain Investigator & Board Member
 location: Flint, Texas / Remote

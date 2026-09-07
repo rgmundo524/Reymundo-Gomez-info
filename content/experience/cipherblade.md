@@ -1,6 +1,7 @@
 ---
 slug: cipherblade
 publication_status: draft
+display_order: 20
 organization: CipherBlade, LLC
 role: Senior Blockchain Investigator
 location: Denver, Colorado / Remote

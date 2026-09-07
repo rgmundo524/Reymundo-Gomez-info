@@ -7,10 +7,11 @@ background or work.
 | Route | Content selection | Purpose |
 | --- | --- | --- |
 | `/` | `content/pages/home.md` | Portrait, introduction, three expertise highlights, selected work, contact link |
-| `/about/` | `content/pages/about.md` | Full biography, employment history, and personal interests |
+| `/about/` | `content/pages/about.md` | Work History: interactive role timeline, employment details, interests, biography |
 | `/expertise/` | `content/pages/expertise.md` | Full descriptions of all expertise areas and analytical approach |
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Certifications, training, and education |
+| `/contact/` | `content/pages/contact.md` | Professional enquiry introduction and contact link |
 | `/investigations/<chart>/<category>/` | Matching records in `content/cases/` | Case summaries reached from chart slices or legend links |
 
 The home page intentionally omits the full CV and chart tables. The underlying
@@ -25,7 +26,7 @@ blocks, while supporting pages use fuller content.
 - `src/styles/global.css` contains the shared navy, burgundy, white, typography,
   spacing, and responsive layout rules.
 - `src/pages/index.astro` renders the curated landing page.
-- `src/pages/[page].astro` renders the supporting page selections. The About
+- `src/pages/[page].astro` renders the supporting page selections. The Work History
   page also uses the full body of the selected profile.
 - `src/components/ContentEntry.astro` presents the detailed content records.
 
@@ -61,16 +62,60 @@ owner-supplied original can replace this asset later.
 
 Professional contact currently links to the LinkedIn profile listed in the
 resume. To use email instead, set the profile's existing `public_email` field;
-the header, homepage, and footer derive their contact link from that one field.
+the contact page, homepage, and footer derive their contact link from that one field.
 
 ## Draft behavior
 
-`npm run dev` and the draft build show all five pages and the ten category pages.
+`npm run dev` and the draft build show all six main pages and the ten category pages.
 The ordinary production build continues to exclude draft content. Navigation
 links follow visible page records, and home-page links are omitted when their
 destination page is not visible. Category return links lead to Casework when
 available and fall back to the home page otherwise.
 
-Each page is reviewed and published through its Markdown `publication_status`.
+Automatic Work History selection includes only visible jobs; draft jobs are
+omitted from production. Explicit page references still require published
+targets. Each page is published through its Markdown `publication_status`.
 The existing relationship validator continues to reject published pages that
 select draft content. Site metadata remains `noindex` during development.
+
+## Navigation and section order
+
+Every page can set `navigation: { label: Home, order: 10 }` in its frontmatter.
+Lower values appear first; omitting navigation hides the menu item. The current
+order is Home, Work History, Casework, Credentials, Expertise, Contact. The
+renamed Work History page retains `/about/` to preserve existing links.
+
+Supporting pages set `section_order`, a list of collection names such as
+`experience`, `charts`, `projects`, `credentials`, `education`, `expertise`,
+`interests`, and `callouts`. Listed sections render only when they have content;
+unlisted sections are omitted. The Astro templates still define each section's
+visual layout and the curated homepage structure.
+
+## Adding a position
+
+Copy `templates/experience.md` into `content/experience/`. Give it a unique slug,
+role, organization, date periods, narrative, and `display_order`. Work History's
+`experience_source: all` automatically includes visible job files, including files
+in subfolders. No change to its page list is needed. The homepage's small
+organization selection is intentionally curated separately.
+
+Lower `display_order` values appear first. Existing positions use 10, 20, 30,
+40, 50, and 60; use an intermediate number to insert a role. Explicitly numbered
+jobs precede all unnumbered jobs. Among ties or unnumbered jobs, current roles
+come first, then the most recent start month, then slug for a stable tie-break.
+The timeline and job details always use the same sorted collection.
+
+A role with separate periods retains each interval, so the timeline does not
+imply continuous employment across a gap. Timeline links jump to and open role
+details, including initial links and back/forward navigation. For ADC LTD NM,
+the current role is confirmed, but start dates and detailed duties are not yet
+known: `periods: []` and `active_position: true` avoid inventing them. Once dates
+are supplied, populate `periods` and remove the explicit active flag.
+
+## Color mode
+
+The header toggle switches light/dark mode and remembers the choice in local
+browser storage across pages and visits. Without a saved choice it follows the
+system preference. Both modes use the shared CSS variables, including chart
+surfaces, tables, notices, and keyboard focus styles. No external dependency is
+used for theme state.

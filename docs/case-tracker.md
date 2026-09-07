@@ -1,0 +1,78 @@
+# Adding and maintaining case records
+
+This is a Markdown-backed running record of casework. Editing files updates the
+local development site; the static public site updates when you rebuild and
+upload it. There is no separate database, browser editing form, or scheduled job.
+
+## Add a case
+
+1. Copy `templates/cases.md` to `content/cases/case_001.md` (or another filename).
+2. Set a unique `slug`, such as `case-001`. Keep that identity stable.
+3. Choose an existing chart and one primary category from `content/charts/`.
+4. Enter the facts you have and write the narrative sections. Leave unknown dates
+   and numbers as `null`; an empty list means no details have been entered.
+5. Use `content_kind: case_study` for actual work or `example` for invented data.
+6. Run `npm run check` and view Casework with `npm run dev`.
+
+No page list or counter needs updating when you add a case. In production, only
+published case records in published charts count. Publishing a record requires
+publishing its referenced chart. A private repository does not make a published
+website private; case Markdown should contain the version you intend the site
+to display. Keep confidential evidence and administrative records separately.
+
+## Facts to gather from historical cases
+
+| Field | Meaning |
+| --- | --- |
+| `title`, `description_short` | Public-facing title and short scope summary |
+| `chart`, `category` | One investigation group and one primary classification |
+| `case_status` | `active`, `completed`, `on_hold`, or `unspecified` |
+| `opened_on`, `closed_on` | Quoted YYYY-MM-DD dates, or null; closing is for completed cases |
+| `role` | Your actual contribution or position in the engagement |
+| `networks` | Unique lowercase IDs such as `bitcoin`, `ethereum`, `tron`, `arbitrum` |
+| `assets` | Asset symbols or names such as BTC, ETH, USDT |
+| `jurisdictions` | Jurisdictions relevant to the matter, when appropriate to include |
+| `services` | `tracing`, `osint`, `forensic-report`, `expert-report`, `deposition`, `testimony` |
+| `metrics.wallets_reviewed` | Count of distinct wallet/address identifiers actually reviewed |
+| `metrics.transactions_reviewed` | Distinct transactions reviewed within the recorded scope |
+| `metrics.reported_loss_usd` | Reported loss for this matter in USD; not an independently proved loss or a recovery |
+| `metrics.assets_reviewed_usd` | USD asset value within the review scope, excluding repeated transfer turnover |
+| `metrics.valuation_date` | Date used for the USD valuation |
+| `metrics.amount_note` | Source, basis, and limitations of any recorded USD amount |
+| `links` | Appropriate public supporting sources, each with a label and URL |
+| `blocks.investigative_question` | Optional short question reused as a callout |
+| Markdown body | Evidence, approach, findings, deliverables, limitations, and follow-up |
+
+USD amounts require both a valuation date and an amount note. A known zero is
+`0`; an unknown amount is `null`. Do not count the same loss in several records
+or turn repeated movements of the same funds into additional assets reviewed.
+If one engagement has several phases, update its record rather than counting
+those phases as new cases. Files may live in subfolders; discovery is recursive.
+
+## Derived statistics
+
+- Total records, active cases, completed cases, and distinct networks.
+- Case counts by opening year, including an Undated bucket, and by status.
+- Counts by network and service. A case can appear in several of these groups,
+  so these counts are not parts of one exclusive total.
+- Reported losses and assets reviewed, kept as separate USD totals. Each shows
+  coverage, such as 4 of 10 cases with an amount recorded. These use historical
+  valuations, are not current market values, and do not imply a recovery rate.
+
+Actual and illustrative records never contribute to the same statistics.
+Statistics describe the records entered so far, not an inferred lifetime total.
+
+## Examples
+
+The ten original illustrative records now include structured facts. Three new
+copyable examples give unequal chart proportions and demonstrate missing data:
+
+- `content/cases/case_011.md`: active cross-network scam review.
+- `content/cases/case_012.md`: completed bridge exploit analysis.
+- `content/cases/case_013.md`: historical holdings review with unknown dates and
+  financial values.
+
+All 13 examples remain drafts. Their dates, values, and engagement details are
+fictional and can be replaced or removed as real records are entered. To reuse
+an example for an actual case, replace its claims and metadata, change its slug,
+and set `content_kind: case_study`.

@@ -2,16 +2,16 @@
 
 Source: the supplied resume, updated August 21, 2026. Content prepared September
 7, 2026. Wording is adapted for a personal website and expert witness directories;
-it has not been independently credential-verified. All 57 entries remain drafts.
-The current development version also includes ten explicitly illustrative case
-summaries and chart values accepted as sample data by the owner.
+it has not been independently credential-verified. All 62 entries remain drafts.
+The current development version includes thirteen illustrative case records.
+All statistics are derived from records, with examples separate from actual work.
 
 ## Inventory
 
 | Collection | Entries | Purpose |
 | --- | ---: | --- |
 | Profile | 1 | Biography, short bio, directory bio, professional focus |
-| Experience | 5 | One file per role, including both CipherBlade periods |
+| Experience | 6 | One file per role, including both CipherBlade periods and the newly confirmed current ADC LTD NM role |
 | Credentials | 11 | Separate certifications, certificates, and training |
 | Education | 3 | Degree labels and attendance without inferred graduation |
 | Expertise | 7 | Reusable subject descriptions and technical skills |
@@ -19,8 +19,8 @@ summaries and chart values accepted as sample data by the owner.
 | Interests | 9 | One file per hobby listed in the resume |
 | Callouts | 2 | Evidence limitations and investigative experience |
 | Charts | 2 | Criminal and professional non-criminal investigation breakdowns |
-| Cases | 10 | Illustrative summaries, one per chart category |
-| Pages | 5 | Curated home page and four supporting page selections |
+| Cases | 13 | Illustrative records covering every chart category |
+| Pages | 6 | Curated home page and five supporting page selections |
 
 The home page now selects a short professional introduction, three expertise
 areas, three organizations, and one project. Supporting pages retain the full
@@ -34,6 +34,7 @@ and available for future additions.
 | MS Computer Science and BA Physics | Source labels retained; completion is `unspecified` | Whether each degree was awarded and the award date |
 | United States Military Academy | Attendance only | Program and preferred public wording; no degree is listed |
 | CipherBlade | Two periods: September 2022–June 2025 and January 2026–present | Confirm the ongoing role when updating the site |
+| ADC LTD NM | Current federal background investigator role confirmed by the owner; no dates invented | Start month, location, detailed duties, and achievements |
 | Go-Crypto | Ongoing role from June 2025, operating within Go Mobile Education Zone | Formal board affiliation and preferred organizational description |
 | Army and ACI Federal | Source dates retained, including an October–November 2019 overlap | Whether the overlap is accurate |
 | Credential names and validity | Names and years retained, no expiration or verification URLs invented | Current validity, exact designation, and any public verification links |
@@ -51,23 +52,18 @@ the report itself.
 
 ## Case statistics
 
-The source narrative describes more than 51 criminal investigations and six expert
-witness cases. The criminal chart's PDF text layer contains category counts of
-21, 13, 5, 5, 4, and 3, totaling 51. Those counts are now included as provisional
-data in the local draft chart. The Hacks label in the visible resume says 35.5%,
-but 13 / 51 yields 25.5%. Website percentages are calculated from the counts.
+The original resume's investigation charts contain conflicting labels and totals.
+For example, the criminal chart text layer totals 51 and gives Hacks as 13,
+while the visible Hacks percentage says 35.5% instead of 25.5%. The expert
+witness chart likewise has conflicting proportions and counts.
 
-The original expert witness chart contained conflicting values: Divorce 50%, Corporate civil
-lawsuits 33.3%, and Bankruptcy 16.7% already sum to 100%, but a separate Other
-slice is also present. Its PDF text layer contains 30, 20, 10, and 4, totaling 64,
-which cannot be assumed to be case counts for the stated six cases. Enter the
-actual count for each category before using that source for historical statistics.
-For current development, the owner requested one sample case in each category
-and renamed this chart to Professional investigations, covering non-criminal
-work. It now displays four cases and four 25% slices. The criminal values are
-also treated as sample data, preserving unequal proportions for development.
-No reconciliation is needed to continue implementing the website. See
-`docs/case-charts.md`.
+Those provisional aggregate values are no longer used by the website. Each
+case record now contributes exactly one count to its chart and category.
+Professional investigations covers non-criminal work, as requested by the owner.
+The current 13 examples yield 8 criminal and 5 professional cases. None of these
+fictional details assert actual historical engagement facts. Build out real
+`case_study` records to establish a documented historical dataset. See
+`docs/case-tracker.md`.
 
 The resume also lists approximately $25,204,222.66 in stolen funds and $431,407.29
 recovered, valued at the time of transfer. Before using these figures, confirm the

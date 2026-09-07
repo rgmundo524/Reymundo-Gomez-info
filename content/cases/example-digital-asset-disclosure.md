@@ -2,15 +2,40 @@
 slug: example-digital-asset-disclosure
 publication_status: draft
 title: Digital asset disclosure review
-description_short: An illustrative review of wallet activity and asset disclosures in a divorce
-  matter.
+description_short: An illustrative review of wallet activity and asset disclosures
+  in a divorce matter.
 chart: professional-investigations
 category: divorce
 content_kind: example
 blocks:
-  investigative_question: Which digital asset activity is relevant to the parties’ disclosures?
-editorial_note: Illustrative content created for website development. This is not a description
-  of an actual client, engagement, finding, or outcome.
+  investigative_question: Which digital asset activity is relevant to the parties’
+    disclosures?
+editorial_note: All dates, status, metrics, and other case details are fictional examples
+  for developing the tracker. Replace with reviewed information for a real case.
+case_status: active
+opened_on: '2025-03-10'
+closed_on: null
+role: Blockchain investigator
+networks:
+- bitcoin
+- ethereum
+assets:
+- ETH
+- USDC
+jurisdictions:
+- United States
+services:
+- tracing
+- forensic-report
+- expert-report
+metrics:
+  wallets_reviewed: 19
+  transactions_reviewed: 295
+  reported_loss_usd: null
+  assets_reviewed_usd: 306000
+  valuation_date: '2025-03-10'
+  amount_note: Fictional USD valuation for this illustrative record. Not an actual
+    client amount.
 ---
 
 ## Approach

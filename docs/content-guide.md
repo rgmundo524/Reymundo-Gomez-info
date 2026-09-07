@@ -50,8 +50,9 @@ means the role remains open. Closed periods must not overlap; at most one final
 period can be open. For now, two periods within one entry may not share a month,
 because month-only data cannot distinguish their exact transition dates.
 
-`activePosition()` computes whether a period includes the current month. You do
-not need an `active_position` field. Explicit date ranges are the canonical data.
+`activePosition()` computes whether a known period includes the current month.
+Use `active_position` only with `periods: []` when dates are unknown, as in the
+ADC LTD NM entry. Explicit date ranges remain the canonical data when available.
 “Present” is derived from an open end date; rebuild when you update employment.
 
 `highlights` is a list of `{ id, text }` items. Stable IDs let future CV and
@@ -78,11 +79,12 @@ or build commands. During live editing, field schemas are rechecked automaticall
 but run `npm run check` after changing relationships. Missing page selections also
 raise an error in the preview instead of disappearing silently.
 
-Each record under `content/pages/` selects entries and their order. The home page
-is a curated introduction. About, Expertise, Casework, and Credentials select the
-fuller material. Adding a content entry makes it available; adding its slug to a
-page selection makes it appear there. Page records get their own route, while
-individual jobs, credentials, and other subjects appear within the selected page.
+Each record under `content/pages/` selects entries, navigation, and section order.
+The home page remains a curated introduction. Work History uses
+`experience_source: all`, automatically discovering visible job records and
+ordering them by their `display_order` field. Other collections retain explicit
+page selections. Page records get their own route; individual jobs and
+credentials appear within the selected page.
 See [the page structure guide](page-structure.md).
 
 ## Reuse from Astro components
@@ -119,26 +121,11 @@ status. Attending an institution must not implicitly display as earning a degree
 
 ## Case charts
 
-Each file under `content/charts/` supplies categories and integer case counts to
-the reusable interactive donut component. Add its slug to `charts` in `content/pages/casework.md`.
-Totals and percentages are derived; `null` means unknown and `0` means a confirmed
-zero. Charts with unknown counts display their categories without proportions.
-
-Use `data_status: sample` during development. Entering sample values is enough to
-render the charts and exercise their links; historical accuracy is not required
-for this workflow. Set `data_status: confirmed` when preparing real statistics for
-publication. See [case chart authoring](case-charts.md) for the fields.
-
-Individual summaries live in `content/cases/`. Each has a `chart` slug and a
-`category` ID identifying exactly where it belongs. Both are validated. The full
-Markdown body appears on the corresponding category page, alongside any other
-visible summaries assigned there. `description_short` and named `blocks` remain
-independently reusable. `content_kind: example` labels illustrative content.
-
-Selecting a slice or its legend link opens
-`/investigations/<chart-slug>/<category-id>/`. Native links support pointer,
-touch, and keyboard navigation. Category routes and their summaries use the same
-draft visibility rules as the home page.
+Each chart file defines category IDs, labels, and explanatory copy. Each case file
+records one case assigned to one chart and primary category. Counts, totals, and
+percentages are calculated from those records, with real and example datasets
+kept separate. See [case chart authoring](case-charts.md) and
+[the case record guide](case-tracker.md) for fields and the historical-case workflow.
 
 ## Publishing
 

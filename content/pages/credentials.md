@@ -1,6 +1,9 @@
 ---
 slug: credentials
 publication_status: draft
+navigation:
+  label: Credentials
+  order: 40
 title: Credentials & education
 profile: reymundo
 description_short: Professional certifications, technical training, and academic background.

@@ -1,6 +1,7 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { activePosition, formatMonth, formatPeriods } from '../lib/content';
+import { formatMonth, formatPeriods } from '../lib/content';
+import { isCurrentPosition } from '../lib/experience';
 
 type Props = {
   entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases'>>;
@@ -11,9 +12,9 @@ const { Content } = await render(entry);
 const data = entry.data;
 const title = 'role' in data ? data.role : 'title' in data ? data.title : 'name' in data ? data.name : data.program;
 ---
-<article class="content-entry" id={entry.id}>
+<article class="content-entry" id={entry.id} tabindex="-1">
   <header>
-    {entry.collection === 'experience' && <p class="meta">{formatPeriods(entry.data.periods)}{activePosition(entry.data.periods) ? ' · Current role' : ''}</p>}
+    {entry.collection === 'experience' && <p class="meta">{formatPeriods(entry.data.periods)}{isCurrentPosition(entry) ? `${entry.data.periods.length ? ' · ' : ''}Current role` : ''}</p>}
     <h3>{title}</h3>
     {entry.collection === 'experience' && <p class="entry-organization">{entry.data.organization}</p>}
     {entry.collection === 'credentials' && <p class="meta">{entry.data.issuer} · {entry.data.issued_year} · {entry.data.credential_type}</p>}
