@@ -97,6 +97,7 @@ Adjust the animation in `src/config/particles.json`:
 | `size.min` | `1` | Smallest node radius in pixels |
 | `size.max` | `2.4` | Largest node radius in pixels |
 | `connectionDistance` | `140` | Maximum distance in pixels for ordinary connecting lines |
+| `hoverDistance` | `160` | Maximum cursor-to-node distance in pixels for hover connections |
 | `speed` | `0.35` | Relative movement speed |
 
 Each node gets a size in the configured range. Set min and max to the same value
@@ -105,6 +106,11 @@ desktop `70` and mobile `30` makes a denser network. These are examples, not
 automatic presets. Counts currently stay fixed for each screen class because
 automatic area-based density is disabled. More nodes and longer connections
 increase the rendering work; keep mobile counts lower.
+
+`hoverDistance` controls the cursor's reach independently of connections between
+nodes. For example, `250` connects the cursor to nodes farther away, while `80`
+requires it to be closer. Hover connections are enabled on devices with hover
+support.
 
 Save the settings and reload the page during development. Rebuild to update a
 static deployment. Colors, opacity, hover behavior, and the 30fps cap are in

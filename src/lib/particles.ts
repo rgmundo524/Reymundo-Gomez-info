@@ -23,7 +23,7 @@ export function particleOptions(dark: boolean, compact: boolean, hover: boolean)
       // Window coordinates remain accurate when the pointer is over nested page content.
       detectsOn: 'window',
       events: { onHover: { enable: hover, mode: 'grab' }, onClick: { enable: false } },
-      modes: { grab: { distance: 160, links: { color, opacity: 0.35 } } },
+      modes: { grab: { distance: settings.hoverDistance, links: { color, opacity: 0.35 } } },
     },
   };
 }

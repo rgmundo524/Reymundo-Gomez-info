@@ -8,5 +8,6 @@
     "max": 2.4
   },
   "connectionDistance": 140,
+  "hoverDistance": 160,
   "speed": 0.35
 }
