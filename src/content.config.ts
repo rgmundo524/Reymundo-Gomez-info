@@ -24,5 +24,6 @@ export const collections = {
   callouts: defineCollection({ loader: loader('callouts'), schema: schemas.callouts }),
   charts: defineCollection({ loader: loader('charts'), schema: schemas.charts }),
   cases: defineCollection({ loader: loader('cases'), schema: schemas.cases }),
+  articles: defineCollection({ loader: loader('articles'), schema: schemas.articles }),
   pages: defineCollection({ loader: loader('pages'), schema: schemas.pages }),
 };

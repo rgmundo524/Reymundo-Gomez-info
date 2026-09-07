@@ -86,6 +86,16 @@ export const schemas = {
     title: text,
     categories: caseCategories,
   }),
+  articles: z.strictObject({
+    ...common, title: text,
+    published_on: z.iso.date().nullable().default(null),
+    updated_on: z.iso.date().nullable().default(null),
+    tags: z.array(slug).default([]).refine((items) => new Set(items).size === items.length, 'Use each tag once.'),
+    related_cases: refs(),
+  }).superRefine((entry, ctx) => {
+    if (entry.publication_status === 'published' && !entry.published_on) ctx.addIssue({ code: 'custom', path: ['published_on'], message: 'Published articles need a publication date.' });
+    if (entry.updated_on && (!entry.published_on || entry.updated_on < entry.published_on)) ctx.addIssue({ code: 'custom', path: ['updated_on'], message: 'An update date requires a publication date and cannot precede it.' });
+  }),
   cases: z.strictObject({
     ...common,
     title: text,
@@ -120,7 +130,7 @@ export const schemas = {
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
-    section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+    section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };
@@ -137,6 +147,7 @@ export const relationships: Partial<Record<CollectionName, Record<string, Collec
   credentials: { expertise: 'expertise' },
   projects: { experience: 'experience', expertise: 'expertise' },
   cases: { chart: 'charts' },
+  articles: { related_cases: 'cases' },
   pages: {
     profile: 'profile', experience: 'experience', education: 'education',
     credentials: 'credentials', expertise: 'expertise', projects: 'projects',

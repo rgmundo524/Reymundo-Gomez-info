@@ -12,6 +12,8 @@ background or work.
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Certifications, training, and education |
 | `/contact/` | `content/pages/contact.md` | Professional enquiry introduction and contact link |
+| `/articles/` | `content/pages/articles.md` | Automatically discovered articles, newest dated entries first |
+| `/articles/<slug>/` | `content/articles/` | Article body, takeaway, topics, and related cases |
 | `/investigations/<chart>/<category>/` | Matching records in `content/cases/` | Case summaries reached from chart slices or legend links |
 
 The home page intentionally omits the full CV and chart tables. The underlying
@@ -31,7 +33,8 @@ blocks, while supporting pages use fuller content.
 - `src/components/ContentEntry.astro` presents the detailed content records.
 
 Typography uses locally available serif and system fonts. No hosted font,
-charting service, client framework, or additional dependency is required.
+charting service or client framework is required. Pagefind supplies the case
+search interface and static search index.
 
 ## Portrait and contact
 
@@ -66,7 +69,8 @@ the contact page, homepage, and footer derive their contact link from that one f
 
 ## Draft behavior
 
-`npm run dev` and the draft build show all six main pages and the ten category pages.
+`npm run dev` and the draft build show all seven main pages, the ten category pages,
+and the draft article.
 The ordinary production build continues to exclude draft content. Navigation
 links follow visible page records, and home-page links are omitted when their
 destination page is not visible. Category return links lead to Casework when
@@ -82,7 +86,7 @@ select draft content. Site metadata remains `noindex` during development.
 
 Every page can set `navigation: { label: Home, order: 10 }` in its frontmatter.
 Lower values appear first; omitting navigation hides the menu item. The current
-order is Home, Work History, Casework, Credentials, Expertise, Contact. The
+order is Home, Work History, Casework, Credentials, Expertise, Articles, Contact. The
 renamed Work History page retains `/about/` to preserve existing links.
 
 Supporting pages set `section_order`, a list of collection names such as

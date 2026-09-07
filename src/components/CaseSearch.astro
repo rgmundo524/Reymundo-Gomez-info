@@ -1,0 +1,21 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { includeDrafts } from '../lib/content';
+import { eligibleCases } from '../lib/cases';
+type Props = { charts: CollectionEntry<'charts'>[] };
+const cases = eligibleCases(Astro.props.charts, await getCollection('cases'), includeDrafts);
+---
+{cases.length > 0 && <section class="case-search" aria-labelledby="case-search-heading">
+  <h2 id="case-search-heading">Search casework</h2>
+  <p>Search case summaries or narrow the results by investigation, category, network, and status.</p>
+  <link rel="stylesheet" href="/pagefind/pagefind-component-ui.css" />
+  <script is:inline type="module" src="/pagefind/pagefind-component-ui.js"></script>
+  <pagefind-config instance="cases" bundle-path="/pagefind/" faceted></pagefind-config>
+  <pagefind-input instance="cases" placeholder="Search case summaries…"></pagefind-input>
+  <div class="case-search-filters">
+    {['Dataset', 'Investigation', 'Category', 'Network', 'Status'].map((filter) => <pagefind-filter-dropdown instance="cases" filter={filter} label={filter}></pagefind-filter-dropdown>)}
+  </div>
+  <pagefind-summary instance="cases"></pagefind-summary>
+  <pagefind-results instance="cases" hide-sub-results></pagefind-results>
+  <noscript><p>Search requires JavaScript. You can browse every case using the charts and case lists below.</p></noscript>
+</section>}

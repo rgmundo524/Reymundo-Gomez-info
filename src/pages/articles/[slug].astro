@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { InferGetStaticPropsType } from 'astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { includeDrafts, selected } from '../../lib/content';
+import { articleDate, visibleArticles } from '../../lib/articles';
+import { categoryUrl } from '../../lib/charts';
+import { readable } from '../../lib/cases';
+
+export async function getStaticPaths() {
+  return visibleArticles(await getCollection('articles'), includeDrafts)
+    .map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const related = await selected('cases', entry.data.related_cases);
+const articlePageExists = (await getCollection('pages')).some(({ id, data }) => id === 'articles' && (includeDrafts || data.publication_status === 'published'));
+---
+<SiteLayout title={`${entry.data.title} | Reymundo Gómez`} description={entry.data.description_short}>
+  <article class="container article-detail">
+    <header class="page-intro">
+      <p class="eyebrow">Articles</p>
+      <h1>{entry.data.title}</h1>
+      <p class="page-lead">{entry.data.description_short}</p>
+      <p class="meta">{entry.data.publication_status === 'draft' && <span>Draft · </span>}{entry.data.published_on ? <time datetime={entry.data.published_on}>{articleDate(entry.data.published_on)}</time> : 'Unpublished'}{entry.data.updated_on && <span> · Updated <time datetime={entry.data.updated_on}>{articleDate(entry.data.updated_on)}</time></span>}</p>
+      {entry.data.tags.length > 0 && <ul class="tag-list" aria-label="Topics">{entry.data.tags.map((tag) => <li>{readable(tag)}</li>)}</ul>}
+    </header>
+    {entry.data.blocks.takeaway && <aside class="callout article-takeaway" aria-label="Key takeaway">{entry.data.blocks.takeaway}</aside>}
+    <div class="prose article-body"><Content /></div>
+    {related.length > 0 && <aside class="article-related"><h2>Related casework</h2><ul>{related.map(({ id, data }) => <li><a href={`${categoryUrl(data.chart, data.category)}#${id}`}>{data.title}</a></li>)}</ul></aside>}
+    {entry.data.links.length > 0 && <aside class="article-related"><h2>Further reading</h2><ul>{entry.data.links.map(({ label, url }) => <li><a href={url}>{label}</a></li>)}</ul></aside>}
+    <p class="back-link"><a href={articlePageExists ? '/articles/' : '/'}>← {articlePageExists ? 'All articles' : 'Home'}</a></p>
+  </article>
+</SiteLayout>

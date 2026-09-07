@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import { includeDrafts } from '../lib/content';
+import { articleDate, visibleArticles } from '../lib/articles';
+import { readable } from '../lib/cases';
+const articles = visibleArticles(await getCollection('articles'), includeDrafts);
+---
+{articles.length ? <div class="article-list">
+  {articles.map(({ id, data }) => <article class="article-preview">
+    <div class="meta">{data.publication_status === 'draft' && <span>Draft · </span>}{data.published_on ? <time datetime={data.published_on}>{articleDate(data.published_on)}</time> : <span>Unpublished</span>}</div>
+    <h2><a href={`/articles/${id}/`}>{data.title}</a></h2>
+    <p>{data.description_short}</p>
+    {data.tags.length > 0 && <ul class="tag-list" aria-label="Topics">{data.tags.map((tag) => <li>{readable(tag)}</li>)}</ul>}
+    <a class="text-link" href={`/articles/${id}/`}>Read article <span aria-hidden="true">→</span><span class="sr-only">: {data.title}</span></a>
+  </article>)}
+</div> : <p>Articles will appear here as they are published.</p>}

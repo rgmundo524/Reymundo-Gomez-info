@@ -5,6 +5,8 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import ContentEntry from '../components/ContentEntry.astro';
 import CaseDashboard from '../components/CaseDashboard.astro';
 import ExperienceTimeline from '../components/ExperienceTimeline.astro';
+import ArticleList from '../components/ArticleList.astro';
+import CaseSearch from '../components/CaseSearch.astro';
 import { contactLink, isVisible, pageProfile, selected } from '../lib/content';
 import { sortExperience } from '../lib/experience';
 
@@ -32,7 +34,9 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     <div class="page-lead"><Intro /></div>
   </header>
   {page.data.section_order.map((name) => {
+    if (name === 'articles') return <section class="container content-section" aria-label="Articles"><ArticleList /></section>;
     if (name === 'charts') return charts.length > 0 && <section class="container content-section" id="section-casework" aria-labelledby="chart-heading">
+      {page.id === 'casework' && <CaseSearch charts={charts} />}
       <div class="section-heading"><h2 id="chart-heading">Case experience</h2></div><CaseDashboard charts={charts} />
     </section>;
     const section = sections.find((section) => section.name === name)!;

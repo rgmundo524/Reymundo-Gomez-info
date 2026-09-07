@@ -4,7 +4,7 @@ import { formatMonth, formatPeriods } from '../lib/content';
 import { isCurrentPosition } from '../lib/experience';
 
 type Props = {
-  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases'>>;
+  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'charts' | 'cases' | 'articles'>>;
   expanded?: boolean;
 };
 const { entry, expanded = false } = Astro.props;

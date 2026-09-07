@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This version has a focused professional landing page, a profile portrait, and
-supporting Work History, Casework, Credentials, Expertise, and Contact pages. Reusable Markdown
+supporting Work History, Casework, Credentials, Expertise, Articles, and Contact pages. Reusable Markdown
 supplies the content across all routes. Content entries remain drafts for local
 development; an ordinary production build excludes them.
 
@@ -76,6 +76,7 @@ from `templates/` into the matching collection under `content/`.
 | `content/callouts/` | Independently reusable passages |
 | `content/charts/` | Category definitions for record-derived donut charts |
 | `content/cases/` | One structured record per case, driving charts and statistics |
+| `content/articles/` | Articles with dates, topics, takeaways, and related cases |
 | `content/pages/` | Page introductions and selected content IDs |
 | `templates/` | Copyable examples; never loaded into the site |
 | `src/content/schemas.ts` | Shared authoring rules |
@@ -117,14 +118,19 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 
 ## Resume content
 
-The content inventory contains 62 draft entries: one profile, six roles, eleven
+The content inventory contains 64 draft entries: one profile, six roles, eleven
 credentials and training records, three education records, seven expertise areas,
 two selected-work entries, nine interests, two callouts, two case charts,
-thirteen example cases, and six page selections.
+thirteen example cases, one starter article, and seven page selections.
 
 Casework is a Markdown-backed tracker. Add a record under `content/cases/` and
 its chart count, category share, and statistics update from that record. Real
 cases and examples use separate datasets. Charts store no manual counts.
+
+Pagefind adds case search with per-case filters and direct links into summaries.
+Search refreshes from Markdown in local development and is generated with static
+builds. The Articles section automatically discovers `content/articles/*.md`.
+See [articles, search, and future editor storage](docs/articles-and-search.md).
 
 Start with [the case record guide](docs/case-tracker.md) and `templates/cases.md`.
 See [page structure](docs/page-structure.md) for job ordering, timeline behavior,

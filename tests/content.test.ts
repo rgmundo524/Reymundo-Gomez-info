@@ -6,8 +6,86 @@ import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { formatPeriods } from '../src/lib/dates';
+import { visibleArticles } from '../src/lib/articles';
+import { caseSearchRecords } from '../src/lib/search';
+import { createSearchCache } from '../scripts/search-index';
 
 const base = { slug: 'example', description_short: 'A short description.' };
+
+test('articles validate dates, sort newest first, and exclude drafts from publication', () => {
+  const article = { ...base, title: 'Article' };
+  assert.equal(schemas.articles.safeParse({ ...article, publication_status: 'published' }).success, false);
+  assert.equal(schemas.articles.safeParse({ ...article, published_on: '2026-05-01', updated_on: '2026-04-30' }).success, false);
+  const entries = [
+    { id: 'draft', data: schemas.articles.parse(article) },
+    { id: 'older', data: schemas.articles.parse({ ...article, publication_status: 'published', published_on: '2026-01-01' }) },
+    { id: 'newer', data: schemas.articles.parse({ ...article, publication_status: 'published', published_on: '2026-06-01' }) },
+  ];
+  assert.deepEqual(visibleArticles(entries, false).map(({ id }) => id), ['newer', 'older']);
+  assert.deepEqual(visibleArticles(entries, true).map(({ id }) => id), ['newer', 'older', 'draft']);
+});
+
+test('article case references cannot silently break or publish a draft case', () => {
+  const article: ContentRecord = { collection: 'articles', data: schemas.articles.parse({ ...base, title: 'Article', publication_status: 'published', published_on: '2026-01-01', related_cases: ['missing'] }), body: 'Article', file: 'articles/test.md' };
+  assert.throws(() => validateRecords([article]), /related_cases references missing cases\/missing/);
+  const study: ContentRecord = { collection: 'cases', data: schemas.cases.parse({ ...base, slug: 'missing', title: 'Draft case', chart: 'example', category: 'fraud' }), body: 'Draft', file: 'cases/missing.md' };
+  assert.throws(() => validateRecords([article, study]), /published content references draft cases\/missing/);
+});
+
+test('search respects case visibility, exact anchors, and per-case filters without indexing editorial notes', async () => {
+  const records = await loadContent();
+  const previews = caseSearchRecords(records, true);
+  assert.equal(previews.length, 13);
+  assert.equal(new Set(previews.map(({ url }) => url)).size, 13);
+  assert.deepEqual(caseSearchRecords(records, false), []);
+  for (const record of records) {
+    if (record.collection === 'cases') {
+      record.data.editorial_note = 'EDITORIAL_SECRET_SENTINEL';
+      record.data.blocks.unused_private_block = 'UNUSED_BLOCK_SENTINEL';
+      const found = previews.find(({ url }) => url.endsWith(`#${record.data.slug}`))!;
+      assert.equal(found.url, `${categoryUrl(record.data.chart, record.data.category)}#${record.data.slug}`);
+      assert.deepEqual(found.filters.Network, record.data.networks.length ? record.data.networks.map((value) => value.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join(' ')) : ['Not recorded']);
+    }
+  }
+  assert.doesNotMatch(JSON.stringify(caseSearchRecords(records, true)), /EDITORIAL_SECRET_SENTINEL|UNUSED_BLOCK_SENTINEL/);
+  const publicRecords = structuredClone(records);
+  for (const record of publicRecords) if (record.collection !== 'cases') record.data.publication_status = 'published';
+  const study = publicRecords.find((record) => record.collection === 'cases')!;
+  assert.equal(study.collection, 'cases');
+  if (study.collection !== 'cases') return;
+  study.data.content_kind = 'case_study';
+  study.data.publication_status = 'published';
+  assert.equal(caseSearchRecords(publicRecords, false).length, 1);
+  assert.deepEqual(caseSearchRecords(publicRecords, false)[0].filters.Dataset, ['Case studies']);
+  study.data.category = publicRecords.filter((record) => record.collection === 'charts').find(({ data }) => data.slug === study.data.chart)!.data.categories.find(({ id }) => id !== study.data.category)!.id;
+  assert.equal(caseSearchRecords(publicRecords, false)[0].url, `${categoryUrl(study.data.chart, study.data.category)}#${study.data.slug}`);
+  publicRecords.splice(publicRecords.indexOf(study), 1);
+  assert.equal(caseSearchRecords(publicRecords, false).length, 0);
+});
+
+test('development search discards superseded builds and refuses stale content after errors', async () => {
+  let builds = 0;
+  let release: (() => void) | undefined;
+  let fail = false;
+  const cache = createSearchCache(async () => {
+    const number = ++builds;
+    if (number === 1) await new Promise<void>((resolve) => { release = resolve; });
+    if (fail) throw new Error('Invalid content');
+    return [{ path: 'pagefind.js', content: new TextEncoder().encode(String(number)) }];
+  });
+  const first = cache.files();
+  const concurrent = cache.files();
+  cache.invalidate();
+  release!();
+  assert.equal(new TextDecoder().decode((await first).get('pagefind.js')), '2');
+  assert.equal(await concurrent, await cache.files());
+  assert.equal(builds, 2);
+  fail = true;
+  cache.invalidate();
+  await assert.rejects(cache.files(), /Invalid content/);
+  fail = false;
+  assert.equal(new TextDecoder().decode((await cache.files()).get('pagefind.js')), '4');
+});
 const job = { ...base, organization: 'Example', role: 'Investigator', periods: [{ start: '2022-09', end: '2025-06' }, { start: '2026-01', end: null }] };
 
 test('a resumed role preserves the gap and defaults to draft', () => {
