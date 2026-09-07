@@ -19,6 +19,15 @@ export const periodSchema = z.strictObject({ start: month, end: month.nullable()
   .refine((period) => period.end === null || period.end >= period.start,
     { message: 'End month must be on or after start month.', path: ['end'] });
 
+export const timelineSchema = z.strictObject({
+  // null starts at January of the earliest recorded role.
+  start: month.nullable().default(null),
+  levels: z.strictObject({
+    desktop: z.number().int().min(2).max(8).default(3),
+    mobile: z.number().int().min(2).max(8).default(5),
+  }).default({ desktop: 3, mobile: 5 }),
+}).default({ start: null, levels: { desktop: 3, mobile: 5 } });
+
 const periods = z.array(periodSchema).superRefine((items, ctx) => {
   const sorted = [...items].sort((a, b) => a.start.localeCompare(b.start));
   for (let index = 1; index < sorted.length; index++) {
@@ -130,6 +139,7 @@ export const schemas = {
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
+    timeline: timelineSchema,
     section_order: z.array(z.enum(['experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),

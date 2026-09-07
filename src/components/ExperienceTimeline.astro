@@ -1,67 +1,48 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { formatMonth, formatPeriods } from '../lib/content';
-import { isCurrentPosition, plotExperience } from '../lib/experience';
-type Props = { entries: CollectionEntry<'experience'>[] };
-const { entries } = Astro.props;
-const timeline = plotExperience(entries);
+import { formatMonth } from '../lib/dates';
+import { isCurrentPosition } from '../lib/experience';
+import { careerTimeline, type TimelineSettings } from '../lib/career-timeline';
+type Props = { entries: CollectionEntry<'experience'>[]; settings: TimelineSettings };
+const { entries, settings } = Astro.props;
+const { undated, ...timeline } = careerTimeline(entries, settings);
+const lastMonth = new Date(timeline.to - 1).toISOString().slice(0, 7);
 ---
-<figure class="career-timeline" aria-labelledby="career-timeline-title">
+<figure class="career-timeline" data-career-timeline aria-labelledby="career-timeline-title">
   <figcaption>
-    <div><h3 id="career-timeline-title">Roles over time</h3><p id="career-timeline-help">Select a position or a bar to read about the role. Overlapping bars show concurrent work.</p></div>
-    <div class="career-legend" aria-label="Timeline key"><span><i class="career-key" aria-hidden="true"></i>Past period</span><span><i class="career-key current" aria-hidden="true"></i>Current period</span>{timeline.rows.some(({ periods }) => periods.some(({ scheduled }) => scheduled)) && <span><i class="career-key scheduled" aria-hidden="true"></i>Scheduled period</span>}</div>
+    <div><h3 id="career-timeline-title">Roles over time</h3><p id="career-timeline-help">Follow the line through my career. Select a shaded span or a position below to explore the work.</p></div>
+    <span class="career-extent">{formatMonth(timeline.start)} to {formatMonth(lastMonth)}</span>
   </figcaption>
-  {timeline.rows.length > 0 && <>
-    <div class="career-scroll" role="region" aria-label="Work history plotted by calendar month" aria-describedby="career-timeline-help career-timeline-note" tabindex="0">
-      <div class="career-plot">
-        <div class="career-axis-row" aria-hidden="true">
-          <div class="career-axis-label">Position</div>
-          <div class="career-axis">{timeline.ticks.map(({ year, left, alignEnd }) => <span class:list={{ 'align-end': alignEnd }} style={`left:${left}%`}>{year}</span>)}</div>
-        </div>
-        <ol class="career-rows">{timeline.rows.map(({ entry, periods }) => <li class="career-row">
-          <a class="career-position" href={`#${entry.id}`} data-position-link>
-            <strong>{entry.data.blocks.organization_short ?? entry.data.organization}</strong>
-            <span>{entry.data.role}</span>
-            <span class="career-dates">{formatPeriods(entry.data.periods)}</span>
-          </a>
-          <div class="career-track">
-            {timeline.ticks.map(({ left }) => <span class="career-gridline" style={`left:${left}%`} aria-hidden="true"></span>)}
-            <span class="career-present" style={`left:${timeline.present}%`} aria-hidden="true"></span>
-            {periods.map((period) => <a class:list={['career-period', { current: period.current, planned: period.planned, scheduled: period.scheduled }]}
-              href={`#${entry.id}`} data-position-link
-              style={`left:${period.left}%;width:${period.width}%`}
-              title={`${entry.data.organization}: ${period.planned ? `Starts ${formatMonth(period.start)}` : formatPeriods([period])}`}
-              aria-label={`${entry.data.organization}, ${entry.data.role}: ${period.planned ? `starts ${formatMonth(period.start)}` : formatPeriods([period])}. Read role details.`}>
-              {period.current && <span class="career-current-cap" aria-hidden="true"></span>}
-            </a>)}
-          </div>
-        </li>)}</ol>
+  {timeline.spans.length > 0 && <>
+    <div class="career-interactive" data-career-interactive hidden>
+      <div class="career-toolbar" role="group" aria-label="Timeline navigation">
+        <button type="button" data-career-action="earlier" aria-controls="career-chart">Earlier</button>
+        <button type="button" data-career-action="zoom-in" aria-controls="career-chart">Zoom in</button>
+        <button type="button" data-career-action="zoom-out" aria-controls="career-chart">Zoom out</button>
+        <button type="button" data-career-action="later" aria-controls="career-chart">Later</button>
+        <button type="button" data-career-action="reset" aria-controls="career-chart">Full timeline</button>
       </div>
+      <p class="career-window" data-career-window aria-live="polite" aria-atomic="true"></p>
+      <div id="career-chart" class="career-chart" data-career-chart role="region" aria-label="Interactive serpentine work history" aria-describedby="career-timeline-help career-timeline-note"></div>
+      <p class="career-note" id="career-timeline-note">Hover or focus a span for dates. Drag along the line to zoom on desktop, or use the buttons and slider. Parallel bands show concurrent roles; breaks remain visible.</p>
     </div>
-    <p class="career-note" id="career-timeline-note">Dates are plotted by month. Separate bars preserve breaks between periods. Open roles extend through {formatMonth(timeline.asOf)}. Scroll horizontally on smaller screens.</p>
+    <p class="career-note" data-career-status role="status" hidden>Loading the interactive timeline. You can explore the positions below.</p>
+    <ol class="career-roles" aria-label="Positions and employment dates">
+      {timeline.roles.map((role) => <li><a class="career-role-link" href={`#${role.id}`} data-position-link style={`--role-light:${role.light};--role-dark:${role.dark}`}>
+        <span class="career-swatch" aria-hidden="true"></span>
+        <span><strong>{role.label}</strong><span>{role.role}</span><span class="career-dates">{role.dates}</span></span>
+      </a></li>)}
+    </ol>
+    <p class="career-note">Dates are recorded by month. Each end month is included. Current roles extend through {formatMonth(timeline.asOf)}.</p>
+    <script is:inline type="application/json" data-career-data set:html={JSON.stringify(timeline).replace(/</g, '\\u003c')}></script>
   </>}
-  {timeline.undated.length > 0 && <div class="career-undated">
+  {undated.length > 0 && <div class="career-undated">
     <p>Start date not yet recorded</p>
-    <ul>{timeline.undated.map((entry) => <li><a href={`#${entry.id}`} data-position-link><strong>{entry.data.organization}</strong> · {entry.data.role}</a>{isCurrentPosition(entry) && <span class="timeline-current">Current role</span>}</li>)}</ul>
+    <ul>{undated.map((entry) => <li><a href={`#${entry.id}`} data-position-link><strong>{entry.data.organization}</strong> · {entry.data.role}</a>{isCurrentPosition(entry) && <span class="timeline-current">Current role</span>}</li>)}</ul>
   </div>}
 </figure>
 <script>
-  function selectPosition() {
-    for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-position-link]')) {
-      if (link.hash === window.location.hash) {
-        link.setAttribute('aria-current', 'location');
-        const details = document.getElementById(link.hash.slice(1))?.querySelector('details');
-        if (details) details.open = true;
-      }
-      else link.removeAttribute('aria-current');
-    }
-  }
-  document.querySelectorAll<HTMLAnchorElement>('[data-position-link]').forEach((link) => link.addEventListener('click', () => {
-    const article = document.getElementById(link.hash.slice(1));
-    const details = article?.querySelector('details');
-    if (details) details.open = true;
-    article?.focus({ preventScroll: true });
-  }));
-  window.addEventListener('hashchange', selectPosition);
-  selectPosition();
+  import { mountCareerTimelines } from '../scripts/work-history';
+  const cleanup = mountCareerTimelines();
+  if (import.meta.hot) import.meta.hot.dispose(cleanup);
 </script>

@@ -9,6 +9,11 @@ navigation:
   label: Page label
   order: 70
 experience_source: selected
+timeline:
+  start: null
+  levels:
+    desktop: 3
+    mobile: 5
 section_order:
   - charts
   - experience

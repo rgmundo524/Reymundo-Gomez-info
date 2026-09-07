@@ -24,6 +24,7 @@
     "test": "node --import tsx --test tests/content.test.ts"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "5.20.5",
     "@astrojs/mdx": "8.0.0",
     "@fontsource/inter": "5.3.0",
     "@iconify-json/lucide": "1.2.129",

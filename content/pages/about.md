@@ -11,6 +11,11 @@ blocks:
   eyebrow: Professional background
   bio_heading: An investigator’s perspective.
 experience_source: all
+timeline:
+  start: "2016-01"
+  levels:
+    desktop: 3
+    mobile: 5
 section_order:
 - experience
 - interests

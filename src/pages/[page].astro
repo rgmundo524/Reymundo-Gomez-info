@@ -42,7 +42,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     const section = sections.find((section) => section.name === name)!;
     return section.entries.length > 0 && <section class="container content-section" id={`section-${name}`} aria-labelledby={`heading-${name}`}>
       <div class="section-heading"><h2 id={`heading-${name}`}>{labels[name]}</h2></div>
-      {name === 'experience' && <ExperienceTimeline entries={experience} />}
+      {name === 'experience' && <ExperienceTimeline entries={experience} settings={page.data.timeline} />}
       <div class:list={['entry-list', `collection-${name}`]}>{section.entries.map((entry) => <ContentEntry entry={entry} expanded={name === 'expertise' || name === 'projects'} />)}</div>
     </section>;
   })}

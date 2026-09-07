@@ -5,6 +5,8 @@ import { loadContent, validateRecords } from '../scripts/content';
 import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
+import { careerTimeline, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
+import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
 import { visibleArticles } from '../src/lib/articles';
 import { caseSearchRecords } from '../src/lib/search';
@@ -362,4 +364,64 @@ test('open roles extend with the build month and single-month roles retain durat
   assert.equal(october.rows[0].periods[0].width, 100);
   const single = plotExperience([{ id: 'one-month', data: { periods: [{ start: '2026-03', end: '2026-03' }] } }], '2026-09');
   assert.equal(single.rows[0].periods[0].width, 1 / 9 * 100);
+});
+
+test('serpentine date spans include whole end months and preserve gaps, concurrency, and unknown dates', () => {
+  const position = (id: string, periods: { start: string; end: string | null }[], active_position?: boolean) => ({
+    id, data: { organization: id, role: 'Investigator', blocks: {}, periods, active_position },
+  });
+  const entries = [
+    position('resumed', [{ start: '2020-01', end: '2020-02' }, { start: '2020-05', end: null }]),
+    position('overlap', [{ start: '2020-02', end: '2020-04' }]),
+    position('adjacent', [{ start: '2020-03', end: '2020-03' }]),
+    position('unknown', [], true),
+  ];
+  const result = careerTimeline(entries, timelineSchema.parse({ start: '2019-07' }), '2020-06');
+  assert.equal(result.from, Date.UTC(2019, 6, 1));
+  assert.equal(result.to, Date.UTC(2020, 6, 1));
+  assert.equal(result.present, result.to);
+  assert.deepEqual(result.undated.map(({ id }) => id), ['unknown']);
+  const [first, second] = result.spans.filter(({ id }) => id === 'resumed');
+  assert.equal(first.to, Date.UTC(2020, 2, 1)); // Includes leap-year February.
+  assert.equal(second.from, Date.UTC(2020, 4, 1));
+  assert.equal(second.to, result.to);
+  assert.ok(second.from > first.to);
+  assert.equal(result.lanes.length, 2);
+  assert.equal(result.spans.find(({ id }) => id === 'adjacent')?.category, first.category);
+  for (const a of result.spans) for (const b of result.spans) {
+    if (a !== b && a.category === b.category) assert.ok(a.to <= b.from || b.to <= a.from);
+  }
+  assert.equal(monthTimestamp('2020-02', 1) - monthTimestamp('2020-02'), 29 * 86400000);
+});
+
+test('serpentine scheduled starts stay points and bounds advance for open roles', () => {
+  const entries = [{ id: 'role', data: { organization: 'Organization', role: 'Investigator', blocks: {}, periods: [{ start: '2027-01', end: null }] } }];
+  const before = careerTimeline(entries, timelineSchema.parse({}), '2026-09');
+  assert.equal(before.spans[0].from, before.spans[0].to);
+  assert.equal(before.spans[0].planned, true);
+  assert.ok(before.present < before.spans[0].from);
+  assert.ok(before.to > before.spans[0].from);
+  const after = careerTimeline(entries, timelineSchema.parse({}), '2027-02');
+  assert.equal(after.spans[0].planned, false);
+  assert.equal(after.spans[0].current, true);
+  assert.equal(after.spans[0].to, Date.UTC(2027, 2, 1));
+});
+
+test('timeline settings reject clipping recorded history and invalid bend counts', () => {
+  const entry = { id: 'role', data: { organization: 'Organization', role: 'Investigator', blocks: {}, periods: [{ start: '2020-01', end: '2020-02' }] } };
+  assert.throws(() => careerTimeline([entry], timelineSchema.parse({ start: '2021-01' }), '2026-09'), /on or before the earliest role/);
+  assert.equal(timelineSchema.safeParse({ start: '2020-13' }).success, false);
+  assert.equal(timelineSchema.safeParse({ levels: { desktop: 1, mobile: 5 } }).success, false);
+  assert.equal(timelineSchema.safeParse({ levels: { desktop: 3, mobile: 9 } }).success, false);
+  assert.deepEqual(timelineSchema.parse(undefined), { start: null, levels: { desktop: 3, mobile: 5 } });
+  assert.equal(careerTimeline([], timelineSchema.parse({}), '2026-09').spans.length, 0);
+});
+
+test('timeline navigation clamps zoom and chronological shifts at both ends', () => {
+  assert.deepEqual(timelineWindow(0, 1, 0.5), { start: 0.25, end: 0.75 });
+  assert.deepEqual(timelineWindow(0.1, 0.6, 1, -1), { start: 0, end: 0.5 });
+  assert.deepEqual(timelineWindow(0.4, 0.9, 1, 1), { start: 0.5, end: 1 });
+  assert.deepEqual(timelineWindow(0.25, 0.75, 3), { start: 0, end: 1 });
+  const smallest = timelineWindow(0.4, 0.5, 0.01, 0, 0.1);
+  assert.ok(Math.abs(smallest.end - smallest.start - 0.1) < 1e-12);
 });

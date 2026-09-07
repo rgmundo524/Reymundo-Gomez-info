@@ -107,22 +107,64 @@ Lower `display_order` values appear first. Existing positions use 10, 20, 30,
 40, 50, and 60; use an intermediate number to insert a role. Explicitly numbered
 jobs precede all unnumbered jobs. Among ties or unnumbered jobs, current roles
 come first, then the most recent start month, then slug for a stable tie-break.
-The timeline rows and job details use the same ordering. Undated jobs appear in
-a separate linked list below the plot because their duration is not known.
+The linked role list and job details use the same ordering. The chart itself
+uses dates for position and duration, independently of `display_order`.
 
-The timeline plots horizontal bars against one shared calendar-year axis. Bar
-positions and lengths use the job periods, independently of `display_order`.
-Each month has equal width and the end month is included. A role with separate
-periods has separate bars, so gaps and concurrent roles remain visible. Open
-periods extend through the month when the site is built; rebuild to refresh that
-endpoint. A future open period is a start marker until it begins. The plot
-scrolls horizontally on small screens, keeping position labels visible.
+### Serpentine timeline
 
-Timeline bars and position links jump to and open role
-details, including initial links and back/forward navigation. For ADC LTD NM,
-the current role is confirmed, but start dates and detailed duties are not yet
-known: `periods: []` and `active_position: true` avoid inventing them. Once dates
-are supplied, populate `periods` and remove the explicit active flag.
+Work History uses locally bundled **amCharts 5**, loaded only when the timeline
+approaches the viewport. Its transparent canvas, plot, and axis labels leave the
+site-wide particle animation visible. The chart follows light/dark mode and
+respects reduced motion. No hosted chart service, account, or React is needed.
+
+`content/pages/about.md` controls the timeline:
+
+```yaml
+timeline:
+  start: "2016-01"
+  levels:
+    desktop: 3
+    mobile: 5
+```
+
+- `start`: first displayed month, or `null` to start in January of the earliest
+  recorded role. It must be on or before the earliest role, so no history is
+  silently clipped. The configured 2016 start matches the existing timeline.
+- `levels.desktop` and `levels.mobile`: straight runs along the winding path,
+  between 2 and 8. Three runs means two bends. Mobile layout applies when the
+  chart container is 700px wide or narrower. Height adjusts to fit the runs and
+  concurrent tracks.
+- The endpoint includes the current build month and any scheduled periods.
+  Rebuild the site to advance current roles to a new month.
+
+A true UTC date axis preserves elapsed time, so months have their actual calendar
+lengths. End months are inclusive: a June end is drawn through July 1. Separate
+employment periods remain separate bands. Overlapping periods automatically use
+adjacent lanes along the same axis. A future role with no end date has only a
+start marker until it begins. Colors identify positions; tooltips include dates
+and current/past/scheduled status. Current endpoints have larger markers.
+
+Visitors can select bands or role links to open the job details, including with
+the keyboard. Links work before JavaScript loads, when charts cannot load, and
+in print. Hash navigation and back/forward navigation preserve selection. Zoom
+in/out, earlier/later, full-timeline reset, and the range slider navigate the
+chart. Desktop pointer users can drag along the line to select a zoom range.
+Touch users use the controls and slider; ordinary page scrolling remains free.
+The visible range survives theme changes, resizing, and browser back/forward
+cache restoration.
+
+For ADC LTD NM, the current role is confirmed, but its start date is not yet
+known: `periods: []` and `active_position: true` keep it in the linked undated
+list. Once dates are supplied, populate `periods` and remove the explicit flag.
+
+The amCharts logo/backlink is retained under its free-use license. The license
+is included at `/vendor/amcharts-LICENSE.txt`; no paid key is configured. The
+serpentine chart is marked experimental by its authors. Dependency versions are
+pinned, and the HTML role links remain available independently of the chart.
+
+References: [timeline documentation](https://www.amcharts.com/docs/v5/charts/timeline/),
+[accessibility](https://www.amcharts.com/docs/v5/concepts/accessibility/),
+[licensing](https://www.amcharts.com/download/).
 
 ## Color mode
 
