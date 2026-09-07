@@ -6,6 +6,7 @@ import { categoryUrl, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
 import { caseVisuals, type CaseNode } from '../src/lib/case-visuals';
 import { caseSunburst, sunburstNodes, sunburstSelection } from '../src/lib/case-sunburst';
+import { classificationKeys, chartSearchSelection, createCaseSearchController, type CaseFilters, type PagefindCaseInstance } from '../src/lib/case-search-filters';
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
 import { groupCredentials } from '../src/lib/credentials';
@@ -340,14 +341,100 @@ test('example Markdown subcategories appear in search and remain isolated to the
   const divorce = data.groups[1].categories.find(({ id }) => id === 'divorce')!;
   assert.deepEqual(divorce.subcategories.map(({ id }) => id), ['asset-disclosure', 'historical-holdings']);
   const found = caseSearchRecords(records, true).find(({ url }) => url.endsWith('#case-012'))!;
-  assert.deepEqual(found.filters.Subcategory, ['Bridge Exploit']);
+  assert.deepEqual(found.filters.CasePath, classificationKeys('criminal-investigations', ['hacks', 'bridge-exploit']));
   assert.match(found.content, /Bridge Exploit/);
   const deepSearch = caseSearchRecords(records, true).find(({ url }) => url.endsWith('#case-011'))!;
-  assert.deepEqual(deepSearch.filters.Subcategory, ['Investment Platform', 'Fake Exchange', 'Withdrawal Fee']);
+  assert.deepEqual(deepSearch.filters.CasePath, classificationKeys('criminal-investigations', ['pig-butchering', 'investment-platform', 'fake-exchange', 'withdrawal-fee']));
   const criminal = caseSunburst(data.groups[0]);
   assert.equal(sunburstSelection(criminal, 'criminal-investigations/pig-butchering').caseIds.size, 2);
   assert.deepEqual([...sunburstSelection(criminal, 'criminal-investigations/pig-butchering/investment-platform/fake-exchange/withdrawal-fee').caseIds], ['case-011']);
 
+});
+
+test('Pagefind path filters select exactly the same descendants as each sunburst level', async () => {
+  const content = await loadContent();
+  const charts = content.filter((entry) => entry.collection === 'charts').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  const studies = content.filter((entry) => entry.collection === 'cases').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  const search = caseSearchRecords(content, true);
+  for (const chart of caseVisuals(charts, studies, 'example', true).groups) {
+    for (const node of sunburstNodes(caseSunburst(chart))) {
+      const matches = search.filter(({ filters }) => filters.Investigation.includes(chart.title) && filters.CasePath.includes(node.id));
+      assert.deepEqual(matches.map(({ url }) => url.split('#')[1]).sort(), [...node.caseIds].sort());
+    }
+  }
+  const full = classificationKeys('criminal', ['fraud', 'platform', 'exchange']);
+  assert.ok(full.includes('criminal/fraud/platform'));
+  assert.ok(!full.includes('criminal/fraud/exchange'), 'A grandchild is never promoted to an equal sibling');
+  assert.ok(!full.includes('criminal/other/platform'), 'Identical labels in another branch cannot match');
+  assert.ok(!full.includes('criminal/fraud/platform/@unclassified'), 'Deeper cases do not enter a parent-only bucket');
+});
+
+function fakePagefind() {
+  const listeners: ((term: string, filters: CaseFilters) => void)[] = [];
+  const requests: { term: string; filters: CaseFilters }[] = [];
+  const instance: PagefindCaseInstance = {
+    searchTerm: '', searchFilters: {},
+    on(_event, listener) { listeners.push(listener); },
+    triggerSearchWithFilters(term, filters) {
+      this.searchTerm = term; this.searchFilters = structuredClone(filters);
+      // Match Pagefind's synchronous notification before the request starts.
+      for (const listener of listeners) listener(term, structuredClone(filters));
+      requests.push({ term, filters: structuredClone(filters) });
+    },
+  };
+  return { instance, requests };
+}
+
+test('one Pagefind controller handles queued chart clicks, sibling paths, switching investigations, and global reset', async () => {
+  const litigation = { id: 'litigation', data: schemas.charts.parse({ ...chart, slug: 'litigation', title: 'Litigation Support Investigations', publication_status: 'published' }) };
+  const groups = caseVisuals([makeChart(), litigation], [makeCase('one', { subcategory: ['platform', 'exchange'] }), makeCase('two', { chart: 'litigation', subcategory: 'platform' })], 'case_study').groups;
+  const [criminal, civil] = groups;
+  const root = caseSunburst(criminal), civilRoot = caseSunburst(civil);
+  const deep = sunburstNodes(root).find(({ id }) => id.endsWith('/platform/exchange'))!;
+  const controller = createCaseSearchController();
+  controller.select(criminal, deep);
+  const { instance, requests } = fakePagefind();
+  const disconnect = controller.connect(instance);
+  assert.deepEqual(requests.at(-1)?.filters.CasePath, [deep.id], 'A pre-load click is applied when Pagefind connects');
+  instance.triggerSearchWithFilters('wallet', { ...instance.searchFilters, Network: ['Ethereum'], Status: ['Active'] });
+  assert.equal(chartSearchSelection(criminal, root, controller.snapshot().filters).node.id, deep.id);
+  controller.select(criminal, root.children![0]);
+  assert.deepEqual(instance.searchFilters.Network, ['Ethereum'], 'Refining the same investigation retains other filters');
+  controller.select(civil, civilRoot.children![0]);
+  assert.deepEqual(instance.searchFilters.Investigation, ['Litigation Support Investigations']);
+  assert.equal(instance.searchFilters.Network, undefined);
+  assert.equal(instance.searchFilters.Status, undefined);
+  assert.ok(instance.searchFilters.CasePath[0].startsWith('litigation/'));
+  assert.equal(instance.searchTerm, 'wallet', 'Investigation switches preserve the typed search');
+  assert.equal(chartSearchSelection(criminal, root, controller.snapshot().filters).node, root);
+  assert.equal(chartSearchSelection(criminal, root, controller.snapshot().filters).active, false);
+  controller.reset();
+  assert.equal(instance.searchTerm, ''); assert.deepEqual(instance.searchFilters, {});
+  assert.equal(chartSearchSelection(civil, civilRoot, controller.snapshot().filters).active, false);
+  disconnect();
+  instance.triggerSearchWithFilters('ignored after cleanup', {});
+  assert.equal(controller.snapshot().term, '');
+});
+
+test('native Pagefind dropdown changes clear stale paths without recursive or superseded searches', async () => {
+  const data = caseVisuals([makeChart()], [makeCase('one', { subcategory: ['platform', 'exchange'] })], 'case_study').groups[0];
+  const root = caseSunburst(data), deep = sunburstNodes(root).at(-1)!;
+  const controller = createCaseSearchController();
+  const { instance, requests } = fakePagefind();
+  controller.connect(instance); controller.select(data, deep);
+  instance.triggerSearchWithFilters('funds', { ...instance.searchFilters, Category: ['Other'], Network: ['Bitcoin'] });
+  await Promise.resolve();
+  assert.equal(requests.at(-1)?.filters.CasePath, undefined);
+  assert.deepEqual(requests.at(-1)?.filters.Network, ['Bitcoin']);
+  controller.select(data, deep);
+  instance.triggerSearchWithFilters('funds', { ...instance.searchFilters, Investigation: ['Litigation Support Investigations'] });
+  await Promise.resolve();
+  assert.deepEqual(requests.at(-1)?.filters, { Dataset: ['Case studies'], Investigation: ['Litigation Support Investigations'] });
+  controller.select(data, deep);
+  instance.triggerSearchWithFilters('old', { ...instance.searchFilters, Investigation: ['Litigation Support Investigations'] });
+  controller.reset();
+  await Promise.resolve();
+  assert.deepEqual(requests.at(-1), { term: '', filters: {} }, 'Queued cleanup cannot overwrite a newer user action');
 });
 
 test('pie groups and tree count each case once and follow category changes without duplicating parent values', () => {

@@ -6,7 +6,7 @@ navigation:
   order: 30
 title: Casework & selected projects
 profile: reymundo
-description_short: Explore criminal and professional investigations, case summaries, and selected
+description_short: Explore criminal and litigation support investigations, case summaries, and selected
   technical work.
 blocks:
   eyebrow: Investigations in practice

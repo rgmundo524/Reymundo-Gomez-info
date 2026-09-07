@@ -3,17 +3,19 @@ import { Sunburst } from '@amcharts/amcharts5/hierarchy';
 import settings from '../config/case-visuals.json';
 import { caseChartStyle } from './case-chart-style';
 import { caseSunburst, sunburstNodes, sunburstSelection, type SunburstNode } from './case-sunburst';
-import type { CaseSunburstData, CaseVisual, CaseVisualState } from './case-visuals';
+import { caseSearchController, chartSearchSelection } from './case-search-filters';
+import type { CaseSunburstData, CaseVisual } from './case-visuals';
 
 export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data: CaseSunburstData,
-  motionEnabled: boolean, saved: CaseVisualState = {}): CaseVisual {
+  motionEnabled: boolean): CaseVisual {
   const root = am5.Root.new(host);
   let resize: ResizeObserver | undefined;
+  let unsubscribe: (() => void) | undefined;
   try {
     const { dark, ink, tooltip } = caseChartStyle(root, figure);
     const hierarchy = caseSunburst(data);
     const nodes = sunburstNodes(hierarchy);
-    let selected = sunburstSelection(hierarchy, saved.sunburstNode);
+    let selected = sunburstSelection(hierarchy);
     let ready = false;
     const series = root.container.children.push(Sunburst.new(root, {
       idField: 'id', categoryField: 'label', valueField: 'value', childDataField: 'children',
@@ -31,7 +33,7 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
     series.nodes.template.adapters.add('ariaLabel', (_text, target) => context(target)?.tooltip.replace(/\n/g, '. ') ?? 'Filter cases');
     series.nodes.template.events.on('click', ({ target }) => {
       const node = context(target);
-      if (node) select(node.id);
+      if (node) select(node.id, true);
     });
     series.slices.template.setAll({ stroke: ink, strokeOpacity: 0.25, strokeWidth: 1, interactive: false });
     series.slices.template.adapters.add('fill', (fill, target) => {
@@ -50,34 +52,37 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
     const breadcrumbs = figure.querySelector<HTMLElement>('[data-sunburst-breadcrumbs]');
     const branches = figure.querySelector<HTMLElement>('[data-sunburst-branches]');
     const hint = figure.querySelector<HTMLElement>('[data-sunburst-hint]');
-    const summary = figure.querySelector<HTMLElement>('[data-case-results-summary]');
-    const results = [...figure.querySelectorAll<HTMLElement>('[data-case-result]')];
     const reset = figure.querySelector<HTMLButtonElement>('[data-visual-action="sunburst-reset"]');
+    const investigation = figure.querySelector<HTMLButtonElement>('[data-visual-action="sunburst-investigation"]');
     function button(node: SunburstNode, current = false) {
       const element = document.createElement('button');
       element.type = 'button'; element.dataset.visualAction = `sunburst-select:${node.id}`;
       element.textContent = `${node.label} (${node.count})`;
-      element.setAttribute('aria-controls', `${host.id} ${host.id}-results`);
+      element.setAttribute('aria-controls', `${host.id} case-search-results`);
       if (current) element.setAttribute('aria-current', 'true');
       return element;
     }
-    function select(id: string) {
+    function select(id: string, publish = false) {
+      if (publish) { caseSearchController.select(data, sunburstSelection(hierarchy, id).node); return; }
       selected = sunburstSelection(hierarchy, id);
       if (ready) {
         const item = series.getDataItemById(selected.focus.id);
         if (item) series.set('selectedDataItem', item);
         for (const slice of series.slices) { slice.markDirtyKey('strokeWidth'); slice.markDirtyKey('strokeOpacity'); }
       }
-      for (const result of results) result.hidden = !selected.caseIds.has(result.dataset.caseResult!);
-      if (summary) summary.textContent = `Showing ${selected.node.count} of ${data.total} ${data.kind === 'example' ? 'example ' : ''}cases${selected.node === hierarchy ? '' : `: ${selected.ancestors.slice(1).map(({ label }) => label).join(' → ')}`}.`;
-      if (reset) reset.disabled = selected.node === hierarchy;
       // Keep keyboard navigation on the same control when rebuilding breadcrumbs.
       const active = document.activeElement;
       const action = active instanceof HTMLElement && (breadcrumbs?.contains(active) || branches?.contains(active)) ? active.dataset.visualAction : undefined;
-      breadcrumbs?.replaceChildren(...selected.ancestors.map((node) => button(node, node === selected.node)));
+      breadcrumbs?.replaceChildren(...selected.ancestors.flatMap((node, index) => {
+        const crumb = button(node, node === selected.node);
+        if (!index) return [crumb];
+        const separator = document.createElement('span');
+        separator.textContent = '→'; separator.setAttribute('aria-hidden', 'true');
+        return [separator, crumb];
+      }));
       branches?.replaceChildren(...(selected.node.children ?? []).map((node) => button(node)));
       if (hint) hint.textContent = selected.node.children?.length
-        ? 'Choose a slice or group to narrow these results.'
+        ? 'Choose a child slice or group to refine the shared case search.'
         : 'This is the deepest recorded classification. Choose a parent group or reset to broaden the results.';
       if (action) {
         const replacement = [...figure.querySelectorAll<HTMLButtonElement>('[data-visual-action]')].find((element) => element.dataset.visualAction === action);
@@ -88,20 +93,27 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
     // leaf selection so filtering, breadcrumbs, and restored state cannot diverge.
     series.events.once('datavalidated', () => { ready = true; select(selected.node.id); });
     series.data.setAll([hierarchy]);
-    select(selected.node.id);
+    unsubscribe = caseSearchController.subscribe(({ filters, term }) => {
+      const selection = chartSearchSelection(data, hierarchy, filters);
+      figure.dataset.searchActive = String(selection.active);
+      investigation?.setAttribute('aria-pressed', String(selection.active));
+      if (reset) reset.disabled = !term && !Object.keys(filters).length;
+      select(selection.node.id);
+    });
     resize = new ResizeObserver(() => tooltip.label.set('maxWidth', Math.min(330, Math.max(160, host.clientWidth - 40))));
     resize.observe(host);
     return {
       state: () => ({ sunburstNode: selected.node.id }), visible() {},
       motion(enabled) { series.set('animationDuration', enabled ? settings.sunburst.transitionDuration : 0); },
       action(action) {
-        if (action === 'sunburst-reset') select(hierarchy.id);
+        if (action === 'sunburst-reset') caseSearchController.reset();
+        else if (action === 'sunburst-investigation') select(hierarchy.id, true);
         else if (action.startsWith('sunburst-select:')) {
           const id = action.slice('sunburst-select:'.length);
-          if (nodes.some((node) => node.id === id)) select(id);
+          if (nodes.some((node) => node.id === id)) select(id, true);
         }
       },
-      dispose() { resize?.disconnect(); root.dispose(); },
+      dispose() { unsubscribe?.(); resize?.disconnect(); root.dispose(); },
     };
-  } catch (error) { resize?.disconnect(); root.dispose(); throw error; }
+  } catch (error) { unsubscribe?.(); resize?.disconnect(); root.dispose(); throw error; }
 }

@@ -1,7 +1,7 @@
 ---
 slug: professional-investigations
 publication_status: draft
-title: Professional investigations
+title: Litigation Support Investigations
 description_short: Non-criminal investigations involving civil, commercial, and personal
   matters.
 categories:
@@ -17,4 +17,4 @@ editorial_note: Category definitions only. Counts and percentages are calculated
   eligible individual case records.
 ---
 
-Explore non-criminal investigation case records by selecting a category.
+Explore litigation support investigation case records by selecting a category.

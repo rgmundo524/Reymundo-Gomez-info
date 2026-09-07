@@ -1,0 +1,15 @@
+---
+import type { SunburstNode } from '../lib/case-sunburst';
+type Props = { nodes: SunburstNode[] };
+const { nodes } = Astro.props;
+---
+<ul class="classification-tree">
+  {nodes.map((node) => <li>
+    <span>{node.label} <span class="meta">({node.count})</span></span>
+    {node.children?.length && <Astro.self nodes={node.children} />}
+  </li>)}
+</ul>
+<style>
+  .classification-tree { padding-left: 1rem; margin: .5rem 0; border-left: 1px solid var(--line); }
+  li { margin-block: .6rem; }
+</style>

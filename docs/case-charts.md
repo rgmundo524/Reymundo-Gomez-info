@@ -4,29 +4,48 @@ Every count comes from `content/cases/*.md`. Chart Markdown defines primary
 category IDs, labels, and explanatory copy. Case Markdown supplies each case’s
 classification path. No stored counts or percentages are needed.
 
-## Two independent sunburst filters
+## Two sunbursts, one Pagefind search
 
-Criminal investigations and Professional investigations each have an amCharts 5
-[drill-down sunburst](https://www.amcharts.com/demos/drill-down-sunburst-chart/)
-and their own matching case list directly below it. These replace the earlier
-broken-slice pies. Each investigation has one canvas, with no SVG overlay.
+Criminal investigations and Litigation Support Investigations each have an
+amCharts 5 [drill-down sunburst](https://www.amcharts.com/demos/drill-down-sunburst-chart/).
+Both charts control the **same Pagefind search and result list**. There are no
+per-chart result lists. The investigation file keeps its existing
+`professional-investigations` slug so case references and URLs remain stable;
+its displayed name is Litigation Support Investigations.
+
+Casework is ordered as follows:
+
+1. Summary statistics and the expandable detailed statistics.
+2. The two sunburst charts.
+3. Shared search, filters, and Pagefind results.
+4. The force-directed case explorer.
 
 - The inner ring shows primary categories, such as Pig butchering or Divorce.
-- The next ring shows subcategories. Each further path level adds another ring.
-- Selecting a branch zooms into it and shows all its descendant cases below.
+- Subcategories are children of that category. Each further level is nested
+  under the previous one and adds another ring, never an equal sibling.
+- Selecting a branch zooms into it and filters Pagefind to all its descendants.
 - Selecting a terminal slice filters to that exact classification; its parent
   remains in view because there are no deeper layers to reveal.
-- Breadcrumbs return to any ancestor. The group buttons provide the same
-  filtering as the slices, including keyboard access and small-screen use.
-- **Reset filters** returns that investigation to its initial chart and all its
-  cases. Selecting one investigation never changes the other.
-- Theme changes retain the current selection. System reduced-motion preferences
-  disable chart transitions.
+- Breadcrumbs return to ancestors; group buttons offer the same filtering as
+  the slices. Expand Classification hierarchy in the count table to read the
+  complete nested structure.
+- **Filter by this investigation** selects the full investigation. Switching
+  investigations through a chart or dropdown clears the old category path,
+  network, and status filters. The new chart selection becomes active; the
+  previous chart returns to its overview.
+- Refining within one investigation preserves the typed query and other filters.
+  Switching investigations also preserves the typed query.
+- **Reset search and filters** clears the query and every filter, returns both
+  charts to their initial views, and shows all eligible cases in Pagefind.
+- Native Investigation and Category dropdowns update chart selection as well.
+  Single selection prevents combining incompatible classification branches.
+- Theme changes preserve shared filter state. Reduced motion disables chart
+  transitions. Filters clicked before Pagefind loads are queued and applied.
 
-The sunburst results and Pagefind search are separate ways to browse the same
-eligible case records. Sunburst selections update their own lists; they do not
-change the Pagefind query or its dropdowns. Each case title links to its full
-existing case details. The force-directed explorer below remains available.
+All results have their existing case-detail links. Examples retain their explicit
+labels and dataset filter. Charts and statistical totals always describe their
+whole investigation dataset; the Pagefind result count reflects additional text,
+network, and status filtering.
 
 ## Markdown classification paths
 
@@ -65,7 +84,11 @@ Investment Platform still shows both the shorter and deeper cases.
 
 Category pages group cases by the first subcategory and display the complete
 classification path in each case’s facts. Existing category and case anchors
-remain stable. Pagefind indexes every level of the path.
+remain stable. Pagefind indexes every ancestor prefix of the complete path under the internal
+`CasePath` filter. For example, Fake Exchange is indexed beneath Investment
+Platform and Pig butchering, not as an unrelated tag. The same label under a
+different parent cannot match that path. An exact terminal token distinguishes
+shorter paths from their deeper descendants.
 
 ## Counting and publication rules
 
@@ -75,8 +98,8 @@ remain stable. Pagefind indexes every level of the path.
   numeric values to amCharts, preventing parent/child double counting.
 - Each investigation has its own denominator. Tooltips explicitly show shares
   of the entire investigation and the parent group. Zoom changes the visible
-  branch, while the result summary shows the selected count out of the full
-  investigation count. The count tables always describe the entire investigation.
+  branch, while Pagefind reports the matching result count. The count tables
+  always describe the entire investigation.
 - Zero cases means zero slices. Empty primary categories remain in the count
   tables, with links to their category pages.
 - Real case studies and illustrative examples stay in separate datasets.
@@ -86,7 +109,7 @@ remain stable. Pagefind indexes every level of the path.
   selected display fields, never editorial notes or unused content blocks.
 
 The fictional examples include two paths below Pig butchering and a deep
-professional path below Divorce. They demonstrate navigation, not real findings.
+litigation support path below Divorce. They demonstrate navigation, not real findings.
 
 ## Appearance and fallback
 
@@ -94,10 +117,10 @@ The sunbursts remain transparent so the particle background shows through.
 The force-directed explorer retains a solid theme-matched background for wheel,
 pinch, and drag interaction. amCharts attribution remains visible.
 
-Charts load near the viewport. Case summaries and expandable count tables are
-server-rendered and available without JavaScript or when chart loading fails.
-Printing includes all case summaries, even if the on-screen list was filtered.
-Small slices retain tooltip and equivalent HTML button navigation.
+Charts load near the viewport. Expandable count tables, the nested hierarchy,
+and the explorer’s text case list are server-rendered and remain available
+without JavaScript or when chart/search loading fails. Small slices retain
+tooltips and equivalent HTML button navigation.
 
 Edit `src/config/case-visuals.json`:
 
@@ -130,3 +153,9 @@ adapts the [Force-Directed Tree with Animated Bullets](https://www.amcharts.com/
 Read [the case record guide](case-tracker.md) for field definitions and publishing
 rules. All visualizations use the existing amCharts dependency without a new
 client framework, database, or remote chart service.
+
+The Pagefind bridge uses its [documented component instance API](https://pagefind.app/docs/custom-components/).
+`src/lib/case-search-filters.ts` owns shared selection and filter normalization;
+`src/scripts/case-search.ts` connects it to the existing Pagefind instance.
+Dropdown corrections are deferred until after Pagefind’s originating event so
+an older request cannot supersede a newer selection.

@@ -1,47 +1,37 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { readable } from '../lib/cases';
 import { formatShare } from '../lib/charts';
 import type { CaseSunburstData } from '../lib/case-visuals';
+import { caseSunburst } from '../lib/case-sunburst';
+import CaseClassificationList from './CaseClassificationList.astro';
 
 type Props = { entry: CollectionEntry<'charts'>; visual: CaseSunburstData };
 const { entry, visual } = Astro.props;
 const { kind, total } = visual;
 const id = `case-sunburst-${kind}-${visual.id}`;
 const { Content } = await render(entry);
+const hierarchy = caseSunburst(visual);
 ---
 
-<figure class="case-chart" data-case-visual="sunburst" aria-labelledby={`${id}-title`}>
+<figure class="case-chart" data-case-visual="sunburst" data-search-active="false" aria-labelledby={`${id}-title`}>
   <figcaption>
     <h3 id={`${id}-title`}>{visual.title}</h3>
     <p class="chart-description">{entry.data.description_short}</p>
-    <p class="chart-hint">Select a category, then follow the outer layers to narrow the cases below.</p>
+    <p class="chart-hint">Select a category, then follow its nested subcategories to filter the shared search below.</p>
     <p class="chart-total">{total.toLocaleString('en-US')} {kind === 'example' ? 'example cases' : 'recorded cases'}</p>
   </figcaption>
   {total > 0 ? <div data-visual-panel hidden>
     <div class="case-visual-controls">
-      <button type="button" data-visual-action="sunburst-reset" aria-controls={`${id} ${id}-results`}>Reset filters</button>
+      <button type="button" data-visual-action="sunburst-investigation" aria-controls="case-search-results" aria-pressed="false">Filter by this investigation</button>
+      <button type="button" data-visual-action="sunburst-reset" aria-controls={`${id} case-search-results`}>Reset search and filters</button>
     </div>
+    <p class="chart-hint">Current classification path</p>
     <nav class="case-visual-controls sunburst-breadcrumbs" data-sunburst-breadcrumbs aria-label={`${visual.title} filter path`}></nav>
     <div id={id} class="case-sunburst-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-hint`}></div>
     <p class="chart-hint" id={`${id}-hint`} data-sunburst-hint>Choose a slice or group to narrow these results.</p>
     <div class="case-visual-controls" data-sunburst-branches role="group" aria-label="Narrow results"></div>
   </div> : <p class="chart-hint">The chart will appear as case records are added.</p>}
   <p class="chart-hint" data-visual-status role="status" hidden></p>
-  <section class="sunburst-results" id={`${id}-results`} aria-labelledby={`${id}-results-title`}>
-    <h4 id={`${id}-results-title`}>Matching cases</h4>
-    <p class="chart-hint" data-case-results-summary role="status" aria-atomic="true">Showing {total} of {total} {kind === 'example' ? 'example ' : ''}cases.</p>
-    <ul class="sunburst-case-list">
-      {visual.cases.map((study) => <li data-case-result={study.id}>
-        <article>
-          <h5><a href={study.url}>{study.title}</a></h5>
-          <p class="chart-hint">{study.path.map((part, index) => index === 0 ? visual.categories.find(({ id }) => id === part)?.label : readable(part)).join(' → ')}</p>
-          <p>{study.description}</p>
-        </article>
-      </li>)}
-    </ul>
-    {!total && <p>No case records yet.</p>}
-  </section>
   <details class="chart-counts"><summary>All category counts and shares</summary>
       <table class="chart-legend">
         <caption>Counts and shares within {visual.title.toLowerCase()}</caption>
@@ -49,9 +39,9 @@ const { Content } = await render(entry);
         <tbody>
           {visual.categories.map((category) => <tr>
             <th scope="row"><a class="category-link" href={category.url}><span class="swatch case-category-color" style={`--case-light:${category.light};--case-dark:${category.dark}`} aria-hidden="true"></span>{category.label}</a>
-              {category.subcategories.length > 0 && <details class="subcategory-list"><summary>Subcategories</summary><ul>
-                {category.subcategories.map((subcategory) => <li><a href={subcategory.url}>{subcategory.label}</a><span>{subcategory.count} · {formatShare(subcategory.percentage)}</span></li>)}
-              </ul></details>}
+              {category.subcategories.length > 0 && <details class="subcategory-list"><summary>Classification hierarchy</summary>
+                <CaseClassificationList nodes={hierarchy.children?.find(({ path }) => path[0] === category.id)?.children ?? []} />
+              </details>}
             </th>
             <td>{category.count.toLocaleString('en-US')}</td>
             <td>{total > 0 ? formatShare(category.percentage) : '—'}</td>
@@ -84,13 +74,6 @@ const { Content } = await render(entry);
   .chart-caption :global(p:last-child) { margin-bottom: 0; }
   .chart-counts { margin-block: 1.5rem; }
   .chart-counts > summary { cursor: pointer; padding-block: .75rem; }
-  .sunburst-results { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1.5rem; }
-  .sunburst-results h4 { font-size: 1.25rem; margin: 0 0 .5rem; }
-  .sunburst-case-list { list-style: none; padding: 0; margin: 0; }
-  .sunburst-case-list li { border-bottom: 1px solid var(--line); padding-block: 1.25rem; }
-  .sunburst-case-list h5 { font-size: 1.1rem; margin: 0; }
-  .sunburst-case-list h5 a { color: var(--accent); }
-  .sunburst-case-list p { margin-block: .5rem 0; overflow-wrap: anywhere; }
   .subcategory-list { font-size: .875rem; font-weight: 400; color: var(--muted); }
   .subcategory-list summary { cursor: pointer; padding-block: .4rem; }
   .subcategory-list ul { padding-left: 1rem; margin: .25rem 0 .5rem; }

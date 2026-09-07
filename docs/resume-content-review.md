@@ -59,7 +59,7 @@ witness chart likewise has conflicting proportions and counts.
 
 Those provisional aggregate values are no longer used by the website. Each
 case record now contributes exactly one count to its chart and category.
-Professional investigations covers non-criminal work, as requested by the owner.
+Litigation Support Investigations covers non-criminal work, as requested by the owner.
 The current 13 examples yield 8 criminal and 5 professional cases. None of these
 fictional details assert actual historical engagement facts. Build out real
 `case_study` records to establish a documented historical dataset. See

@@ -1,7 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import CaseChart from './CaseChart.astro';
-import CaseExplorer from './CaseExplorer.astro';
 import { caseStatistics, readable, type CaseStudy, type CaseKind } from '../lib/cases';
 import { caseVisuals } from '../lib/case-visuals';
 import { includeDrafts } from '../lib/content';
@@ -20,8 +19,6 @@ const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'curre
     <div><dt>Completed</dt><dd>{stats.completed}</dd></div>
     <div><dt>Networks involved</dt><dd>{stats.networks.length}</dd></div>
   </dl>
-  <div class="case-chart-grid">{visuals.groups.map((visual) => <CaseChart entry={charts.find(({ id }) => id === visual.id)!} visual={visual} />)}</div>
-  <CaseExplorer data={{ kind, total: visuals.total, tree: visuals.tree }} />
   {studies.length > 0 && <>
     <details class="statistics-details"><summary>Explore case statistics</summary>
       <div class="statistics-grid">
@@ -37,9 +34,5 @@ const money = (amount: number) => new Intl.NumberFormat('en-US', { style: 'curre
       <p class="meta">Reported losses and assets reviewed measure different things. They are not combined and do not describe recoveries.</p>
     </details>
   </>}
+  <div class="case-chart-grid">{visuals.groups.map((visual) => <CaseChart entry={charts.find(({ id }) => id === visual.id)!} visual={visual} />)}</div>
 </div>
-<script>
-  import { mountCaseVisuals } from '../scripts/case-visuals';
-  const cleanup = mountCaseVisuals();
-  if (import.meta.hot) import.meta.hot.dispose(cleanup);
-</script>

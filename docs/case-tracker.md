@@ -56,7 +56,7 @@ those phases as new cases. Files may live in subfolders; discovery is recursive.
 ## Derived statistics
 
 - Total records, active cases, completed cases, and distinct networks.
-- Separate criminal/professional chart totals, with category and subcategory counts.
+- Separate criminal/litigation-support chart totals, with category and subcategory counts.
 - Case counts by opening year, including an Undated bucket, and by status.
 - Counts by network and service. A case can appear in several of these groups,
   so these counts are not parts of one exclusive total.
@@ -87,7 +87,7 @@ The examples include `hacks → bridge-exploit / protocol-exploit` and
 null to demonstrate how unclassified records stay in the totals. Primary
 categories remain centrally defined; adding a subcategory needs only the case file.
 
-The sunbursts filter their matching case lists at every level. See the
+Both sunbursts filter one shared Pagefind result list at every level. See the
 [chart guide](case-charts.md#markdown-classification-paths) for a copyable nested
 path. `case_011.md` and `example-investment-scam-tracing.md` share Investment
 Platform → Fake Exchange, then split into Withdrawal Fee and Account Freeze.

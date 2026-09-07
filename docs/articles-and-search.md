@@ -33,7 +33,11 @@ article listing. A starter introduction remains a draft for review.
 ## Search casework
 
 Pagefind supplies full-text search and filters for dataset, investigation type,
-category, network, and status on Casework. Each result represents one case and
+category, network, and status on Casework. The two sunbursts above the search
+control this same result list using full classification paths. Switching between
+Criminal investigations and Litigation Support Investigations clears the old
+branch and other filters while retaining the typed query. Reset search and
+filters clears both. Each result represents one case and
 links directly to that case's existing category-page anchor. Examples carry an
 explicit `Example:` title and their own dataset filter.
 
@@ -64,7 +68,11 @@ The ordinary charts and case lists remain usable without JavaScript.
 Implementation: `src/lib/search.ts` selects case fields;
 `scripts/search-index.ts` builds and refreshes indexes;
 `integrations/case-search.ts` connects Astro's development and build hooks;
-`src/components/CaseSearch.astro` uses Pagefind's supplied web components.
+`src/components/CaseSearch.astro` uses Pagefind's supplied web components;
+`src/lib/case-search-filters.ts` and `src/scripts/case-search.ts` synchronize
+chart selections, native dropdowns, and the one Pagefind instance. The hidden
+`CasePath` filter indexes ancestry prefixes and exact terminal classifications,
+so deeper categories never become unrelated peer tags.
 
 ## Optional editor later
 

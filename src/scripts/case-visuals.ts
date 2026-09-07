@@ -56,16 +56,13 @@ export function mountCaseVisuals() {
         // The discriminant selects the matching factory and serialized payload.
         chart = isTree
           ? (factory as typeof import('../lib/case-tree-chart').createCaseTree)(host, figure, data as CaseTreeData, enabled(), inViewport && !document.hidden, saved)
-          : (factory as typeof import('../lib/case-sunburst-chart').createCaseSunburst)(host, figure, data as CaseSunburstData, enabled(), saved);
+          : (factory as typeof import('../lib/case-sunburst-chart').createCaseSunburst)(host, figure, data as CaseSunburstData, enabled());
         if (status) status.hidden = true;
         motion();
       } catch (error) {
         if (revision !== generation || abort.signal.aborted) return;
         chart?.dispose(); chart = undefined;
         panel.hidden = true;
-        for (const result of figure.querySelectorAll<HTMLElement>('[data-case-result]')) result.hidden = false;
-        const summary = figure.querySelector<HTMLElement>('[data-case-results-summary]');
-        if (summary) summary.textContent = `Showing all ${data.total} cases in this investigation.`;
         if (status) {
           status.hidden = false;
           status.textContent = 'The interactive chart is unavailable. Use the case links below.';

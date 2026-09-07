@@ -2,6 +2,7 @@ import type { ContentRecord } from '../content/schemas';
 import { eligibleCases, readable, statusLabels, subcategoryPath } from './cases';
 import { categoryUrl } from './charts';
 import { mdxSearchText } from './mdx-text';
+import { classificationKeys, datasetLabel } from './case-search-filters';
 
 // Explicitly select rendered fields. Editorial notes and unused blocks never enter search.
 export function caseSearchRecords(records: ContentRecord[], includeDrafts: boolean) {
@@ -13,7 +14,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
   return eligibleCases(charts, cases, includeDrafts).map(({ id, data, body, file }) => {
     const chart = charts.find((chart) => chart.id === data.chart)!;
     const category = chart.data.categories.find(({ id }) => id === data.category)!.label;
-    const dataset = data.content_kind === 'example' ? 'Illustrative examples' : 'Case studies';
+    const dataset = datasetLabel(data.content_kind);
     return {
       url: `${categoryUrl(data.chart, data.category)}#${id}`,
       language: 'en',
@@ -27,7 +28,7 @@ export function caseSearchRecords(records: ContentRecord[], includeDrafts: boole
       },
       filters: {
         Dataset: [dataset], Investigation: [chart.data.title], Category: [category],
-        Subcategory: subcategoryPath({ id, data }).map(readable),
+        CasePath: classificationKeys(data.chart, [data.category, ...subcategoryPath({ id, data })]),
         Network: data.networks.length ? data.networks.map(readable) : ['Not recorded'],
         Status: [statusLabels[data.case_status]],
       },
