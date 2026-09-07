@@ -50,8 +50,6 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
     series.labels.template.adapters.add('text', (_text, target) => context(target)?.label ?? '');
 
     const breadcrumbs = figure.querySelector<HTMLElement>('[data-sunburst-breadcrumbs]');
-    const branches = figure.querySelector<HTMLElement>('[data-sunburst-branches]');
-    const hint = figure.querySelector<HTMLElement>('[data-sunburst-hint]');
     const reset = figure.querySelector<HTMLButtonElement>('[data-visual-action="sunburst-reset"]');
     const investigation = figure.querySelector<HTMLButtonElement>('[data-visual-action="sunburst-investigation"]');
     function button(node: SunburstNode, current = false) {
@@ -72,7 +70,7 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
       }
       // Keep keyboard navigation on the same control when rebuilding breadcrumbs.
       const active = document.activeElement;
-      const action = active instanceof HTMLElement && (breadcrumbs?.contains(active) || branches?.contains(active)) ? active.dataset.visualAction : undefined;
+      const action = active instanceof HTMLElement && breadcrumbs?.contains(active) ? active.dataset.visualAction : undefined;
       breadcrumbs?.replaceChildren(...selected.ancestors.flatMap((node, index) => {
         const crumb = button(node, node === selected.node);
         if (!index) return [crumb];
@@ -80,10 +78,6 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
         separator.textContent = '→'; separator.setAttribute('aria-hidden', 'true');
         return [separator, crumb];
       }));
-      branches?.replaceChildren(...(selected.node.children ?? []).map((node) => button(node)));
-      if (hint) hint.textContent = selected.node.children?.length
-        ? 'Choose a child slice or group to refine the shared case search.'
-        : 'This is the deepest recorded classification. Choose a parent group or reset to broaden the results.';
       if (action) {
         const replacement = [...figure.querySelectorAll<HTMLButtonElement>('[data-visual-action]')].find((element) => element.dataset.visualAction === action);
         (replacement ?? breadcrumbs?.querySelector<HTMLButtonElement>('[aria-current]'))?.focus({ preventScroll: true });

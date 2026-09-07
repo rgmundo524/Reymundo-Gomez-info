@@ -37,7 +37,10 @@ category, network, and status on Casework. The two sunbursts above the search
 control this same result list using full classification paths. Switching between
 Criminal investigations and Litigation Support Investigations clears the old
 branch and other filters while retaining the typed query. Reset search and
-filters clears both. Each result represents one case and
+filters clears both and hides the results again. The input and filter tools are
+visible immediately; result counts and records appear only when a nonblank query
+or filter is active. Whitespace-only queries do not expand an unfiltered list.
+Each result represents one case and
 links directly to that case's existing category-page anchor. Examples carry an
 explicit `Example:` title and their own dataset filter.
 

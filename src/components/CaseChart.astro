@@ -27,9 +27,7 @@ const hierarchy = caseSunburst(visual);
     </div>
     <p class="chart-hint">Current classification path</p>
     <nav class="case-visual-controls sunburst-breadcrumbs" data-sunburst-breadcrumbs aria-label={`${visual.title} filter path`}></nav>
-    <div id={id} class="case-sunburst-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`} aria-describedby={`${id}-hint`}></div>
-    <p class="chart-hint" id={`${id}-hint`} data-sunburst-hint>Choose a slice or group to narrow these results.</p>
-    <div class="case-visual-controls" data-sunburst-branches role="group" aria-label="Narrow results"></div>
+    <div id={id} class="case-sunburst-canvas" data-visual-host role="group" aria-labelledby={`${id}-title`}></div>
   </div> : <p class="chart-hint">The chart will appear as case records are added.</p>}
   <p class="chart-hint" data-visual-status role="status" hidden></p>
   <details class="chart-counts"><summary>All category counts and shares</summary>
@@ -49,8 +47,8 @@ const hierarchy = caseSunburst(visual);
         </tbody>
         <tfoot><tr><th scope="row">Total</th><td>{total.toLocaleString('en-US')}</td><td>{total > 0 ? '100%' : '—'}</td></tr></tfoot>
       </table>
-  </details>
       <div class="chart-caption"><Content /></div>
+  </details>
   {total > 0 && <script is:inline type="application/json" data-visual-data set:html={JSON.stringify(visual).replace(/</g, '\\u003c')}></script>}
 </figure>
 

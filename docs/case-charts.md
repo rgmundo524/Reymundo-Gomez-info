@@ -17,7 +17,7 @@ Casework is ordered as follows:
 
 1. Summary statistics and the expandable detailed statistics.
 2. The two sunburst charts.
-3. Shared search, filters, and Pagefind results.
+3. Shared search and filters; results appear only after a query or filter is applied.
 4. The force-directed case explorer.
 
 - The inner ring shows primary categories, such as Pig butchering or Divorce.
@@ -26,9 +26,10 @@ Casework is ordered as follows:
 - Selecting a branch zooms into it and filters Pagefind to all its descendants.
 - Selecting a terminal slice filters to that exact classification; its parent
   remains in view because there are no deeper layers to reveal.
-- Breadcrumbs return to ancestors; group buttons offer the same filtering as
-  the slices. Expand Classification hierarchy in the count table to read the
-  complete nested structure.
+- Breadcrumbs above the chart return to ancestors. Below each chart, only
+  **All category counts and shares** remains; the extra subcategory button rows
+  and instructions are removed. Its expandable table includes the complete
+  classification hierarchy and chart notes.
 - **Filter by this investigation** selects the full investigation. Switching
   investigations through a chart or dropdown clears the old category path,
   network, and status filters. The new chart selection becomes active; the
@@ -36,11 +37,17 @@ Casework is ordered as follows:
 - Refining within one investigation preserves the typed query and other filters.
   Switching investigations also preserves the typed query.
 - **Reset search and filters** clears the query and every filter, returns both
-  charts to their initial views, and shows all eligible cases in Pagefind.
+  charts to their initial views, and hides the result list again.
 - Native Investigation and Category dropdowns update chart selection as well.
   Single selection prevents combining incompatible classification branches.
 - Theme changes preserve shared filter state. Reduced motion disables chart
   transitions. Filters clicked before Pagefind loads are queued and applied.
+
+The search opens directly with its input and filter tools, without a visible
+heading or introductory instructions. Results, counts, and the active-selection
+controls remain hidden until a nonblank search term or a filter is applied.
+Clearing the last active criterion collapses that area again. Pagefind still
+preloads in the background to prepare the filter options.
 
 All results have their existing case-detail links. Examples retain their explicit
 labels and dataset filter. Charts and statistical totals always describe their
@@ -120,7 +127,7 @@ pinch, and drag interaction. amCharts attribution remains visible.
 Charts load near the viewport. Expandable count tables, the nested hierarchy,
 and the explorer’s text case list are server-rendered and remain available
 without JavaScript or when chart/search loading fails. Small slices retain
-tooltips and equivalent HTML button navigation.
+tooltips and keyboard focus on the chart itself.
 
 Edit `src/config/case-visuals.json`:
 

@@ -223,6 +223,8 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .case-search > p { color: var(--muted); max-width: 46rem; }
 .case-search-filters { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
 .case-search pagefind-summary { display: block; margin-block: 1rem; }
+/* Pagefind's keyboard helper checks the link itself, not hidden ancestors. */
+[data-case-search-output][hidden] a { display: none !important; }
 /* Transparent serpentine chart over the shared particle canvas. */
 .experience-section { width: min(100% - 3rem, 80rem); }
 .career-timeline { margin: 0 0 3rem; background: transparent; }
