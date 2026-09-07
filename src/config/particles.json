@@ -1,0 +1,12 @@
+{
+  "count": {
+    "desktop": 42,
+    "mobile": 22
+  },
+  "size": {
+    "min": 1,
+    "max": 2.4
+  },
+  "connectionDistance": 140,
+  "speed": 0.35
+}

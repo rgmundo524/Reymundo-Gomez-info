@@ -142,8 +142,9 @@ See [articles, search, and future editor storage](docs/articles-and-search.md).
 
 Astro Icon supplies locally bundled Lucide icons. OpenGraph Canvas generates
 social sharing images from visible page, article, and case category content, using
-locally installed Inter fonts. The homepage has an optional tsParticles network
+locally installed Inter fonts. Every page has an optional tsParticles network
 background with a remembered pause control and support for reduced motion.
+Node count, size, connection distance, and speed are set in `src/config/particles.json`.
 See [MDX and visual integrations](docs/mdx-and-visuals.md) for editing examples and settings.
 
 Start with [the case record guide](docs/case-tracker.md) and `templates/cases.md`.

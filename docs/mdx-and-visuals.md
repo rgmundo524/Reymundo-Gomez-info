@@ -75,17 +75,40 @@ page's card because URL fragments are not separate pages.
 
 ## tsParticles
 
-The homepage introduction contains a decorative network of connected particles.
+Every page contains a decorative network of connected particles, mounted once in
+the shared site layout. The canvas stays fixed to the viewport, so long pages
+do not create an increasingly large animation or add more particles as you scroll.
 Pointer movement highlights nearby connections. The canvas does not intercept
 links or text selection. The animation follows light/dark mode, pauses outside
 the viewport or when the browser loses focus, and runs at a capped 30 frames
 per second. Small screens use fewer particles.
 
-The Pause animation button remembers the choice in browser storage. Users with
+The Pause animation button stays in the lower-right corner and remembers the
+choice across pages in browser storage. Users with
 reduced motion enabled receive no animation or particle-engine download. The
-engine also loads only on the homepage when animation is enabled.
+engine loads only when animation is enabled.
 
-Adjust colors, count, connection distance, and movement in `src/lib/particles.ts`.
+Adjust the animation in `src/config/particles.json`:
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `count.desktop` | `42` | Total nodes on screens wider than 760px |
+| `count.mobile` | `22` | Total nodes on screens up to 760px wide |
+| `size.min` | `1` | Smallest node radius in pixels |
+| `size.max` | `2.4` | Largest node radius in pixels |
+| `connectionDistance` | `140` | Maximum distance in pixels for ordinary connecting lines |
+| `speed` | `0.35` | Relative movement speed |
+
+Each node gets a size in the configured range. Set min and max to the same value
+for equal-sized nodes. For example, min `2` and max `4` makes larger nodes;
+desktop `70` and mobile `30` makes a denser network. These are examples, not
+automatic presets. Counts currently stay fixed for each screen class because
+automatic area-based density is disabled. More nodes and longer connections
+increase the rendering work; keep mobile counts lower.
+
+Save the settings and reload the page during development. Rebuild to update a
+static deployment. Colors, opacity, hover behavior, and the 30fps cap are in
+`src/lib/particles.ts` if you want to adjust those too.
 The lifecycle and pause control live in `src/components/ParticleBackground.astro`.
 For tsParticles 4, particle colors are under `particles.paint.color`; older
 `particles.color` examples do not apply. The network is decorative and uses no

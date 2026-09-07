@@ -1,7 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 ---
-<canvas id="hero-particles" class="hero-particles" aria-hidden="true" hidden></canvas>
+<canvas id="site-particles" class="site-particles" aria-hidden="true" hidden></canvas>
 <button class="particle-toggle" type="button" aria-pressed="false" hidden>
   <Icon name="lucide:pause" class="particle-pause" aria-hidden="true" />
   <Icon name="lucide:play" class="particle-play" aria-hidden="true" />
@@ -11,7 +11,7 @@ import { Icon } from 'astro-icon/components';
   import type { Container } from '@tsparticles/engine';
   import { particleOptions } from '../lib/particles';
 
-  const canvas = document.querySelector<HTMLCanvasElement>('#hero-particles');
+  const canvas = document.querySelector<HTMLCanvasElement>('#site-particles');
   const button = document.querySelector<HTMLButtonElement>('.particle-toggle');
   if (canvas && button) {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -23,7 +23,10 @@ import { Icon } from 'astro-icon/components';
     let paused = false;
     let queued = Promise.resolve();
     let engine: Promise<typeof import('@tsparticles/engine')['tsParticles']> | undefined;
-    try { paused = localStorage.getItem('reymundo-particles-paused') === 'true'; } catch {}
+    function readPausePreference() {
+      try { paused = localStorage.getItem('reymundo-particles-paused') === 'true'; } catch {}
+    }
+    readPausePreference();
 
     function updateButton() {
       button!.setAttribute('aria-pressed', String(paused));
@@ -77,9 +80,17 @@ import { Icon } from 'astro-icon/components';
       container?.destroy();
       container = undefined;
     }
-    function onPageShow(event: PageTransitionEvent) { if (event.persisted) { disposed = false; refresh(); } }
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) { disposed = false; readPausePreference(); refresh(); }
+    }
+    function onStorage(event: StorageEvent) {
+      if (event.key !== 'reymundo-particles-paused' && event.key !== null) return;
+      readPausePreference();
+      refresh();
+    }
     window.addEventListener('pagehide', onPageHide);
     window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('storage', onStorage);
     import.meta.hot?.dispose(() => {
       disposed = true;
       generation++;
@@ -91,6 +102,7 @@ import { Icon } from 'astro-icon/components';
       button.removeEventListener('click', toggleAnimation);
       window.removeEventListener('pagehide', onPageHide);
       window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('storage', onStorage);
     });
     refresh();
   }

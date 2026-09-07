@@ -3,7 +3,6 @@ import { getCollection, getEntry, render } from 'astro:content';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import Portrait from '../components/Portrait.astro';
 import { Icon } from 'astro-icon/components';
-import ParticleBackground from '../components/ParticleBackground.astro';
 import { contactLink, isVisible, pageProfile, selected } from '../lib/content';
 
 const home = await getEntry('pages', 'home');
@@ -21,7 +20,6 @@ const hasPage = (id: string) => visiblePages.some((entry) => entry.id === id);
 <SiteLayout title={page?.data.title ?? 'Site in preparation'} description={page?.data.description_short ?? 'A personal website in preparation.'} profile={profile}>
   {page && profile ? <>
     <section class="container hero">
-      <ParticleBackground />
       <div class="hero-copy">
         <p class="eyebrow">{profile.data.headline}</p>
         <h1>{profile.data.name}</h1>

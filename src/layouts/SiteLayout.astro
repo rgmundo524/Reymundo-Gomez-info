@@ -5,6 +5,7 @@ import '../styles/global.css';
 import { Icon } from 'astro-icon/components';
 import { navigationIcons } from '../lib/icons';
 import { openGraphPath } from '../lib/open-graph';
+import ParticleBackground from '../components/ParticleBackground.astro';
 
 type Props = {
   title: string;
@@ -60,6 +61,7 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
     </script>
   </head>
   <body>
+    <ParticleBackground />
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="container header-inner">
