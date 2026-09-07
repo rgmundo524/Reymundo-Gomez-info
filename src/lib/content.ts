@@ -1,5 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry, type CollectionKey } from 'astro:content';
 export { activePosition } from './experience';
+export { formatMonth, formatPeriods } from './dates';
 
 export const includeDrafts = import.meta.env.DEV || import.meta.env.CONTENT_PREVIEW === 'drafts';
 
@@ -28,14 +29,4 @@ export async function selected<K extends CollectionKey>(collection: K, ids: stri
     return entry;
   });
   return entries.filter(isVisible);
-}
-
-export function formatMonth(value: string): string {
-  const [year, month] = value.split('-').map(Number);
-  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)));
-}
-
-export function formatPeriods(periods: { start: string; end: string | null }[]): string {
-  return [...periods].sort((a, b) => a.start.localeCompare(b.start))
-    .map(({ start, end }) => `${formatMonth(start)} to ${end ? formatMonth(end) : 'Present'}`).join('; ');
 }

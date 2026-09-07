@@ -4,7 +4,8 @@ import { schemas, type ContentRecord } from '../src/content/schemas';
 import { loadContent, validateRecords } from '../scripts/content';
 import { categoryUrl, donutSlicePath, formatShare, summarizeCases } from '../src/lib/charts';
 import { caseRoutes, chartCategories, caseStatistics, eligibleCases } from '../src/lib/cases';
-import { sortExperience, isCurrentPosition } from '../src/lib/experience';
+import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
+import { formatPeriods } from '../src/lib/dates';
 
 const base = { slug: 'example', description_short: 'A short description.' };
 const job = { ...base, organization: 'Example', role: 'Investigator', periods: [{ start: '2022-09', end: '2025-06' }, { start: '2026-01', end: null }] };
@@ -177,4 +178,55 @@ test('job frontmatter controls order and supports a confirmed current role with 
   past.data.display_order = 5;
   assert.deepEqual(sortExperience([current, adc, past], '2026-09').map(({ id }) => id), ['past', 'adc', 'current']);
   assert.equal(schemas.experience.safeParse({ ...job, periods: [] }).success, false);
+});
+
+test('employment plot uses a shared month scale and preserves gaps and overlapping roles', () => {
+  const entries = [
+    { id: 'resumed', data: { display_order: 10, periods: [{ start: '2020-01', end: '2020-06' }, { start: '2021-09', end: null }] } },
+    { id: 'concurrent', data: { display_order: 20, periods: [{ start: '2020-04', end: '2021-05' }] } },
+  ];
+  const result = plotExperience(entries, '2021-12');
+  assert.equal(result.span, 24);
+  assert.deepEqual(result.ticks.map(({ year }) => year), [2020, 2021]);
+  assert.equal(result.present, 100);
+  const [resumed, concurrent] = result.rows;
+  assert.equal(resumed.periods.length, 2);
+  assert.equal(resumed.periods[0].left, 0);
+  assert.equal(resumed.periods[0].width, 25); // Six inclusive months of 24.
+  assert.equal(resumed.periods[1].left, 20 / 24 * 100);
+  assert.equal(resumed.periods[1].width, 4 / 24 * 100);
+  assert.ok(concurrent.periods[0].left < resumed.periods[0].left + resumed.periods[0].width);
+  assert.equal(concurrent.periods[0].width, 14 / 24 * 100);
+  assert.ok(resumed.periods[1].left > resumed.periods[0].left + resumed.periods[0].width);
+  entries[0].data.display_order = 30;
+  const reordered = plotExperience(entries, '2021-12');
+  assert.equal(reordered.rows[0].entry.id, 'concurrent');
+  assert.deepEqual(reordered.rows[1].periods, resumed.periods);
+});
+
+test('unknown and future start dates do not create fictitious employment bars', () => {
+  const undated = { id: 'adc', data: { active_position: true, periods: [] } };
+  assert.equal(plotExperience([undated], '2026-09').rows.length, 0);
+  assert.deepEqual(plotExperience([undated], '2026-09').undated.map(({ id }) => id), ['adc']);
+  const planned = plotExperience([{ id: 'future', data: { periods: [{ start: '2027-01', end: null }] } }], '2026-09');
+  assert.equal(planned.rows[0].periods[0].planned, true);
+  assert.equal(planned.rows[0].periods[0].scheduled, true);
+  assert.equal(formatPeriods([{ start: '2027-01', end: null }], '2026-09'), 'Starts Jan 2027');
+  assert.equal(formatPeriods([{ start: '2027-01', end: '2027-06' }], '2026-09'), 'Scheduled Jan 2027 to Jun 2027');
+  assert.equal(planned.rows[0].periods[0].current, false);
+  assert.equal(planned.rows[0].periods[0].width, 0);
+  assert.ok(planned.rows[0].periods[0].left < 100);
+  assert.ok(planned.present < planned.rows[0].periods[0].left);
+});
+
+test('open roles extend with the build month and single-month roles retain duration', () => {
+  const entries = [{ id: 'current', data: { periods: [{ start: '2026-01', end: null }] } }];
+  const september = plotExperience(entries, '2026-09');
+  const october = plotExperience(entries, '2026-10');
+  assert.equal(september.span, 9);
+  assert.equal(october.span, 10);
+  assert.equal(september.rows[0].periods[0].width, 100);
+  assert.equal(october.rows[0].periods[0].width, 100);
+  const single = plotExperience([{ id: 'one-month', data: { periods: [{ start: '2026-03', end: '2026-03' }] } }], '2026-09');
+  assert.equal(single.rows[0].periods[0].width, 1 / 9 * 100);
 });

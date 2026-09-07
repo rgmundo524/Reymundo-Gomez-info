@@ -103,10 +103,18 @@ Lower `display_order` values appear first. Existing positions use 10, 20, 30,
 40, 50, and 60; use an intermediate number to insert a role. Explicitly numbered
 jobs precede all unnumbered jobs. Among ties or unnumbered jobs, current roles
 come first, then the most recent start month, then slug for a stable tie-break.
-The timeline and job details always use the same sorted collection.
+The timeline rows and job details use the same ordering. Undated jobs appear in
+a separate linked list below the plot because their duration is not known.
 
-A role with separate periods retains each interval, so the timeline does not
-imply continuous employment across a gap. Timeline links jump to and open role
+The timeline plots horizontal bars against one shared calendar-year axis. Bar
+positions and lengths use the job periods, independently of `display_order`.
+Each month has equal width and the end month is included. A role with separate
+periods has separate bars, so gaps and concurrent roles remain visible. Open
+periods extend through the month when the site is built; rebuild to refresh that
+endpoint. A future open period is a start marker until it begins. The plot
+scrolls horizontally on small screens, keeping position labels visible.
+
+Timeline bars and position links jump to and open role
 details, including initial links and back/forward navigation. For ADC LTD NM,
 the current role is confirmed, but start dates and detailed duties are not yet
 known: `periods: []` and `active_position: true` avoid inventing them. Once dates

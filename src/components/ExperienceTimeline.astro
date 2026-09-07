@@ -1,20 +1,50 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { formatPeriods } from '../lib/content';
-import { isCurrentPosition } from '../lib/experience';
+import { formatMonth, formatPeriods } from '../lib/content';
+import { isCurrentPosition, plotExperience } from '../lib/experience';
 type Props = { entries: CollectionEntry<'experience'>[] };
 const { entries } = Astro.props;
+const timeline = plotExperience(entries);
 ---
-<nav class="experience-timeline" aria-label="Explore work history">
-  <ol>{entries.map((entry) => <li>
-    <a href={`#${entry.id}`} data-position-link>
-      <span class="timeline-dates">{entry.data.periods.length ? formatPeriods(entry.data.periods) : isCurrentPosition(entry) ? 'Current role' : 'Earlier role'}</span>
-      <strong>{entry.data.organization}</strong>
-      <span>{entry.data.role}</span>
-      {entry.data.periods.length > 0 && isCurrentPosition(entry) && <span class="timeline-current">Current</span>}
-    </a>
-  </li>)}</ol>
-</nav>
+<figure class="career-timeline" aria-labelledby="career-timeline-title">
+  <figcaption>
+    <div><h3 id="career-timeline-title">Roles over time</h3><p id="career-timeline-help">Select a position or a bar to read about the role. Overlapping bars show concurrent work.</p></div>
+    <div class="career-legend" aria-label="Timeline key"><span><i class="career-key" aria-hidden="true"></i>Past period</span><span><i class="career-key current" aria-hidden="true"></i>Current period</span>{timeline.rows.some(({ periods }) => periods.some(({ scheduled }) => scheduled)) && <span><i class="career-key scheduled" aria-hidden="true"></i>Scheduled period</span>}</div>
+  </figcaption>
+  {timeline.rows.length > 0 && <>
+    <div class="career-scroll" role="region" aria-label="Work history plotted by calendar month" aria-describedby="career-timeline-help career-timeline-note" tabindex="0">
+      <div class="career-plot">
+        <div class="career-axis-row" aria-hidden="true">
+          <div class="career-axis-label">Position</div>
+          <div class="career-axis">{timeline.ticks.map(({ year, left, alignEnd }) => <span class:list={{ 'align-end': alignEnd }} style={`left:${left}%`}>{year}</span>)}</div>
+        </div>
+        <ol class="career-rows">{timeline.rows.map(({ entry, periods }) => <li class="career-row">
+          <a class="career-position" href={`#${entry.id}`} data-position-link>
+            <strong>{entry.data.blocks.organization_short ?? entry.data.organization}</strong>
+            <span>{entry.data.role}</span>
+            <span class="career-dates">{formatPeriods(entry.data.periods)}</span>
+          </a>
+          <div class="career-track">
+            {timeline.ticks.map(({ left }) => <span class="career-gridline" style={`left:${left}%`} aria-hidden="true"></span>)}
+            <span class="career-present" style={`left:${timeline.present}%`} aria-hidden="true"></span>
+            {periods.map((period) => <a class:list={['career-period', { current: period.current, planned: period.planned, scheduled: period.scheduled }]}
+              href={`#${entry.id}`} data-position-link
+              style={`left:${period.left}%;width:${period.width}%`}
+              title={`${entry.data.organization}: ${period.planned ? `Starts ${formatMonth(period.start)}` : formatPeriods([period])}`}
+              aria-label={`${entry.data.organization}, ${entry.data.role}: ${period.planned ? `starts ${formatMonth(period.start)}` : formatPeriods([period])}. Read role details.`}>
+              {period.current && <span class="career-current-cap" aria-hidden="true"></span>}
+            </a>)}
+          </div>
+        </li>)}</ol>
+      </div>
+    </div>
+    <p class="career-note" id="career-timeline-note">Dates are plotted by month. Separate bars preserve breaks between periods. Open roles extend through {formatMonth(timeline.asOf)}. Scroll horizontally on smaller screens.</p>
+  </>}
+  {timeline.undated.length > 0 && <div class="career-undated">
+    <p>Start date not yet recorded</p>
+    <ul>{timeline.undated.map((entry) => <li><a href={`#${entry.id}`} data-position-link><strong>{entry.data.organization}</strong> · {entry.data.role}</a>{isCurrentPosition(entry) && <span class="timeline-current">Current role</span>}</li>)}</ul>
+  </div>}
+</figure>
 <script>
   function selectPosition() {
     for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-position-link]')) {

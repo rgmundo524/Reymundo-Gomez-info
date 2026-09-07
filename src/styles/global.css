@@ -170,13 +170,48 @@ li + li { margin-top: .4rem; }
 
 .theme-toggle { flex-shrink: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: .875rem; min-height: 2.75rem; padding: .45rem .75rem; border-radius: .2rem; }
 .theme-toggle[aria-pressed='true'] { border-color: var(--accent); }
-.experience-timeline { margin-block: 0 3rem; }
-.experience-timeline ol { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; padding: 0; margin: 0; }
-.experience-timeline li { margin: 0; min-width: 0; }
-.experience-timeline a { display: flex; flex-direction: column; gap: .4rem; height: 100%; padding: 1.15rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); color: var(--ink); text-decoration: none; background: var(--surface); }
-.experience-timeline a:hover, .experience-timeline a[aria-current='location'] { border-color: var(--accent); }
-.timeline-dates, .timeline-current { font-size: .875rem; color: var(--muted); }
-.timeline-current { color: var(--accent); }
+/* Month-scaled employment plot; the label column stays visible while the axis scrolls. */
+.career-timeline { margin: 0 0 3rem; }
+.career-timeline figcaption { display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem 2rem; margin-bottom: 1.25rem; }
+.career-timeline h3 { margin-bottom: .5rem; }
+.career-timeline figcaption p { margin: 0; color: var(--muted); max-width: 42rem; font-size: .9375rem; }
+.career-legend { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; font-size: .875rem; }
+.career-legend > span { display: inline-flex; align-items: center; gap: .5rem; }
+.career-key { width: 1.3rem; height: .8rem; display: inline-block; background: var(--muted); }
+.career-key.current { background: var(--accent); border-right: 3px solid var(--ink); }
+.career-scroll { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); scrollbar-color: var(--muted) var(--surface); scroll-padding-inline: 15rem 2rem; }
+.career-scroll:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.career-plot { min-width: 68rem; padding-right: 1.5rem; background: var(--paper); }
+.career-axis-row, .career-row { display: grid; grid-template-columns: 15rem minmax(0, 1fr); }
+.career-axis-label, .career-position { position: sticky; left: 0; z-index: 3; border-right: 1px solid var(--line); background: var(--surface); }
+.career-axis-label { padding: 1rem; font-size: .875rem; color: var(--muted); }
+.career-axis { position: relative; min-height: 3.5rem; border-bottom: 1px solid var(--line); }
+.career-axis > span { position: absolute; top: 1rem; padding-left: .35rem; font-size: .875rem; color: var(--muted); }
+.career-axis > span.align-end { transform: translateX(-100%); padding-left: 0; padding-right: .35rem; }
+.career-rows { list-style: none; margin: 0; padding: 0; }
+.career-row { margin: 0; border-bottom: 1px solid var(--line); }
+.career-row:last-child { border-bottom: 0; }
+.career-position { display: flex; flex-direction: column; gap: .3rem; padding: 1rem; text-decoration: none; color: var(--ink); }
+.career-position > span { font-size: .875rem; line-height: 1.4; }
+.career-position .career-dates { color: var(--muted); }
+.career-position:hover, .career-position[aria-current='location'] { color: var(--accent); }
+.career-position:focus-visible { outline-offset: -4px; }
+.career-track { position: relative; min-height: 7.5rem; }
+.career-gridline, .career-present { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px solid var(--line); pointer-events: none; }
+.career-present { border-left: 1px dashed var(--muted); }
+.career-period { display: block; position: absolute; top: calc(50% - 1rem); height: 2rem; background: var(--muted); border-radius: 2px; z-index: 1; }
+.career-period.current { background: var(--accent); }
+.career-period.scheduled, .career-key.scheduled { background: transparent; border: 2px dashed var(--accent); }
+.career-period.planned { width: 3px !important; background: var(--accent); }
+.career-current-cap { position: absolute; right: 0; top: -.2rem; bottom: -.2rem; border-right: 3px solid var(--ink); }
+.career-period:hover, .career-period[aria-current='location'] { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+.career-period:focus-visible { outline-color: var(--ink); }
+.career-note { color: var(--muted); font-size: .875rem; margin: .9rem 0 1.5rem; }
+.career-undated { padding: 1.2rem 1.5rem; border-left: 3px solid var(--accent); background: var(--surface); }
+.career-undated > p { font-size: .875rem; color: var(--muted); margin-bottom: .5rem; }
+.career-undated ul { margin: 0; padding: 0; list-style: none; }
+.career-undated li { display: flex; align-items: baseline; gap: .5rem 1.5rem; flex-wrap: wrap; }
+.timeline-current { color: var(--accent); font-size: .875rem; }
 .content-entry:target { border-left: 3px solid var(--accent); padding-left: 1.25rem; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1.75rem 0 2rem; }
 .stat-grid > div { padding: 1.25rem; background: var(--surface); border-top: 2px solid var(--accent); }
@@ -201,10 +236,10 @@ li + li { margin-top: .4rem; }
 .case-chart { background: var(--paper); }
 @media (max-width: 1040px) { .theme-toggle { margin-left: auto; } .statistics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
-  .experience-timeline ol { grid-template-columns: 1fr; gap: 0; border-left: 1px solid var(--line); margin-left: .5rem; }
-  .experience-timeline li { padding-bottom: 1rem; padding-left: 1rem; }
   .stat-grid, .case-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .case-index li { flex-direction: column; gap: .35rem; }
   .financial-stats { grid-template-columns: 1fr; }
 }
 @media (max-width: 420px) { .statistics-grid, .case-facts { grid-template-columns: 1fr; } .stat-grid { gap: .6rem; } .stat-grid > div { padding: 1rem; } }
+
+@media (max-width: 760px) { .career-axis-row, .career-row { grid-template-columns: 11rem minmax(0, 1fr); } .career-position, .career-axis-label { padding: .85rem; } .career-scroll { scroll-padding-inline-start: 11rem; } }
