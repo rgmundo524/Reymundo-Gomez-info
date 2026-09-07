@@ -1,6 +1,16 @@
 import * as am5 from '@amcharts/amcharts5';
 import am5themes_Dark from '@amcharts/amcharts5/themes/Dark';
 
+// Choose label ink from the actual fill, including brightened sunburst layers.
+export function caseLabelColor(fill: am5.Color) {
+  const channels = [fill.r, fill.g, fill.b].map((value) => {
+    const channel = value / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  return am5.color(luminance > 0.179 ? '#000000' : '#ffffff');
+}
+
 export function caseChartStyle(root: am5.Root, element: HTMLElement) {
   const dark = document.documentElement.dataset.theme === 'dark';
   const style = getComputedStyle(element);

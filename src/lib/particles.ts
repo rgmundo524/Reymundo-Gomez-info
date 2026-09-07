@@ -2,7 +2,7 @@ import type { ISourceOptions } from '@tsparticles/engine';
 import settings from '../config/particles.json';
 
 export function particleOptions(dark: boolean, compact: boolean, hover: boolean): ISourceOptions {
-  const color = dark ? '#c99baa' : '#7a3a50';
+  const color = dark ? '#c94c44' : '#7a3a50';
   return {
     fullScreen: false,
     fpsLimit: 30,

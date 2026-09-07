@@ -2,7 +2,7 @@ import { categoryUrl, formatShare, summarizeCases } from './charts';
 import { subcategoryPath, caseSubcategories, chartCategories, eligibleCases, readable, statusLabels, subcategoryAnchor, type Chart, type CaseStudy, type CaseKind } from './cases';
 
 const palette = [
-  ['#8b3049', '#efa5b6'], ['#386b94', '#91c9ee'], ['#30786f', '#8bd7c6'],
+  ['#8b3049', '#c94c44'], ['#386b94', '#91c9ee'], ['#30786f', '#8bd7c6'],
   ['#946925', '#edc078'], ['#70528e', '#c9afe9'], ['#607082', '#b3c4d6'],
 ];
 export type CaseNode = {

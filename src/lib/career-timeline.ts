@@ -16,9 +16,9 @@ export function monthTimestamp(month: string, offset = 0): number {
 }
 
 const palette = [
-  ['#7e2537', '#efa5b6'], ['#225f82', '#83c9ee'], ['#6c4f98', '#c4a7eb'],
+  ['#7e2537', '#c94c44'], ['#225f82', '#83c9ee'], ['#6c4f98', '#c4a7eb'],
   ['#287169', '#7ed5c7'], ['#92621a', '#e8bc72'], ['#455c9b', '#a5b9f4'],
-  ['#935326', '#f2b28c'], ['#745966', '#d6b6c6'],
+  ['#935326', '#f2b28c'], ['#745966', '#bb6552'],
 ];
 
 export function careerTimeline<T extends Position>(entries: T[], settings: TimelineSettings, asOf?: string) {

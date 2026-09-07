@@ -1,7 +1,7 @@
 import * as am5 from '@amcharts/amcharts5';
 import { Sunburst } from '@amcharts/amcharts5/hierarchy';
 import settings from '../config/case-visuals.json';
-import { caseChartStyle } from './case-chart-style';
+import { caseChartStyle, caseLabelColor } from './case-chart-style';
 import { caseSunburst, sunburstNodes, sunburstSelection, type SunburstNode } from './case-sunburst';
 import { caseSearchController, chartSearchSelection } from './case-search-filters';
 import type { CaseSunburstData, CaseVisual } from './case-visuals';
@@ -29,6 +29,7 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
       role: 'button', cursorOverStyle: 'pointer', tooltip, tooltipText: 'Filter cases', tooltipPosition: 'pointer',
     });
     const context = (item: { dataItem?: { dataContext?: unknown } }) => item.dataItem?.dataContext as SunburstNode | undefined;
+    const nodeColor = (node: SunburstNode) => am5.Color.brighten(am5.color(dark ? node.dark : node.light), Math.min(0.24, Math.max(0, node.path.length - 1) * 0.08));
     series.nodes.template.adapters.add('tooltipText', (_text, target) => context(target)?.tooltip ?? 'Filter cases');
     series.nodes.template.adapters.add('ariaLabel', (_text, target) => context(target)?.tooltip.replace(/\n/g, '. ') ?? 'Filter cases');
     series.nodes.template.events.on('click', ({ target }) => {
@@ -38,7 +39,7 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
     series.slices.template.setAll({ stroke: ink, strokeOpacity: 0.25, strokeWidth: 1, interactive: false });
     series.slices.template.adapters.add('fill', (fill, target) => {
       const node = context(target);
-      return node ? am5.Color.brighten(am5.color(dark ? node.dark : node.light), Math.min(0.24, Math.max(0, node.path.length - 1) * 0.08)) : fill;
+      return node ? nodeColor(node) : fill;
     });
     series.slices.template.adapters.add('strokeWidth', (_width, target) => context(target)?.id === selected.node.id ? 3 : 1);
     series.slices.template.adapters.add('strokeOpacity', (_opacity, target) => context(target)?.id === selected.node.id ? 1 : 0.25);
@@ -48,6 +49,10 @@ export function createCaseSunburst(host: HTMLElement, figure: HTMLElement, data:
       fill: dark ? am5.color('#142131') : am5.color('#ffffff'),
     });
     series.labels.template.adapters.add('text', (_text, target) => context(target)?.label ?? '');
+    series.labels.template.adapters.add('fill', (fill, target) => {
+      const node = context(target);
+      return dark && node ? caseLabelColor(nodeColor(node)) : fill;
+    });
 
     const breadcrumbs = figure.querySelector<HTMLElement>('[data-sunburst-breadcrumbs]');
     const reset = figure.querySelector<HTMLButtonElement>('[data-visual-action="sunburst-reset"]');

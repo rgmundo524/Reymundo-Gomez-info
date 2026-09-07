@@ -1,7 +1,7 @@
 import * as am5 from '@amcharts/amcharts5';
 import * as am5hierarchy from '@amcharts/amcharts5/hierarchy';
 import settings from '../config/case-visuals.json';
-import { caseChartStyle } from './case-chart-style';
+import { caseChartStyle, caseLabelColor } from './case-chart-style';
 import type { CaseNode, CaseTreeData, CaseVisual, CaseVisualState } from './case-visuals';
 
 export function createCaseTree(host: HTMLElement, figure: HTMLElement, data: CaseTreeData,
@@ -62,6 +62,10 @@ export function createCaseTree(host: HTMLElement, figure: HTMLElement, data: Cas
     tree.labels.template.adapters.add('text', (_text, label) => {
       const node = label.dataItem?.dataContext as CaseNode | undefined;
       return node ? `${node.label}${node.type === 'case' ? '' : `\n${node.count}`}` : '';
+    });
+    tree.labels.template.adapters.add('fill', (fill, label) => {
+      const node = label.dataItem?.dataContext as CaseNode | undefined;
+      return dark && node ? caseLabelColor(color(node)) : fill;
     });
 
     const bullets: { animation: { pause(): void; play(): void }; endpointsVisible(): boolean }[] = [];
