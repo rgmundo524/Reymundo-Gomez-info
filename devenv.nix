@@ -1,6 +1,7 @@
 { pkgs, ... }:
 
 {
+  # Set env.SITE_DATA_DIR in devenv.local.nix to use an external content checkout.
   packages = [ pkgs.git ];
 
   languages.javascript = {

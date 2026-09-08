@@ -8,6 +8,9 @@ portrait:
   alt: Reymundo Gómez wearing a dark blazer and white shirt.
   source_url: https://cipherblade.com/expert-witness/crypto-experts/
 blocks:
+  initials: RG
+  footer_tagline: Blockchain investigations & expert witness work
+  portrait_caption: Blockchain investigator
   directory_bio_short: >-
     Reymundo Gómez is a senior blockchain investigator and expert witness with experience
     in cryptocurrency tracing, forensic reporting, custom analytical tools, and litigation

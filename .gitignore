@@ -11,3 +11,4 @@ devenv.local.yaml
 !.env.example
 *.log
 .DS_Store
+.site-data/

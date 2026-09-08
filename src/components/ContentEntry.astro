@@ -16,9 +16,9 @@ const data = entry.data;
 const title = 'role' in data ? data.role : 'title' in data ? data.title : 'name' in data ? data.name : data.program;
 const Heading = grouped ? 'h4' : 'h3';
 const badge = entry.collection === 'credentials' ? entry.data.badge : undefined;
-const badgeFiles = import.meta.glob<{ default: ImageMetadata }>('../assets/credentials/*.{png,jpg,jpeg,webp,svg}');
-const badgeLoader = badge ? badgeFiles[`../assets/credentials/${badge.image}`] : undefined;
-if (badge && !badgeLoader) throw new Error(`Missing credential badge: src/assets/credentials/${badge.image}`);
+const badgeFiles = import.meta.glob<{ default: ImageMetadata }>('@site-assets/credentials/*.{png,jpg,jpeg,webp,svg}');
+const badgeLoader = badge ? Object.entries(badgeFiles).find(([file]) => file.endsWith(`/${badge.image}`))?.[1] : undefined;
+if (badge && !badgeLoader) throw new Error(`Missing credential badge: assets/credentials/${badge.image}`);
 const badgeImage = badgeLoader ? (await badgeLoader()).default : undefined;
 const credentialLinks = entry.collection === 'credentials' ? [
   ...(entry.data.course_url ? [{ label: 'Training program', url: entry.data.course_url }] : []),

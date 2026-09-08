@@ -52,7 +52,7 @@ portrait:
   source_url: https://cipherblade.com/expert-witness/crypto-experts/
 ```
 
-`image` names a local file in `src/assets/`. The portrait component checks that
+`image` names a local file in `assets/`. The portrait component checks that
 the file exists and preserves its dimensions. Replace the file to use a newer
 photo, or change the filename and alt text in `content/profile/reymundo.md`.
 
@@ -61,7 +61,7 @@ biography on the official CipherBlade expert page:
 
 - Source page: https://cipherblade.com/expert-witness/crypto-experts/
 - Original image: https://cipherblade.com/wp-content/uploads/2024/06/Remundo-Website-Portrait-v1.png
-- Local asset: `src/assets/reymundo-gomez.png`
+- Local asset: `assets/reymundo-gomez.png`
 
 The source page identifies the subject by name. It carries CipherBlade's
 copyright notice and does not specify a separate image reuse license. No AI

@@ -1,7 +1,8 @@
 import { createRequire } from 'node:module';
-import { getCollection } from 'astro:content';
+import { site } from 'astro:config/server';
+import { getCollection, getEntry } from 'astro:content';
 import { OGImageRoute } from 'astro-og-canvas';
-import { includeDrafts, isVisible } from '../../lib/content';
+import { includeDrafts, isVisible, pageProfile } from '../../lib/content';
 import { visibleArticles } from '../../lib/articles';
 import { caseRoutes } from '../../lib/cases';
 import { openGraphKey, previewText } from '../../lib/open-graph';
@@ -13,6 +14,8 @@ const [pageEntries, charts, cases] = await Promise.all([
 ]);
 const articleEntries = pageEntries.some(({ id, data }) => id === 'articles' && data.section_order.includes('articles'))
   ? await getCollection('articles') : [];
+const profile = await pageProfile(await getEntry('pages', 'home'));
+const attribution = [profile?.data.name, site ? new URL(site).host : undefined].filter(Boolean).join(' · ');
 const pages: Record<string, { title: string; description: string }> = {
   home: { title: 'Site in preparation', description: 'A personal website in preparation.' },
 };
@@ -28,7 +31,7 @@ const route = await OGImageRoute({
   pages,
   getImageOptions: (_path, page) => ({
     title: previewText(page.title, 130),
-    description: `${previewText(page.description, 210)}\n\nReymundo Gómez · reymundo-gomez.info`,
+    description: `${previewText(page.description, 210)}\n\n${attribution}`,
     fonts,
     bgGradient: [[20, 35, 52], [39, 48, 63]],
     border: { color: [166, 79, 100], width: 14, side: 'inline-start' },

@@ -8,6 +8,21 @@ supporting Work History, Casework, Credentials, About, Resources, and Contact pa
 supplies the content across all routes. Content entries remain drafts for local
 development; an ordinary production build excludes them.
 
+## Use a separate content directory
+
+The same builder can render another person's site without copying their content
+into this repository. Keep the Markdown, images, and `site.json` in a separate
+local folder or private repository:
+
+```sh
+npm run content:export -- ../reymundo-site-data
+SITE_DATA_DIR=../reymundo-site-data npm run dev
+```
+
+See [external content and migration](docs/external-content.md) for devenv settings,
+private repository separation, and the generic `examples/site-data` starter.
+The existing bundled content remains the default during migration.
+
 ## Start locally
 
 Install Nix and [devenv](https://devenv.sh/getting-started/) on your computer, then
@@ -54,6 +69,7 @@ The included `.envrc` is optional. If you use direnv, review it and run
 | `npm run preview` | Inspect the published-content build locally |
 | `npm run build:drafts` | Check and compile all content into `dist-drafts/` |
 | `npm run preview:drafts` | Inspect the separate draft build locally |
+| `npm run content:export -- ../my-site-data` | Copy the selected content and assets to a new separate directory |
 | `npm test` | Check important invalid-content cases |
 
 The devenv shell also provides `site-check`, `site-build`, and `site-drafts` as

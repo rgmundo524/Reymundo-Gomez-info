@@ -99,7 +99,7 @@ export const schemas = {
     ...common, name: text, headline: text,
     location: text.optional(),
     portrait: z.strictObject({
-      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from src/assets.'),
+      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from the selected assets directory.'),
       alt: text,
       source_url: webUrl.optional(),
     }).optional(),
@@ -139,7 +139,7 @@ export const schemas = {
     expires_on: z.iso.date().optional(), verification_url: webUrl.optional(),
     course_url: webUrl.optional(),
     badge: z.strictObject({
-      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp|svg)$/, 'Use an image filename from src/assets/credentials.'),
+      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp|svg)$/, 'Use an image filename from the selected assets/credentials directory.'),
       alt: text,
       source_url: webUrl.optional(),
     }).optional(),

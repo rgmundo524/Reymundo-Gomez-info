@@ -41,7 +41,8 @@ Supporting details can be expanded with a mouse, touch, or keyboard.
 `Callout` accepts `title` and `tone="note"` or `tone="caution"`. `Disclosure`
 accepts a required `title` and uses native HTML details, with no JavaScript needed.
 Both are reusable in case records and articles. Use `templates/articles.mdx`
-for another entry. The `@components/` alias works from content subfolders.
+for another entry. The `@components/` alias works from content subfolders, including an external
+`SITE_DATA_DIR`. Use `@site-assets/` to import that person's images.
 
 MDX compiles as code, so author it as part of the trusted project source. Content
 validation parses its syntax without executing it; Astro renders it during the
@@ -80,7 +81,7 @@ ordinary static assets. Builds still need the installed npm packages.
 
 Production cards obey the same draft filtering as pages. With the current draft
 content, production contains only a “Site in preparation” homepage and card.
-Draft cards stay in `dist-drafts/`. Metadata points at `https://reymundo-gomez.info`;
+Draft cards stay in `dist-drafts/`. Metadata uses the selected `site.json` URL;
 social platforms can fetch it once the matching build is publicly hosted. Current
 `noindex` metadata is preserved. An anchor link to a case shares its category
 page's card because URL fragments are not separate pages.

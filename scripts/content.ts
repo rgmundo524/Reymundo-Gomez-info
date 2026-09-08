@@ -3,8 +3,9 @@ import path from 'node:path';
 import { parseDocument } from 'yaml';
 import { createProcessor } from '@mdx-js/mdx';
 import { schemas, relationships, type CollectionName, type ContentRecord } from '../src/content/schemas';
+import { resolveSiteData } from './site-data';
 
-export async function loadContent(root = path.resolve('content')): Promise<ContentRecord[]> {
+export async function loadContent(root = resolveSiteData().contentDir): Promise<ContentRecord[]> {
   const records: ContentRecord[] = [];
   for (const collection of Object.keys(schemas) as CollectionName[]) {
     for (const file of await markdownFiles(path.join(root, collection))) {

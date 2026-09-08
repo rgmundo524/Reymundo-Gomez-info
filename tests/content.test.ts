@@ -23,8 +23,63 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
+import { resolveSiteData, builderRoot } from '../scripts/site-data';
 
 const base = { slug: 'example', description_short: 'A short description.' };
+
+test('external site directories resolve consistently and invalid configuration never falls back', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'site data #'));
+  try {
+    for (const name of ['person-a', 'person-b']) {
+      await mkdir(path.join(root, name, 'content'), { recursive: true });
+      await writeFile(path.join(root, name, 'site.json'), JSON.stringify({ version: 1, url: `https://${name}.example` }));
+    }
+    const a = resolveSiteData('person-a', root);
+    const b = resolveSiteData(path.join(root, 'person-b'));
+    assert.equal(a.contentDir, path.join(root, 'person-a/content'));
+    assert.equal(a.assetsDir, path.join(root, 'person-a/assets'));
+    assert.equal(a.publicDir, path.join(root, 'person-a/public'));
+    assert.equal(a.url, 'https://person-a.example');
+    assert.notEqual(a.cacheKey, b.cacheKey);
+    assert.equal(resolveSiteData(a.dataDir).cacheKey, a.cacheKey);
+    assert.equal(resolveSiteData('', builderRoot).dataDir, builderRoot.replace(/\/$/, ''));
+    assert.throws(() => resolveSiteData('missing', root), /SITE_DATA_DIR is not a directory/);
+    await rm(path.join(root, 'person-a/content'), { recursive: true });
+    assert.throws(() => resolveSiteData('person-a', root), /Missing content directory/);
+    await mkdir(path.join(root, 'person-a/content'));
+    for (const url of ['not-a-url', 'javascript:alert(1)', 'https://a.example/subpath', 'https://user:pass@a.example', 'https://a.example/?secret=yes']) {
+      await writeFile(path.join(root, 'person-a/site.json'), JSON.stringify({ version: 1, url }));
+      assert.throws(() => resolveSiteData('person-a', root), /HTTP\(S\)/);
+    }
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('external source supplies command-line validation and export without modifying either existing directory', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'site-export-'));
+  const source = path.join(root, 'source');
+  const destination = path.join(root, 'exported');
+  try {
+    await mkdir(path.join(source, 'content/profile'), { recursive: true });
+    await mkdir(path.join(source, 'assets'));
+    await writeFile(path.join(source, 'site.json'), JSON.stringify({ version: 1, url: 'https://example.com' }));
+    const markdown = '---\nslug: external\nname: External Person\nheadline: Investigator\ndescription_short: External content sentinel.\n---\n\nExternal biography.\n';
+    await writeFile(path.join(source, 'content/profile/external.md'), markdown);
+    await writeFile(path.join(source, 'assets/fixture.txt'), 'asset sentinel');
+    const env = { ...process.env, SITE_DATA_DIR: source };
+    const check = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/check-content.ts'], { cwd: builderRoot, env, encoding: 'utf8' });
+    assert.equal(check.status, 0, check.stderr);
+    assert.match(check.stdout, /Content valid: 1 entries/);
+    const runExport = () => spawnSync(process.execPath, ['--import', 'tsx', 'scripts/export-content.ts', destination], { cwd: builderRoot, env, encoding: 'utf8' });
+    const first = runExport();
+    assert.equal(first.status, 0, first.stderr);
+    assert.equal(await readFile(path.join(destination, 'content/profile/external.md'), 'utf8'), markdown);
+    assert.equal(await readFile(path.join(source, 'content/profile/external.md'), 'utf8'), markdown);
+    assert.equal(await readFile(path.join(destination, 'assets/fixture.txt'), 'utf8'), 'asset sentinel');
+    await writeFile(path.join(destination, 'site.json'), 'Existing destination sentinel');
+    assert.equal(runExport().status, 1);
+    assert.equal(await readFile(path.join(destination, 'site.json'), 'utf8'), 'Existing destination sentinel');
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
 
 test('theme restores before paint, survives navigation and history, and resets for a new tab session', async () => {
   const source = await readFile('src/scripts/theme-init.js', 'utf8');
@@ -224,7 +279,7 @@ test('article case references cannot silently break or publish a draft case', ()
 });
 
 test('search respects case visibility, exact anchors, and per-case filters without indexing editorial notes', async () => {
-  const records = await loadContent();
+  const records = await loadContent(path.resolve('content'));
   const previews = caseSearchRecords(records, true);
   assert.equal(previews.length, 13);
   assert.equal(new Set(previews.map(({ url }) => url)).size, 13);
@@ -309,7 +364,7 @@ test('published entries cannot pull in draft references', () => {
   assert.doesNotThrow(() => validateRecords([expertise, experience]));
 });
 
-test('the actual Markdown collection has valid fields and relationships', async () => {
+test('the selected Markdown collection has valid fields and relationships', async () => {
   const records = await loadContent();
   assert.ok(records.length > 0);
   assert.ok(records.some((record) => record.collection === 'pages' && record.data.slug === 'home'));
@@ -489,7 +544,7 @@ test('sunbursts exclude drafts and examples in production and handle empty or si
 });
 
 test('example Markdown subcategories appear in search and remain isolated to their parent chart', async () => {
-  const records = await loadContent();
+  const records = await loadContent(path.resolve('content'));
   const charts = records.filter((entry) => entry.collection === 'charts').map((entry) => ({ id: entry.data.slug, data: entry.data }));
   const studies = records.filter((entry) => entry.collection === 'cases').map((entry) => ({ id: entry.data.slug, data: entry.data }));
   const data = caseVisuals(charts, studies, 'example', true);
@@ -510,7 +565,7 @@ test('example Markdown subcategories appear in search and remain isolated to the
 });
 
 test('Pagefind path filters select exactly the same descendants as each sunburst level', async () => {
-  const content = await loadContent();
+  const content = await loadContent(path.resolve('content'));
   const charts = content.filter((entry) => entry.collection === 'charts').map((entry) => ({ id: entry.data.slug, data: entry.data }));
   const studies = content.filter((entry) => entry.collection === 'cases').map((entry) => ({ id: entry.data.slug, data: entry.data }));
   const search = caseSearchRecords(content, true);

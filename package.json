@@ -21,7 +21,9 @@
     "prepreview:drafts": "node scripts/ensure-dependencies.mjs",
     "prebuild:drafts": "node scripts/ensure-dependencies.mjs",
     "pretest": "node scripts/ensure-dependencies.mjs",
-    "test": "node --import tsx --test tests/content.test.ts"
+    "test": "node --import tsx --test tests/content.test.ts",
+    "precontent:export": "node scripts/ensure-dependencies.mjs",
+    "content:export": "node --import tsx scripts/export-content.ts"
   },
   "dependencies": {
     "@amcharts/amcharts5": "5.20.5",

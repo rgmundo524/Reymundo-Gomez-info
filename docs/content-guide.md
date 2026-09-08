@@ -1,5 +1,8 @@
 # Writing and reusing content
 
+Paths under `content/` and `assets/` refer to the selected `SITE_DATA_DIR`,
+or to this repository when unset. See [external content](external-content.md).
+
 ## One file per subject
 
 Keep each job, credential, project, or interest in its own Markdown file. A job

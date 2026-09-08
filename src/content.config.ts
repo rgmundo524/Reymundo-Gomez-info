@@ -2,13 +2,20 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { schemas, type CollectionName } from './content/schemas';
 import { loadContent } from '../scripts/content';
+import { resolveSiteData } from '../scripts/site-data';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 // Also validate direct `astro dev` / `astro build` calls, not just npm scripts.
-const records = await loadContent();
+const { contentDir } = resolveSiteData();
+const records = await loadContent(contentDir);
 
 function loader(name: CollectionName) {
+  // An empty function loader clears old entries. Astro's glob loader otherwise
+  // returns early for an empty folder, retaining records from its last build.
+  if (!records.some(({ collection }) => collection === name)) return async () => [];
   return glob({
-    pattern: '**/*.{md,mdx}', base: `./content/${name}`,
+    pattern: '**/*.{md,mdx}', base: pathToFileURL(`${path.join(contentDir, name)}/`),
     generateId: ({ data }) => String(data.slug),
   });
 }
@@ -28,8 +35,7 @@ export const collections = {
   callouts: defineCollection({ loader: loader('callouts'), schema: schemas.callouts }),
   charts: defineCollection({ loader: loader('charts'), schema: schemas.charts }),
   cases: defineCollection({ loader: loader('cases'), schema: schemas.cases }),
-  // Original writing is paused. Keep its schema available without an empty-glob warning.
-  articles: defineCollection({ loader: records.some(({ collection }) => collection === 'articles') ? loader('articles') : async () => [], schema: schemas.articles }),
+  articles: defineCollection({ loader: loader('articles'), schema: schemas.articles }),
   resources: defineCollection({ loader: loader('resources'), schema: schemas.resources }),
   pages: defineCollection({ loader: loader('pages'), schema: schemas.pages }),
 };

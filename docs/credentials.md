@@ -66,7 +66,7 @@ rather than pretending an archived program page is an active enrollment page.
 
 ## Badge and seal images
 
-Save the issuer-provided image under `src/assets/credentials/`, then add:
+Save the issuer-provided image under `assets/credentials/`, then add:
 
 ```yaml
 badge:

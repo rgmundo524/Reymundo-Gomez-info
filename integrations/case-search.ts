@@ -3,13 +3,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { buildSearchFiles, createSearchCache } from '../scripts/search-index';
+import { resolveSiteData } from '../scripts/site-data';
 
 export default function caseSearch(): AstroIntegration {
-  let contentRoot = path.resolve('content');
+  const contentRoot = resolveSiteData().contentDir;
   return {
     name: 'case-search',
     hooks: {
-      'astro:config:done': ({ config }) => { contentRoot = fileURLToPath(new URL('content/', config.root)); },
       'astro:server:setup': ({ server, logger }) => {
         const cache = createSearchCache(() => buildSearchFiles(contentRoot, true));
         const invalidate = (event: string, filename: string) => {

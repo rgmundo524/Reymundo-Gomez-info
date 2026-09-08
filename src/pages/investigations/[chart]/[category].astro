@@ -18,7 +18,7 @@ const { chart, category, datasets }: Props = Astro.props;
 const casework = await getEntry('pages', 'casework');
 const back = casework && isVisible(casework) ? { url: '/casework/#section-casework', label: 'Back to case charts' } : { url: '/', label: 'Back to home' };
 ---
-<SiteLayout title={`${category.label} | ${chart.data.title} | Reymundo Gómez`} description={`Explore ${category.label.toLowerCase()} case records in ${chart.data.title.toLowerCase()}.`}>
+<SiteLayout title={`${category.label} | ${chart.data.title}`} description={`Explore ${category.label.toLowerCase()} case records in ${chart.data.title.toLowerCase()}.`}>
   <header class="container page-intro">
     <p class="back-link"><a href={back.url}>← {back.label}</a></p>
     <p class="eyebrow">{chart.data.title}</p><h1>{category.label}</h1>
