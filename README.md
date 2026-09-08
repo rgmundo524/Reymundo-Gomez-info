@@ -25,6 +25,8 @@ The existing bundled content remains the default during migration.
 For a complete generic dataset covering every current page, see the
 [starter editing map](examples/site-data/README.md). It includes seven fictional
 cases for the interactive charts and search.
+Profile filenames and optional photo carousels are also controlled by Markdown;
+see [profile photos](docs/portrait-photos.md).
 
 ## Start locally
 

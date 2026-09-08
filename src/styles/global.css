@@ -78,6 +78,17 @@ li + li { margin-top: .4rem; }
 .text-link { display: inline-flex; align-items: center; gap: .7rem; font-size: .9375rem; font-weight: 600; }
 .portrait { margin: 0; width: 100%; max-width: 23rem; justify-self: end; }
 .portrait-mat { background: transparent; padding: 1.4rem; border-top: 3px solid var(--accent); }
+.portrait-viewport { overflow: hidden; }
+.portrait-slides { display: flex; touch-action: pan-y pinch-zoom; }
+.portrait-slide { flex: 0 0 100%; min-width: 0; }
+.portrait-controls { display: flex; align-items: center; justify-content: center; gap: .4rem; padding-top: .75rem; }
+.portrait-controls button { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-width: 2.75rem; min-height: 2.75rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--glass-surface); color: var(--ink); cursor: pointer; }
+.portrait-controls button:hover { border-color: var(--accent); }
+.portrait-controls button:disabled { opacity: .45; cursor: default; }
+.portrait-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.portrait-controls svg { width: 1.1rem; height: 1.1rem; }
+.portrait-controls .portrait-rotation { padding-inline: .6rem; }
+.portrait-position { min-width: 3rem; text-align: center; color: var(--muted); font-size: .875rem; font-variant-numeric: tabular-nums; }
 .portrait img { width: 100%; aspect-ratio: 294/312; object-fit: cover; }
 .portrait figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .15rem 1rem; padding-top: .9rem; font-size: .8125rem; color: var(--muted); }
 .portrait figcaption span:first-child { color: var(--ink); }

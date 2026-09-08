@@ -27,6 +27,23 @@ import { resolveSiteData, builderRoot } from '../scripts/site-data';
 
 const base = { slug: 'example', description_short: 'A short description.' };
 
+test('profile photos accept the existing portrait or an ordered gallery with valid settings', () => {
+  const profile = { ...base, name: 'Example person', headline: 'An example profile' };
+  const first = { image: 'portrait-main.jpg', alt: 'A professional headshot.' };
+  const second = { image: 'portrait-second.webp', alt: 'Speaking at an event.' };
+  assert.deepEqual(schemas.profile.parse({ ...profile, portrait: first }).portrait, first);
+  assert.deepEqual(schemas.profile.parse({ ...profile, portrait: { images: [first, second] } }).portrait,
+    { images: [first, second], autoplay: true, interval_ms: 6000 });
+  assert.ok(schemas.profile.safeParse({ ...profile, portrait: { images: [first], autoplay: false, interval_ms: 2000 } }).success);
+  for (const portrait of [
+    { images: [] }, { images: [first, first] }, { images: [first], ...first },
+    { images: [{ image: '../portrait.jpg', alt: 'Invalid path.' }] },
+    { images: [{ image: 'portrait.jpg' }] },
+    { images: [first], interval_ms: 1999 }, { images: [first], interval_ms: 60001 },
+    { images: [first], autoplay: 'true' },
+  ]) assert.equal(schemas.profile.safeParse({ ...profile, portrait }).success, false);
+});
+
 test('the complete starter is self-contained and keeps fictional work out of published results', async () => {
   const records = await loadContent(path.resolve('examples/site-data/content'));
   assert.ok(records.every(({ data }) => data.publication_status === 'draft'));

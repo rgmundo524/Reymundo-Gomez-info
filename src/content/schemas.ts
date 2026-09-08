@@ -4,6 +4,11 @@ const text = z.string().trim().min(1);
 const slug = text.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase words separated by hyphens.');
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a quoted YYYY-MM date.');
 const webUrl = z.url({ protocol: /^https?$/ });
+const portraitImage = z.strictObject({
+  image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from the selected assets directory.'),
+  alt: text,
+  source_url: webUrl.optional(),
+});
 const link = z.strictObject({ label: text, url: webUrl });
 const contactDetails = {
   email: z.email().nullable().optional(),
@@ -98,11 +103,15 @@ export const schemas = {
   profile: z.strictObject({
     ...common, name: text, headline: text,
     location: text.optional(),
-    portrait: z.strictObject({
-      image: text.regex(/^[a-z0-9-]+\.(png|jpe?g|webp)$/, 'Use an image filename from the selected assets directory.'),
-      alt: text,
-      source_url: webUrl.optional(),
-    }).optional(),
+    portrait: z.union([
+      portraitImage,
+      z.strictObject({
+        images: z.array(portraitImage).min(1)
+          .refine((images) => new Set(images.map(({ image }) => image)).size === images.length, 'List each portrait filename once.'),
+        autoplay: z.boolean().default(true),
+        interval_ms: z.number().int().min(2000).max(60000).default(6000),
+      }),
+    ]).optional(),
   }),
   contacts: z.strictObject({
     ...common,

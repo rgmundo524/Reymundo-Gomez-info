@@ -28,6 +28,10 @@ matching portrait/badge files even when a record is draft or unselected. Draft
 filtering controls rendered records, not confidentiality of source image files.
 Shared application files such as the amCharts license stay with the builder.
 
+Profiles can select a single `portrait.image` or an ordered `portrait.images`
+list from that same `assets/` directory. See [profile photos](portrait-photos.md)
+for Embla carousel settings and the backward-compatible single-photo format.
+
 `site.json` contains:
 
 ```json
