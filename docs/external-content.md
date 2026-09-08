@@ -151,18 +151,59 @@ Official references: [configuration override flags](https://devenv.sh/ad-hoc-dev
 [interactive shell setting](https://devenv.sh/reference/yaml-options/#shell), and
 [devenv 2.1 native shells](https://devenv.sh/blog/2026/05/07/devenv-21-nix-with-zsh-fish-and-nushell-via-libghostty/).
 
-## Start another person's site
+## Start from the complete example dataset
 
-Copy `examples/site-data` to a separate folder, then choose that folder using
-the devenv `-O env.SITE_DATA_DIR:string` flag or the Nix default. It includes a generic profile, Home, and an MDX About example
-that imports the existing Callout component. Replace the example content and
-site URL; use `templates/` to add the collections and sections you need. Keep
-ordinary prose in `.md` and use `.mdx` when a component helps.
+`../reymundo-site-data` is an example destination name, not an automatically created
+folder. It should contain `site.json` and `content/`, with optional `assets/` and
+`public/`. The Markdown is inside the collection folders; for example:
+`../reymundo-site-data/content/experience/example-current-role.md`.
 
-MDX can import shared components using `@components/Callout.astro` and selected
-images using `@site-assets/filename.png`. Relative imports remain relative to
-the MDX file. MDX is trusted build input and can execute code; this is a builder
-for organization-maintained content, not an untrusted upload service.
+The builder includes a complete generic starter at `examples/site-data`. To copy
+it into a new sibling directory, run these from the builder root, outside an
+existing devenv shell:
+
+```sh
+devenv -O env.SITE_DATA_DIR:string examples/site-data shell -- site-export ../reymundo-site-data
+devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data shell
+```
+
+Then run `site-dev`. The first command explicitly chooses the included starter as
+the source; the second opens Fish with your new copy selected. The destination
+must not already exist. If you have already edited that folder, keep those edits
+and copy any additional example files selectively after reviewing their slugs and
+references.
+
+The starter covers Home, Work History, Casework, Credentials, About, Resources,
+and Contact. It includes dated job examples, credentials grouped by issuer,
+six skills in three groups, volunteer/organization/DAO records, hobbies, service
+and social contact cards, and seven fictional cases that populate both charts
+and Pagefind search. Every entry is draft. Case and skill figures are examples,
+not claims about your experience. GitHub groups are disabled until real accounts
+and projects are configured. No personal photograph or certification badge is
+included.
+
+See [the starter editing map](../examples/site-data/README.md) for the individual
+files. Begin with `site.json`, `content/profile/your-name.md`, and
+`content/contacts/your-name.md`; page layout selections live in `content/pages/`.
+Keep existing slugs initially so the references continue to work.
+
+To begin with Reymundo's existing resume-based drafts instead, export the builder's
+current content using the same mechanism, with `.` as the source:
+
+```sh
+devenv -O env.SITE_DATA_DIR:string . shell -- site-export ../reymundo-site-data
+```
+
+Choose one source for a new destination. Exporting never overwrites an existing
+folder. No private repository is created automatically; you can version the new
+folder separately after copying it.
+
+Use `templates/` for more records. Keep ordinary prose in `.md` and use `.mdx` when
+a component helps. The starter's About page demonstrates a shared Callout.
+MDX can import components using `@components/Callout.astro` and selected images
+using `@site-assets/filename.png`. Relative imports stay relative to the MDX file.
+MDX is trusted build input and can execute code; this is a builder for
+organization-maintained content, not an untrusted upload service.
 
 A practical repository split is one public builder and one private content repo
 per person. Pin a tested builder commit/tag for reproducible builds and update

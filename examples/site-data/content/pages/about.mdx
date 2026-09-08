@@ -1,21 +1,68 @@
 ---
+# Starter example. Replace placeholder details before publishing.
 slug: about
 publication_status: draft
 title: About
 profile: your-name
-description_short: Background and interests.
+description_short: Example about page. Replace with your own introduction.
 navigation:
   label: About
-  order: 20
-section_order: []
+  order: 50
+section_order:
+  - skills
+  - volunteering
+  - organizations
+  - interests
+  - github
+skill_symbols: dots
+skill_group_order:
+  - Programming
+  - Systems
+  - Data and analysis
+organization_group_order:
+  - memberships
+  - daos
+skills:
+  - example-python
+  - example-sql
+  - example-linux
+  - example-networking
+  - example-analysis
+  - example-visualization
+volunteering:
+  - example-volunteering
+memberships:
+  - example-membership
+daos:
+  - example-dao
+interests:
+  - example-outdoors
+  - example-making
+repositories:
+  - example-repository
+github_groups:
+  - id: personal
+    title: Personal projects
+    account: null
+    enabled: false
+  - id: go-crypto
+    title: Go-Crypto projects
+    account: null
+    enabled: false
+blocks:
+  eyebrow: Outside work
+  skills_intro: The dot ratings below are fictional examples, not assessments of your skills.
+  interests_heading: Hobbies
+  github_heading: Projects on GitHub
+  github_intro: Add reviewed public repositories before enabling these groups.
 ---
 
 import Callout from '@components/Callout.astro';
 
-Write about your interests and life outside work.
+Introduce your interests and life outside work.
 
-<Callout title="An interest or project">
+<Callout title="A personal introduction">
 
-Replace this example with something you would like visitors to know.
+This MDX page can use shared components. The sections below are populated by ordinary Markdown files.
 
 </Callout>

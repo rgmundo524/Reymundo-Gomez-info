@@ -27,6 +27,26 @@ import { resolveSiteData, builderRoot } from '../scripts/site-data';
 
 const base = { slug: 'example', description_short: 'A short description.' };
 
+test('the complete starter is self-contained and keeps fictional work out of published results', async () => {
+  const records = await loadContent(path.resolve('examples/site-data/content'));
+  assert.ok(records.every(({ data }) => data.publication_status === 'draft'));
+  assert.deepEqual(records.filter(({ collection }) => collection === 'pages').map(({ data }) => data.slug).sort(),
+    ['about', 'casework', 'contact', 'credentials', 'home', 'resources', 'work-history']);
+  const charts = records.filter((entry) => entry.collection === 'charts').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  const cases = records.filter((entry) => entry.collection === 'cases').map((entry) => ({ id: entry.data.slug, data: entry.data }));
+  assert.ok(cases.length > 0 && cases.every(({ data }) => data.content_kind === 'example'));
+  assert.deepEqual(caseSearchRecords(records, false), []);
+  assert.equal(caseSearchRecords(records, true).length, cases.length);
+  for (const group of caseVisuals(charts, cases, 'example', true).groups) {
+    assert.ok(group.categories.filter(({ count }) => count > 0).length >= 2, 'Each chart demonstrates multiple categories');
+    assert.ok(sunburstNodes(caseSunburst(group)).some((node) => node.path.length >= 2 && (node.children?.length ?? 0) > 1), 'Each chart demonstrates sibling subcategories');
+  }
+  assert.equal(caseVisuals(charts, cases, 'case_study', true).groups.every(({ total }) => total === 0), true);
+  const about = records.find((entry) => entry.collection === 'pages' && entry.data.slug === 'about');
+  assert.ok(about?.collection === 'pages');
+  assert.ok(about.data.github_groups.every(({ enabled }) => !enabled), 'Placeholder GitHub accounts stay disabled');
+});
+
 test('external site directories resolve consistently and invalid configuration never falls back', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'site data #'));
   try {

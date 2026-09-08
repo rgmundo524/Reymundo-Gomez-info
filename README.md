@@ -22,6 +22,9 @@ devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data shell -- site-dev
 See [external content and migration](docs/external-content.md) for devenv settings,
 private repository separation, and the generic `examples/site-data` starter.
 The existing bundled content remains the default during migration.
+For a complete generic dataset covering every current page, see the
+[starter editing map](examples/site-data/README.md). It includes seven fictional
+cases for the interactive charts and search.
 
 ## Start locally
 
