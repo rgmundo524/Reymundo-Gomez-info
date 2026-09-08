@@ -103,7 +103,7 @@ visible in the current build. Work History now lives at `/work-history/`, and
 
 Supporting pages set `section_order`, a list of collection names such as
 `experience`, `biography`, `charts`, `projects`, `credentials`, `education`, `expertise`,
-`interests`, `github`, and `callouts`. Listed sections render only when they have content;
+`interests`, `github`, `skills`, `volunteering`, `memberships`, `daos`, and `callouts`. Listed sections render only when they have content;
 unlisted sections are omitted. The Astro templates still define each section's
 visual layout and the curated homepage structure.
 
@@ -131,9 +131,15 @@ to the About page's `interests` list. The list also controls display order; remo
 a slug to omit it from the page. Longer stories belong in the hobby file body.
 The existing selections were moved from Work History without inventing additional
 personal history. The professional profile body remains on Work History.
-The `github` section follows the hobbies and uses `github_groups` to select
-personal and organization projects. See [GitHub project cards](github-projects.md)
-for the existing card integration, selection fields, and future Go-Crypto group.
+Skills, volunteering, organization memberships, and DAO participation have separate
+sections and Markdown records. See [About authoring](about-content.md) for skill
+ratings, activity fields, selection, and order. The `github` section follows the
+hobbies and selects per-repository files with `repositories`; `github_groups`
+controls personal and organization headings. See [GitHub project cards](github-projects.md).
+
+The timeline's zoom controls use large `+` and `−` symbols with at least 52px
+targets. Accessible names and tooltips remain Zoom in and Zoom out. The existing
+amCharts zoom actions, pan controls, slider, and Full timeline reset are retained.
 
 ## Adding a position
 

@@ -80,6 +80,9 @@ from `templates/` into the matching collection under `content/`.
 | `content/credentials/` | Certifications, certificates, and training |
 | `content/expertise/` | Areas of expertise |
 | `content/projects/` | Selected work and public project references |
+| `content/repositories/` | Curated GitHub project descriptions and widget inputs |
+| `content/skills/` | Individual skills, self-assessments, and supporting examples |
+| `content/activities/` | Volunteer roles, organization memberships, and DAO participation |
 | `content/interests/` | Personal interests |
 | `content/callouts/` | Independently reusable passages |
 | `content/charts/` | Category definitions for case-filtering sunburst charts |
@@ -98,6 +101,8 @@ panels. Edit `content/pages/work-history.md` for that selection and order, and
 `content/pages/about.md` for the personal introduction, hobby selection, and
 curated GitHub repository cards. See [GitHub projects](docs/github-projects.md)
 for the card integration and Go-Crypto organization setup.
+See [About content](docs/about-content.md) for the new sections, skill rating
+symbols, ordering, and copyable templates.
 The home page presents a small selection; the supporting pages provide the full
 background and details. Other content files supply the writing. See
 [the page structure guide](docs/page-structure.md) for the route map and portrait.
@@ -134,10 +139,11 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 
 ## Resume content
 
-The content inventory contains 64 draft entries: one profile, six roles, eleven
-credentials and training records, three education records, seven expertise areas,
-two selected-work entries, nine interests, two callouts, two case charts,
-thirteen example cases, one starter article, and seven page selections.
+The content inventory remains in draft while its wording and source claims are
+reviewed. It includes professional history, credentials, selected work, interests,
+case examples, a starter article, contact details, and page selections. The About
+additions include six unrated skills, a curated repository, and clearly labelled
+volunteer and membership examples. Run `npm run check:content` for the current count.
 
 Casework is a Markdown-backed tracker. Add a record under `content/cases/` and
 its chart count, category share, and statistics update from that record. Real

@@ -190,17 +190,37 @@ li + li { margin-top: .4rem; }
 .collection-credentials .content-entry { min-width: 0; }
 .collection-credentials .content-entry > header { display: flow-root; }
 .credential-badge { float: right; width: 5.5rem; height: 5.5rem; object-fit: contain; margin: 0 0 1rem 1.1rem; }
-.collection-interests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 2rem; }
+.collection-interests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
 .collection-interests h3 { font-size: 1.05rem; }
-.collection-interests .content-entry { padding-block: 1.5rem; }
+.collection-interests .content-entry { padding: 1.5rem; }
+.about-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 1.5rem; align-items: start; }
+.about-card, .collection-interests .content-entry { min-width: 0; border: 1px solid var(--line); border-radius: .75rem; background: var(--glass-surface); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); }
+.about-card { padding: 1.5rem; }
+.about-card-heading { display: flex; align-items: center; gap: .8rem; }
+.about-card h3, .about-card h4 { margin: 0; font-size: 1.15rem; }
+.about-card p { font-size: .95rem; }
+.about-card-icon { flex: none; width: 1.65rem; height: 1.65rem; color: var(--accent-text); }
+.collection-interests .about-card-icon { margin-bottom: .65rem; }
+.skill-group { margin-top: 2.25rem; }
+.skill-group > h3 { font-size: 1.35rem; }
+.skill-scale { display: flex; flex-wrap: wrap; gap: .35rem 1rem; color: var(--muted); font-size: .8rem; }
+.skill-rating { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-block: 1.25rem; }
+.skill-symbols { display: inline-flex; gap: .4rem; color: var(--accent); }
+.skill-symbol { width: 1rem; height: 1rem; fill: none; }
+.skill-symbol.is-filled :is(circle, path) { fill: currentColor; }
+.skill-rating-label { color: var(--muted); font-size: .8rem; }
+.about-card .example-label { color: var(--accent-text); font-size: .8rem; }
 .github-group { margin-block: 2rem; }
 .github-group-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .75rem 1.5rem; margin-bottom: 1.25rem; }
 .github-group-heading h3 { margin: 0; font-size: 1.35rem; }
 .github-project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr)); gap: 1.5rem; }
 .github-project { display: block; max-width: 34rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--glass-surface); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); text-decoration: none; }
 .github-project:hover { border-color: var(--accent); }
-.github-project-name { display: block; color: var(--ink); font-size: 1.1rem; font-weight: 600; }
-.github-project-owner { display: block; color: var(--muted); font-size: .875rem; }
+.github-project h4 { margin: 0 0 .4rem; }
+.github-project-name { display: inline-flex; align-items: center; gap: .5rem; color: var(--ink); font-size: 1.1rem; font-weight: 600; }
+.github-project-name svg { flex: none; width: 1.1rem; height: 1.1rem; }
+.github-project-owner { display: block; color: var(--muted); font-size: .875rem; overflow-wrap: anywhere; }
+.github-project details { margin-top: 1rem; }
 .github-project img { width: 100%; height: auto; margin-top: .75rem; }
 .github-card-dark { display: none; }
 [data-theme='dark'] .github-card-dark { display: block; }
@@ -306,6 +326,7 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .career-chart canvas { background: transparent; }
 .career-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; }
 .career-toolbar button { min-height: 2.75rem; padding: .55rem .9rem; border: 1px solid var(--line); border-radius: .2rem; color: var(--ink); background: transparent; font-size: .875rem; }
+.career-toolbar .career-zoom { display: inline-flex; align-items: center; justify-content: center; min-width: 3.25rem; min-height: 3.25rem; padding: .15rem .75rem; font-size: 2.25rem; font-weight: 600; line-height: 1; }
 .career-toolbar button:hover:enabled { border-color: var(--accent); color: var(--accent-text); }
 .career-toolbar button:disabled { opacity: .45; cursor: default; }
 .career-toolbar button:last-child { margin-left: auto; }

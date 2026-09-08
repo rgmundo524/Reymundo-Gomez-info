@@ -10,6 +10,7 @@ import { classificationKeys, chartSearchSelection, createCaseSearchController, t
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
 import { groupCredentials } from '../src/lib/credentials';
+import { orderAboutEntries } from '../src/lib/about';
 import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
 import { visibleArticles } from '../src/lib/articles';
@@ -22,6 +23,57 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const base = { slug: 'example', description_short: 'A short description.' };
+
+test('About ratings distinguish unknown levels and keep illustrative entries out of publication', () => {
+  const skill = { ...base, title: 'Python', group: 'Programming' };
+  assert.equal(schemas.skills.parse(skill).proficiency, null);
+  for (const value of [1, 2, 3, 4, 5, null]) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, true);
+  for (const value of [0, 6, 2.5, '3']) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, false);
+  assert.equal(schemas.skills.safeParse({ ...skill, icon: 'nonexistent-icon' }).success, false);
+  assert.equal(schemas.skills.safeParse({ ...skill, content_kind: 'example', publication_status: 'published' }).success, false);
+  const activity = { ...base, title: 'Example membership', kind: 'memberships', content_kind: 'example' };
+  assert.equal(schemas.activities.safeParse(activity).success, true);
+  assert.equal(schemas.activities.safeParse({ ...activity, publication_status: 'published' }).success, false);
+  assert.equal(schemas.activities.safeParse({ ...activity, periods: [{ start: '2025-10', end: '2025-01' }] }).success, false);
+  const entries = [
+    { id: 'later', data: { display_order: 100 } },
+    { id: 'first-tie', data: { display_order: 10 } },
+    { id: 'second-tie', data: { display_order: 10 } },
+  ];
+  assert.deepEqual(orderAboutEntries(entries).map(({ id }) => id), ['first-tie', 'second-tie', 'later']);
+  assert.equal(entries[0].id, 'later');
+});
+
+test('About selection rejects missing, misclassified, and unpublished activity records', () => {
+  const profile: ContentRecord = { collection: 'profile', data: schemas.profile.parse({ ...base, name: 'Example', headline: 'Investigator', publication_status: 'published' }), body: 'Biography', file: 'profile/example.md' };
+  const page: ContentRecord = { collection: 'pages', data: schemas.pages.parse({ ...base, title: 'About', profile: 'example', memberships: ['example'] }), body: 'About', file: 'pages/about.md' };
+  const activity: ContentRecord = { collection: 'activities', data: schemas.activities.parse({ ...base, title: 'Community work', kind: 'volunteering' }), body: 'Details', file: 'activities/example.md' };
+  assert.throws(() => validateRecords([profile, page]), /missing activities\/example/);
+  assert.throws(() => validateRecords([profile, page, activity]), /belongs to volunteering/);
+  activity.data.kind = 'memberships';
+  assert.doesNotThrow(() => validateRecords([profile, page, activity]));
+  page.data.publication_status = 'published';
+  assert.throws(() => validateRecords([profile, page, activity]), /published content references draft activities\/example/);
+  activity.data.publication_status = 'published';
+  assert.doesNotThrow(() => validateRecords([profile, page, activity]));
+});
+
+test('repository records validate identity, unique owner/name pairs, and selected group ownership', () => {
+  const input = { ...base, title: 'Website', contribution: 'Maintainer', owner: 'rgmundo524', repository: 'Reymundo-Gomez-info', group: 'personal' };
+  for (const repository of ['../hidden', '..', '.', 'owner/name']) assert.equal(schemas.repositories.safeParse({ ...input, repository }).success, false);
+  assert.equal(schemas.repositories.safeParse({ ...input, owner: 'https://github.com/rgmundo524' }).success, false);
+  const repository: ContentRecord = { collection: 'repositories', data: schemas.repositories.parse(input), body: 'Description', file: 'repositories/example.md' };
+  const profile: ContentRecord = { collection: 'profile', data: schemas.profile.parse({ ...base, name: 'Example', headline: 'Investigator' }), body: 'Biography', file: 'profile/example.md' };
+  const page: ContentRecord = { collection: 'pages', data: schemas.pages.parse({ ...base, title: 'About', profile: 'example', repositories: ['example'] }), body: 'About', file: 'pages/about.md' };
+  assert.throws(() => validateRecords([profile, page]), /missing repositories\/example/);
+  assert.throws(() => validateRecords([profile, page, repository]), /missing GitHub group personal/);
+  page.data.github_groups = [{ id: 'personal', title: 'Personal', account: 'wrong-owner', enabled: true }];
+  assert.throws(() => validateRecords([profile, page, repository]), /owner does not match/);
+  page.data.github_groups[0].account = 'RGMUNDO524';
+  assert.doesNotThrow(() => validateRecords([profile, page, repository]));
+  const duplicate: ContentRecord = { ...repository, data: { ...repository.data, slug: 'another-slug', owner: 'RGMUNDO524', repository: 'reymundo-gomez-info' }, file: 'repositories/duplicate.md' };
+  assert.throws(() => validateRecords([repository, duplicate]), /duplicate GitHub repository/);
+});
 
 test('startup installs once, refreshes after a changed lockfile, and propagates installation failure', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'site-startup-'));

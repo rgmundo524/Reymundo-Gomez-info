@@ -11,9 +11,40 @@ independently of the images.
 
 ## Select projects in Markdown
 
-Edit `content/pages/about.md`. Include `github` in `section_order` to position the
-section. `blocks.github_heading` and `blocks.github_intro` control its heading
-and introduction. Each item in `github_groups` has:
+Copy `templates/repositories.md` into `content/repositories/` for each project.
+Both `.md` and `.mdx` work. Each file contains all the input the GitHub card
+integration needs; the body supplies your longer project description.
+
+| Repository field | Meaning |
+| --- | --- |
+| `slug` | Stable selection ID, independent of the repository's name |
+| `owner`, `repository` | Exact GitHub account and repository name, without a URL |
+| `title`, `description_short` | Your displayed title and introduction |
+| `contribution` | Your actual role or contribution |
+| `group` | An ID from the page's `github_groups` |
+| `display_order` | Lower numbers first within the group; ties retain page selection order |
+| `show_stats` | Load the prebuilt GitHub Stats Extended card; false keeps the local text and links |
+| `publication_status` | Drafts appear only in local development and draft builds |
+| `links` | Optional documentation, demo, or project links |
+| Markdown body | Longer description, expanded with About this project |
+
+Then add its slug to the page's **top-level** `repositories` list:
+
+```yaml
+repositories:
+  - personal-website
+```
+
+Adding a file alone does not feature it. Explicit selection makes reviewing a
+repository part of adding it to the portfolio. The initial record is
+`content/repositories/personal-website.md`; no other repositories are indexed.
+Repository URLs and the statistics requests are derived from `owner` and
+`repository`, so there is no second hardcoded URL to maintain. Validation catches
+missing selections, duplicate owner/name pairs, and owner/group mismatches.
+
+Edit `content/pages/about.md` to position the section with `github` in
+`section_order`. `blocks.github_heading` and `blocks.github_intro` control its
+heading and introduction. Each item in `github_groups` has:
 
 | Field | Meaning |
 | --- | --- |
@@ -21,26 +52,33 @@ and introduction. Each item in `github_groups` has:
 | `title` | Displayed group heading |
 | `account` | GitHub user or organization name; use `null` for an unconfigured group |
 | `enabled` | Whether the group is displayed; an enabled group requires an account |
-| `repositories` | Ordered list of repository names owned by that account |
 
 The personal group currently features only `rgmundo524/Reymundo-Gomez-info`.
 Other public repositories are not automatically included. Review a project and
-then add its name to the list. The list is curated, not an account-wide feed.
-Remove a repository from this public selection when making it private or when
-it is no longer appropriate to feature. The card service has no access to your
-private repositories. Repository names are explicitly stored in this page's
-Markdown, so visibility changes on GitHub do not edit that list automatically.
+then create its Markdown record and select its slug. Remove the selection if a
+repository's name or description should no longer be public. `show_stats: false`
+only hides the external image; the local description and repository link remain.
+The card service has no access to your private repositories. Changes to GitHub
+visibility do not automatically edit your Markdown selections.
 
 The Go-Crypto group is disabled with `account: null` until an organization exists.
-Once created, set its actual account name, add selected public repository names,
-and set `enabled: true`. Empty repository lists can still show the group's
+Once created, set its actual account name, create and select records with that
+`owner` and `group: go-crypto`, and set `enabled: true`. Group order follows the
+written `github_groups` list. Empty groups can still show the group's
 GitHub profile link; disabled groups render nothing.
 
 Cards have transparent backgrounds and follow the site's explicit light/dark
 toggle. Images load lazily and request disabled SVG animations. If the external
 service is unavailable, local development and builds still work and the ordinary
 links remain present. `GitHubProjects.astro` owns the wrapper and theme parameters;
-the external integration renders the repository cards.
+the external integration renders the repository cards. `RepositoryCard.astro`
+renders the selected record's text, links, and details.
+
+The process is **Markdown record → Astro validation and build → GitHub widget**.
+This uses the existing widget, not a Cloudflare Worker. No background sync,
+GitHub token, Actions workflow, or database is required. Local text updates after
+editing and rebuilding; external statistics refresh according to the provider's
+cache. The public widget's availability does not determine whether Astro builds.
 
 ## Account and repository ownership
 

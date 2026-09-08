@@ -1,5 +1,6 @@
 ---
 slug: defi-hack-analysis
+icon: shield-check
 publication_status: draft
 title: Following DeFi hacks
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

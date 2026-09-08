@@ -1,5 +1,6 @@
 ---
 slug: cycling
+icon: bike
 publication_status: draft
 title: Cycling
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

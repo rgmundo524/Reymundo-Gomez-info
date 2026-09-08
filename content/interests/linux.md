@@ -1,5 +1,6 @@
 ---
 slug: linux
+icon: terminal
 publication_status: draft
 title: Linux
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

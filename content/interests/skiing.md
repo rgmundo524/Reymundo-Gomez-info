@@ -1,5 +1,6 @@
 ---
 slug: skiing
+icon: mountain-snow
 publication_status: draft
 title: Skiing
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

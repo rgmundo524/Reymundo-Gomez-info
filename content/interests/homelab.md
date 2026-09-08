@@ -1,5 +1,6 @@
 ---
 slug: homelab
+icon: server
 publication_status: draft
 title: Homelab
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

@@ -38,8 +38,6 @@ const githubGroup = z.strictObject({
   id: slug, title: text,
   account: githubAccount.nullable(),
   enabled: z.boolean().default(true),
-  repositories: z.array(githubRepository).default([])
-    .refine((items) => new Set(items.map((item) => item.toLowerCase())).size === items.length, 'List each repository once.'),
 }).refine((group) => !group.enabled || group.account !== null, 'An enabled GitHub group needs an account name.');
 const common = {
   slug,
@@ -49,6 +47,15 @@ const common = {
   links: z.array(link).default([]),
   editorial_note: text.optional(),
 };
+const aboutIcon = z.enum(['code', 'database', 'terminal', 'network', 'chart-no-axes-combined', 'chart-pie', 'hand-heart', 'users', 'landmark', 'bike', 'beer', 'box', 'mountain-snow', 'server', 'puzzle', 'shield-check', 'lightbulb']);
+const aboutFields = {
+  ...common, title: text,
+  display_order: z.number().int().nonnegative().default(100),
+  content_kind: z.enum(['profile', 'example']).default('profile'),
+};
+const reviewedAboutEntry = (entry: { content_kind: string; publication_status: string }) =>
+  entry.content_kind !== 'example' || entry.publication_status !== 'published';
+const exampleMessage = 'Replace example content with reviewed profile content before publishing.';
 
 export const periodSchema = z.strictObject({ start: month, end: month.nullable() })
   .refine((period) => period.end === null || period.end >= period.start,
@@ -142,7 +149,24 @@ export const schemas = {
     ...common, title: text, contribution: text,
     experience: refs(), expertise: refs(),
   }),
-  interests: z.strictObject({ ...common, title: text }),
+  repositories: z.strictObject({
+    ...common, title: text, contribution: text,
+    owner: githubAccount, repository: githubRepository, group: slug,
+    display_order: z.number().int().nonnegative().default(100),
+    show_stats: z.boolean().default(true),
+  }),
+  skills: z.strictObject({
+    ...aboutFields, group: text, icon: aboutIcon.default('code'),
+    proficiency: z.number().int().min(1).max(5).nullable().default(null),
+    assessed_on: z.iso.date().nullable().default(null),
+  }).refine(reviewedAboutEntry, { message: exampleMessage, path: ['content_kind'] }),
+  activities: z.strictObject({
+    ...aboutFields, kind: z.enum(['volunteering', 'memberships', 'daos']),
+    organization: text.optional(), role: text.optional(),
+    participation: text.optional(), periods: periods.default([]),
+    icon: aboutIcon.default('users'),
+  }).refine(reviewedAboutEntry, { message: exampleMessage, path: ['content_kind'] }),
+  interests: z.strictObject({ ...common, title: text, icon: aboutIcon.default('lightbulb') }),
   callouts: z.strictObject({ ...common, title: text }),
   charts: z.strictObject({
     ...common,
@@ -196,13 +220,17 @@ export const schemas = {
       .refine((items) => new Set(items.map((item) => item.id)).size === items.length, 'Each GitHub group needs a unique id.'),
     experience: refs(), education: refs(), credentials: refs(),
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
+    repositories: refs(), skills: refs(), volunteering: refs(), memberships: refs(), daos: refs(),
+    skill_symbols: z.enum(['dots', 'stars']).default('dots'),
+    skill_group_order: z.array(text).default([])
+      .refine((items) => new Set(items).size === items.length, 'List each skill group once.'),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
     credentials_source: z.enum(['selected', 'all']).default('selected'),
     issuer_order: z.array(text).default([]).refine((issuers) => new Set(issuers.map((issuer) => issuer.replace(/\s+/g, ' ').toLocaleLowerCase('en-US'))).size === issuers.length,
       'List each issuer once; capitalization and repeated spaces are ignored.'),
     timeline: timelineSchema,
-    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'skills', 'volunteering', 'memberships', 'daos', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };
@@ -224,5 +252,6 @@ export const relationships: Partial<Record<CollectionName, Record<string, Collec
     profile: 'profile', contact: 'contacts', experience: 'experience', education: 'education',
     credentials: 'credentials', expertise: 'expertise', projects: 'projects',
     interests: 'interests', callouts: 'callouts', charts: 'charts',
+    repositories: 'repositories', skills: 'skills', volunteering: 'activities', memberships: 'activities', daos: 'activities',
   },
 };

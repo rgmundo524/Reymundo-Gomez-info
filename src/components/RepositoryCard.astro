@@ -1,0 +1,31 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+type Props = { entry: CollectionEntry<'repositories'> };
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { owner, repository } = entry.data;
+const repositoryUrl = `https://github.com/${owner}/${repository}`;
+function cardUrl(dark: boolean) {
+  const url = new URL('https://github-stats-extended.vercel.app/api/pin/');
+  url.search = new URLSearchParams({
+    username: owner, repo: repository, show_owner: 'true', hide_border: 'true',
+    bg_color: '00000000', title_color: dark ? 'e36e61' : '7e2537',
+    text_color: dark ? 'e6edf4' : '192b3b', icon_color: dark ? 'c94c44' : '7e2537',
+    disable_animations: 'true',
+  }).toString();
+  return url.href;
+}
+---
+<article class="github-project" id={`repository-${entry.id}`}>
+  <h4><a class="github-project-name" href={repositoryUrl}>{entry.data.title}<Icon name="lucide:arrow-up-right" aria-hidden="true" /></a></h4>
+  <span class="github-project-owner">{owner}/{repository}</span>
+  <p>{entry.data.description_short}</p>
+  <p class="meta">{entry.data.contribution}</p>
+  {entry.data.show_stats && <div class="github-statistics">
+    <img class="github-card-dark" src={cardUrl(true)} width="400" height="130" loading="lazy" decoding="async" alt={`GitHub statistics for ${repository}`} />
+    <img class="github-card-light" src={cardUrl(false)} width="400" height="130" loading="lazy" decoding="async" alt={`GitHub statistics for ${repository}`} />
+  </div>}
+  <details><summary>About this project</summary><div class="prose"><Content /></div></details>
+  {entry.data.links.length > 0 && <ul class="links">{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
+</article>

@@ -17,8 +17,8 @@ const lastMonth = new Date(timeline.to - 1).toISOString().slice(0, 7);
     <div class="career-interactive" data-career-interactive hidden>
       <div class="career-toolbar" role="group" aria-label="Timeline navigation">
         <button type="button" data-career-action="earlier" aria-controls="career-chart">Earlier</button>
-        <button type="button" data-career-action="zoom-in" aria-controls="career-chart">Zoom in</button>
-        <button type="button" data-career-action="zoom-out" aria-controls="career-chart">Zoom out</button>
+        <button class="career-zoom" type="button" data-career-action="zoom-in" aria-controls="career-chart" aria-label="Zoom in" title="Zoom in"><span aria-hidden="true">+</span></button>
+        <button class="career-zoom" type="button" data-career-action="zoom-out" aria-controls="career-chart" aria-label="Zoom out" title="Zoom out"><span aria-hidden="true">−</span></button>
         <button type="button" data-career-action="later" aria-controls="career-chart">Later</button>
         <button type="button" data-career-action="reset" aria-controls="career-chart">Full timeline</button>
       </div>

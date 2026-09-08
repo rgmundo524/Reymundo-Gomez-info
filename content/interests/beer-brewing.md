@@ -1,5 +1,6 @@
 ---
 slug: beer-brewing
+icon: beer
 publication_status: draft
 title: Beer brewing
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

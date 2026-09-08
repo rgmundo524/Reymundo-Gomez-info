@@ -1,0 +1,21 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import { formatPeriods } from '../lib/dates';
+type Props = { entry: CollectionEntry<'activities'> };
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<article class="about-card" id={`activity-${entry.id}`}>
+  <div class="about-card-heading">
+    <Icon class="about-card-icon" name={`lucide:${entry.data.icon}`} aria-hidden="true" />
+    <h3>{entry.data.title}</h3>
+  </div>
+  {entry.data.content_kind === 'example' && <p class="example-label">Example entry · not a claimed affiliation</p>}
+  {entry.data.organization && <p class="entry-organization">{entry.data.organization}</p>}
+  {(entry.data.role || entry.data.participation) && <p class="meta">{[entry.data.role, entry.data.participation].filter(Boolean).join(' · ')}</p>}
+  {entry.data.periods.length > 0 && <p class="meta">{formatPeriods(entry.data.periods)}</p>}
+  <p>{entry.data.description_short}</p>
+  <details><summary>Read more</summary><div class="prose"><Content /></div></details>
+  {entry.data.links.length > 0 && <ul class="links">{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
+</article>

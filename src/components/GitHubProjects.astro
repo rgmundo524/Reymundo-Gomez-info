@@ -1,21 +1,14 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
+import RepositoryCard from './RepositoryCard.astro';
+import { selected } from '../lib/content';
+import { orderAboutEntries } from '../lib/about';
 
 type Props = { page: CollectionEntry<'pages'> };
 const { page } = Astro.props;
 const groups = page.data.github_groups.filter((group) => group.enabled && group.account);
-function cardUrl(account: string, repository: string, dark: boolean) {
-  // Repository pin cards are rendered by GitHub Stats Extended, not a custom renderer.
-  const url = new URL('https://github-stats-extended.vercel.app/api/pin/');
-  url.search = new URLSearchParams({
-    username: account, repo: repository, show_owner: 'true', hide_border: 'true',
-    bg_color: '00000000', title_color: dark ? 'e36e61' : '7e2537',
-    text_color: dark ? 'e6edf4' : '192b3b', icon_color: dark ? 'c94c44' : '7e2537',
-    disable_animations: 'true',
-  }).toString();
-  return url.href;
-}
+const repositories = orderAboutEntries(await selected('repositories', page.data.repositories));
 ---
 {groups.length > 0 && <section class="container content-section" id="section-github" aria-labelledby="heading-github">
   <div class="section-heading"><div>
@@ -27,13 +20,8 @@ function cardUrl(account: string, repository: string, dark: boolean) {
       <h3 id={`github-${group.id}-heading`}>{group.title}</h3>
       <a class="text-link" href={`https://github.com/${group.account}`}>View on GitHub<Icon name="lucide:arrow-up-right" aria-hidden="true" /></a>
     </div>
-    {group.repositories.length > 0 && <div class="github-project-grid">
-      {group.repositories.map((repository) => <a class="github-project" href={`https://github.com/${group.account}/${repository}`}>
-        <span class="github-project-name">{repository}</span>
-        <span class="github-project-owner">{group.account}</span>
-        <img class="github-card-dark" src={cardUrl(group.account!, repository, true)} width="400" height="130" loading="lazy" decoding="async" alt={`GitHub details for ${repository}`} />
-        <img class="github-card-light" src={cardUrl(group.account!, repository, false)} width="400" height="130" loading="lazy" decoding="async" alt={`GitHub details for ${repository}`} />
-      </a>)}
+    {repositories.some((entry) => entry.data.group === group.id) && <div class="github-project-grid">
+      {repositories.filter((entry) => entry.data.group === group.id).map((entry) => <RepositoryCard entry={entry} />)}
     </div>}
   </section>)}
 </section>}

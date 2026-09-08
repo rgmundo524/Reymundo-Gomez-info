@@ -11,30 +11,51 @@ blocks:
   eyebrow: Outside work
   github_heading: Projects on GitHub
   github_intro: Selected projects I maintain and a place to follow my technical work.
+  skills_intro: A selection of my programming, systems, and analytical skills.
+  interests_heading: Hobbies
 section_order:
-- interests
-- github
+  - skills
+  - volunteering
+  - memberships
+  - daos
+  - interests
+  - github
+skill_symbols: dots
+skill_group_order:
+  - Programming
+  - Systems and analysis
+skills:
+  - python
+  - sql
+  - solidity
+  - linux-administration
+  - data-analysis
+  - data-visualization
+volunteering:
+  - example-volunteer-role
+memberships:
+  - example-organization-membership
+daos:
+  - dao-participation
+repositories:
+  - personal-website
 github_groups:
   - id: personal
     title: Personal projects
     account: rgmundo524
     enabled: true
     # Curated selection. Add other public repositories after reviewing them.
-    repositories:
-    - Reymundo-Gomez-info
   - id: go-crypto
     title: Go-Crypto projects
     # Set the organization name and enable this group after it exists.
     account: null
     enabled: false
-    repositories: []
 interests:
 - cycling
 - beer-brewing
 - 3d-printing
 - skiing
 - linux
-- dao-participation
 - homelab
 - puzzles
 - defi-hack-analysis

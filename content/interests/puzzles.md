@@ -1,5 +1,6 @@
 ---
 slug: puzzles
+icon: puzzle
 publication_status: draft
 title: Puzzles
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

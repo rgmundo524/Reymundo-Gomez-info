@@ -1,5 +1,10 @@
 ---
 slug: dao-participation
+kind: daos
+content_kind: profile
+participation: Interest
+display_order: 10
+icon: landmark
 publication_status: draft
 title: DAO participation
 editorial_note: The resume names this interest but supplies no specific projects, achievements,

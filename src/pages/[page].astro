@@ -9,6 +9,8 @@ import ArticleList from '../components/ArticleList.astro';
 import CredentialGroups from '../components/CredentialGroups.astro';
 import ContactCards from '../components/ContactCards.astro';
 import GitHubProjects from '../components/GitHubProjects.astro';
+import SkillsSection from '../components/SkillsSection.astro';
+import ActivitySection from '../components/ActivitySection.astro';
 import { isVisible, pageContact, pageProfile, selected } from '../lib/content';
 import { sortExperience } from '../lib/experience';
 
@@ -44,6 +46,8 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
   {contact && <ContactCards entry={contact} />}
   {page.data.section_order.map((name) => {
     if (name === 'github') return <GitHubProjects page={page} />;
+    if (name === 'skills') return <SkillsSection page={page} />;
+    if (name === 'volunteering' || name === 'memberships' || name === 'daos') return <ActivitySection page={page} kind={name} />;
     if (name === 'biography') return Bio && <section class="container bio-section" id="section-biography" aria-labelledby="heading-biography"><div><p class="eyebrow">{page.data.blocks.bio_eyebrow ?? 'Background'}</p><h2 id="heading-biography">{page.data.blocks.bio_heading ?? 'Biography'}</h2></div><div class="reading-copy"><Bio /></div></section>;
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
@@ -55,7 +59,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
     </section>;
     const section = sections.find((section) => section.name === name)!;
     return section.entries.length > 0 && <section class:list={['container', 'content-section', { 'experience-section': name === 'experience', 'frosted-section': name === 'expertise' || (page.id === 'work-history' && name === 'callouts') }]} id={`section-${name}`} aria-labelledby={`heading-${name}`}>
-      <div class="section-heading"><div><h2 id={`heading-${name}`}>{labels[name]}</h2>{page.data.blocks[`${name}_intro`] && <p class="reading-copy">{page.data.blocks[`${name}_intro`]}</p>}</div></div>
+      <div class="section-heading"><div><h2 id={`heading-${name}`}>{page.data.blocks[`${name}_heading`] ?? labels[name]}</h2>{page.data.blocks[`${name}_intro`] && <p class="reading-copy">{page.data.blocks[`${name}_intro`]}</p>}</div></div>
       {name === 'experience' && <ExperienceTimeline entries={experience} settings={page.data.timeline} />}
       <div class:list={['entry-list', `collection-${name}`]}>{section.entries.map((entry) => <ContentEntry entry={entry} expanded={name === 'expertise' || name === 'projects'} />)}</div>
     </section>;

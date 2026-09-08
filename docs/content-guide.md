@@ -95,6 +95,11 @@ short description and longer body remain in its own reusable file. Add `biograph
 to a page's `section_order` only when you want to render the professional profile
 body there.
 
+About also selects individual skill, activity, and repository records. See
+[About authoring](about-content.md) for the 1–5 self-assessment scale, volunteer
+work, memberships, DAO participation, icons, and card ordering. See
+[GitHub projects](github-projects.md) for the repository-file workflow.
+
 The Contact page selects one contact directory using `contact: reymundo`.
 `content/contacts/reymundo.md` holds organization cards, personal details, social
 links, and the displayed introduction. See [contact authoring](contacts.md).

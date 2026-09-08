@@ -1,11 +1,12 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
 import { formatMonth, formatPeriods } from '../lib/content';
 import { isCurrentPosition } from '../lib/experience';
 import type { ImageMetadata } from 'astro';
 
 type Props = {
-  entry: CollectionEntry<Exclude<keyof typeof import('../content.config').collections, 'pages' | 'profile' | 'contacts' | 'charts' | 'cases' | 'articles'>>;
+  entry: CollectionEntry<'experience' | 'education' | 'credentials' | 'expertise' | 'projects' | 'interests' | 'callouts'>;
   expanded?: boolean;
   grouped?: boolean;
 };
@@ -27,6 +28,7 @@ const links = [...credentialLinks, ...data.links].filter((link, index, items) =>
 ---
 <article class="content-entry" id={entry.id} tabindex="-1">
   <header>
+    {entry.collection === 'interests' && <Icon class="about-card-icon" name={`lucide:${entry.data.icon}`} aria-hidden="true" />}
     {badge && badgeImage && <img class="credential-badge" src={badgeImage.src} width={badgeImage.width} height={badgeImage.height} alt={badge.alt} loading="lazy" decoding="async" />}
     {entry.collection === 'experience' && <p class="meta">{formatPeriods(entry.data.periods)}{isCurrentPosition(entry) ? `${entry.data.periods.length ? ' · ' : ''}Current role` : ''}</p>}
     <Heading>{title}</Heading>

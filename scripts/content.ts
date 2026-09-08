@@ -41,10 +41,16 @@ async function markdownFiles(directory: string): Promise<string[]> {
 
 export function validateRecords(records: ContentRecord[]): void {
   const index = new Map<string, ContentRecord>();
+  const repositories = new Set<string>();
   for (const record of records) {
     const key = `${record.collection}/${record.data.slug}`;
     if (index.has(key)) throw new Error(`${record.file}: duplicate slug ${key}; also used by ${index.get(key)!.file}.`);
     index.set(key, record);
+    if (record.collection === 'repositories') {
+      const repository = `${record.data.owner}/${record.data.repository}`.toLowerCase();
+      if (repositories.has(repository)) throw new Error(`${record.file}: duplicate GitHub repository ${repository}. Use one Markdown record per repository.`);
+      repositories.add(repository);
+    }
   }
   for (const record of records) {
     if (record.collection === 'cases') {
@@ -63,6 +69,16 @@ export function validateRecords(records: ContentRecord[]): void {
         if (!target) throw new Error(`${record.file}: ${field} references missing ${collection}/${id}.`);
         if (record.data.publication_status === 'published' && target.data.publication_status !== 'published') {
           throw new Error(`${record.file}: published content references draft ${collection}/${id}. Publish both or remove the reference.`);
+        }
+        if (record.collection === 'pages' && target.collection === 'activities' && target.data.kind !== field) {
+          throw new Error(`${record.file}: ${field} references ${id}, which belongs to ${target.data.kind}.`);
+        }
+        if (record.collection === 'pages' && target.collection === 'repositories') {
+          const group = record.data.github_groups.find(({ id }) => id === target.data.group);
+          if (!group) throw new Error(`${record.file}: repository ${id} references missing GitHub group ${target.data.group}.`);
+          if (group.account && group.account.toLowerCase() !== target.data.owner.toLowerCase()) {
+            throw new Error(`${record.file}: repository ${id} owner does not match GitHub group ${group.id}.`);
+          }
         }
       }
     }
