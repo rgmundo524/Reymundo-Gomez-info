@@ -13,7 +13,7 @@ import { groupCredentials } from '../src/lib/credentials';
 import { orderAboutEntries } from '../src/lib/about';
 import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
-import { visibleArticles } from '../src/lib/articles';
+import { visibleArticles, visibleReading } from '../src/lib/articles';
 import { caseSearchRecords } from '../src/lib/search';
 import { createSearchCache } from '../scripts/search-index';
 import { mdxSearchText } from '../src/lib/mdx-text';
@@ -21,8 +21,78 @@ import { mkdtemp, mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promi
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { runInNewContext } from 'node:vm';
 
 const base = { slug: 'example', description_short: 'A short description.' };
+
+test('theme restores before paint, survives navigation and history, and resets for a new tab session', async () => {
+  const source = await readFile('src/scripts/theme-init.js', 'utf8');
+  const values = new Map<string, string>();
+  const boot = (storage = values, blocked = false) => {
+    const events: Record<string, () => void> = {};
+    const attributes: Record<string, string> = {};
+    let ready = false;
+    const toggle = { hidden: true, setAttribute: (key: string, value: string) => { attributes[key] = value; }, addEventListener: (name: string, action: () => void) => { events[name] = action; } };
+    const root = { dataset: { theme: 'dark' } };
+    const window = { addEventListener: (name: string, action: () => void) => { events[name] = action; }, get sessionStorage() {
+      if (blocked) throw new Error('Storage disabled');
+      return { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) };
+    }, get localStorage() { throw new Error('Persistent storage must not be used'); } };
+    const document = { documentElement: root, querySelector: () => ready ? toggle : null, addEventListener: (name: string, action: () => void) => { events[name] = action; } };
+    runInNewContext(source, { document, window });
+    return { root, attributes, toggle, events, mount: () => { ready = true; events.DOMContentLoaded(); } };
+  };
+  const first = boot();
+  assert.equal(first.root.dataset.theme, 'dark');
+  first.mount();
+  assert.equal(first.toggle.hidden, false);
+  first.events.click();
+  assert.equal(first.root.dataset.theme, 'light');
+  assert.equal(values.get('rg-theme'), 'light');
+  const next = boot();
+  assert.equal(next.root.dataset.theme, 'light'); // Head script runs before the button exists.
+  next.mount();
+  assert.equal(next.attributes['aria-pressed'], 'false');
+  assert.equal(next.attributes.title, 'Switch to dark mode');
+  next.events.click();
+  first.events.pageshow();
+  assert.equal(first.root.dataset.theme, 'dark');
+  assert.equal(first.attributes['aria-pressed'], 'true');
+  assert.equal(boot(new Map()).root.dataset.theme, 'dark');
+  assert.equal(boot(new Map([['rg-theme', 'invalid']])).root.dataset.theme, 'dark');
+  const unavailable = boot(new Map(), true);
+  unavailable.mount();
+  assert.doesNotThrow(() => unavailable.events.click());
+  assert.equal(unavailable.root.dataset.theme, 'light');
+});
+
+test('reading links require attribution and review, and retain separate source and curation dates', () => {
+  const reading = { ...base, title: 'An outside report', reading_type: 'report', source: { url: 'https://example.com/report.pdf', publisher: 'Publisher' } };
+  const example = schemas.reading.parse(reading);
+  assert.equal(example.source.published_on, null);
+  assert.equal(example.content_kind, 'example');
+  assert.equal(schemas.reading.safeParse({ ...reading, source: { url: 'https://example.com' } }).success, false);
+  assert.equal(schemas.reading.safeParse({ ...reading, source: { ...reading.source, url: 'javascript:alert(1)' } }).success, false);
+  assert.equal(schemas.reading.safeParse({ ...reading, publication_status: 'published', added_on: '2026-09-08' }).success, false);
+  const reviewed = { ...reading, content_kind: 'recommendation', publication_status: 'published' };
+  assert.equal(schemas.reading.safeParse(reviewed).success, false);
+  assert.equal(schemas.reading.safeParse({ ...reviewed, added_on: '2026-09-08' }).success, true);
+  const entries = [
+    { id: 'example', data: example },
+    { id: 'older', data: schemas.reading.parse({ ...reviewed, added_on: '2026-08-01', source: { ...reading.source, published_on: '2026-07-01' } }) },
+    { id: 'newer', data: schemas.reading.parse({ ...reviewed, added_on: '2026-09-08', source: { ...reading.source, published_on: '2020-01-01' } }) },
+  ];
+  assert.deepEqual(visibleReading(entries, false).map(({ id }) => id), ['newer', 'older']);
+  assert.deepEqual(visibleReading(entries, true).map(({ id }) => id), ['newer', 'older', 'example']);
+});
+
+test('Organizations has one page section with two uniquely ordered subgroup kinds', () => {
+  const page = { ...base, title: 'About', profile: 'example', section_order: ['organizations'] };
+  assert.deepEqual(schemas.pages.parse(page).organization_group_order, ['memberships', 'daos']);
+  assert.equal(schemas.pages.safeParse({ ...page, organization_group_order: ['daos', 'memberships'] }).success, true);
+  assert.equal(schemas.pages.safeParse({ ...page, organization_group_order: ['daos', 'daos'] }).success, false);
+  assert.equal(schemas.pages.safeParse({ ...page, section_order: ['memberships', 'daos'] }).success, false);
+});
 
 test('About ratings distinguish unknown levels and keep illustrative entries out of publication', () => {
   const skill = { ...base, title: 'Python', group: 'Programming' };

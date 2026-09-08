@@ -3,9 +3,9 @@ slug: sql
 publication_status: draft
 content_kind: profile
 title: SQL
-group: Programming
+group: Data and analysis
 icon: database
-display_order: 20
+display_order: 10
 # Assign your own level from 1 to 5; null means not yet rated.
 proficiency: null
 assessed_on: null

@@ -183,6 +183,20 @@ export const schemas = {
     if (entry.publication_status === 'published' && !entry.published_on) ctx.addIssue({ code: 'custom', path: ['published_on'], message: 'Published articles need a publication date.' });
     if (entry.updated_on && (!entry.published_on || entry.updated_on < entry.published_on)) ctx.addIssue({ code: 'custom', path: ['updated_on'], message: 'An update date requires a publication date and cannot precede it.' });
   }),
+  reading: z.strictObject({
+    ...common, title: text,
+    reading_type: z.enum(['article', 'blog', 'report']),
+    content_kind: z.enum(['recommendation', 'example']).default('example'),
+    source: z.strictObject({
+      url: webUrl, publisher: text, author: text.optional(),
+      published_on: z.iso.date().nullable().default(null),
+    }),
+    added_on: z.iso.date().nullable().default(null),
+    tags: z.array(slug).default([]).refine((items) => new Set(items).size === items.length, 'Use each tag once.'),
+  }).superRefine((entry, ctx) => {
+    if (entry.publication_status === 'published' && entry.content_kind === 'example') ctx.addIssue({ code: 'custom', path: ['content_kind'], message: 'Review the example and mark it as a recommendation before publishing.' });
+    if (entry.publication_status === 'published' && !entry.added_on) ctx.addIssue({ code: 'custom', path: ['added_on'], message: 'Published reading entries need an added_on date.' });
+  }),
   cases: z.strictObject({
     ...common,
     title: text,
@@ -224,13 +238,16 @@ export const schemas = {
     skill_symbols: z.enum(['dots', 'stars']).default('dots'),
     skill_group_order: z.array(text).default([])
       .refine((items) => new Set(items).size === items.length, 'List each skill group once.'),
+    organization_group_order: z.array(z.enum(['memberships', 'daos'])).length(2)
+      .refine((items) => new Set(items).size === items.length, 'List memberships and daos once each.')
+      .default(['memberships', 'daos']),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
     credentials_source: z.enum(['selected', 'all']).default('selected'),
     issuer_order: z.array(text).default([]).refine((issuers) => new Set(issuers.map((issuer) => issuer.replace(/\s+/g, ' ').toLocaleLowerCase('en-US'))).size === issuers.length,
       'List each issuer once; capitalization and repeated spaces are ignored.'),
     timeline: timelineSchema,
-    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'skills', 'volunteering', 'memberships', 'daos', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'skills', 'volunteering', 'organizations', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };

@@ -4,13 +4,17 @@ publication_status: draft
 navigation:
   label: Articles
   order: 55
-title: Articles & investigation notes
+title: Articles & reading
 profile: reymundo
-description_short: Writing on blockchain investigations, analytical methods, and communicating technical findings.
+description_short: My writing on blockchain investigations, alongside articles, blogs, and reports from other researchers and investigators.
 blocks:
   eyebrow: Ideas & observations
+  writing_heading: My writing
+  reading_heading: Recommended reading
+  reading_intro: Articles, blog posts, and investigation reports from other sources.
 section_order:
   - articles
 ---
 
-Notes on investigative methods, blockchain analysis, and making technical findings understandable.
+My investigation notes and analytical writing, alongside useful perspectives and
+reports from across the field.

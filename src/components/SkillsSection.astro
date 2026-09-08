@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import SkillCard from './SkillCard.astro';
+import SkillRow from './SkillRow.astro';
 import { selected } from '../lib/content';
 import { orderAboutEntries, skillLevels } from '../lib/about';
 type Props = { page: CollectionEntry<'pages'> };
@@ -18,8 +18,8 @@ const groups = [...new Set(entries.map((entry) => entry.data.group))].sort((a, b
     {page.data.blocks.skills_intro && <p class="reading-copy">{page.data.blocks.skills_intro}</p>}
   </div></div>
   <p class="skill-scale">Self-assessment scale: {skillLevels.map((label, index) => <span>{index + 1} · {label}</span>)}<span>Unrated skills have no assigned level.</span></p>
-  {groups.map((group, index) => <section class="skill-group" aria-labelledby={`skill-group-${index}`}>
+  <div class="skill-group-grid">{groups.map((group, index) => <section class="about-card skill-group-card" aria-labelledby={`skill-group-${index}`}>
     <h3 id={`skill-group-${index}`}>{group}</h3>
-    <div class="about-card-grid">{entries.filter((entry) => entry.data.group === group).map((entry) => <SkillCard entry={entry} symbols={page.data.skill_symbols} />)}</div>
-  </section>)}
+    <ul class="skill-rows">{entries.filter((entry) => entry.data.group === group).map((entry) => <SkillRow entry={entry} symbols={page.data.skill_symbols} />)}</ul>
+  </section>)}</div>
 </section>}

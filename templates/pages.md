@@ -27,7 +27,7 @@ section_order:
   - credentials
   - education
   - interests
-  # Optional About sections: skills, volunteering, memberships, daos.
+  # Optional About sections: skills, volunteering, organizations.
   # Add github to show the curated groups below.
   - callouts
 profile: new-profile
@@ -49,6 +49,9 @@ memberships: []
 daos: []
 skill_symbols: dots
 skill_group_order: []
+organization_group_order:
+  - memberships
+  - daos
 ---
 
 Write the full description here. Use paragraphs, lists, and links as needed.

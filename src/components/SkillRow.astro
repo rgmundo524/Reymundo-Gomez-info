@@ -9,13 +9,8 @@ const { proficiency } = entry.data;
 const rating = proficiency === null ? 'Not yet rated' : `${proficiency}/5 · ${skillLevels[proficiency - 1]}`;
 const ratingText = proficiency === null ? rating : `${proficiency} of 5, ${skillLevels[proficiency - 1]}, self-assessed`;
 ---
-<article class="about-card skill-card" id={`skill-${entry.id}`}>
-  <div class="about-card-heading">
-    <Icon class="about-card-icon" name={`lucide:${entry.data.icon}`} aria-hidden="true" />
-    <h4 id={`skill-${entry.id}-title`}>{entry.data.title}</h4>
-  </div>
-  {entry.data.content_kind === 'example' && <p class="example-label">Example skill · illustrative rating</p>}
-  <p>{entry.data.description_short}</p>
+<li class="skill-row" id={`skill-${entry.id}`}>
+  <h4 id={`skill-${entry.id}-title`}><Icon class="skill-icon" name={`lucide:${entry.data.icon}`} aria-hidden="true" />{entry.data.title}</h4>
   <div class="skill-rating">
     {proficiency !== null && <meter class="sr-only" min="0" max="5" value={proficiency} aria-labelledby={`skill-${entry.id}-title`} aria-valuetext={ratingText}>{ratingText}</meter>}
     <span class="skill-symbols" aria-hidden="true">
@@ -23,7 +18,11 @@ const ratingText = proficiency === null ? rating : `${proficiency} of 5, ${skill
     </span>
     <span class="skill-rating-label" aria-hidden={proficiency !== null ? 'true' : undefined}>{rating}</span>
   </div>
-  {entry.data.assessed_on && <p class="meta">Self-assessed <time datetime={entry.data.assessed_on}>{entry.data.assessed_on}</time></p>}
-  <details><summary>How I use it</summary><div class="prose"><Content /></div></details>
-  {entry.data.links.length > 0 && <ul class="links">{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
-</article>
+  {entry.data.content_kind === 'example' && <p class="example-label">Example skill · illustrative rating</p>}
+  <details><summary>Details<span class="sr-only"> about {entry.data.title}</span></summary>
+    <p>{entry.data.description_short}</p>
+    {entry.data.assessed_on && <p class="meta">Self-assessed <time datetime={entry.data.assessed_on}>{entry.data.assessed_on}</time></p>}
+    <div class="prose"><Content /></div>
+    {entry.data.links.length > 0 && <ul class="links">{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
+  </details>
+</li>

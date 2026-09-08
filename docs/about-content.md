@@ -1,7 +1,7 @@
 # About: skills, participation, hobbies, and projects
 
 `content/pages/about.md` controls section order and selects every displayed record.
-Use `section_order: [skills, volunteering, memberships, daos, interests, github]`
+Use `section_order: [skills, volunteering, organizations, interests, github]`
 to reproduce the current layout, or reorder/remove those names. Empty selections
 render no section. The professional biography and expertise remain on Work History.
 
@@ -9,8 +9,8 @@ render no section. The professional biography and expertise remain on Work Histo
 | --- | --- | --- | --- |
 | Skills | `content/skills/` | `skills` | `templates/skills.md` |
 | Volunteer work | `content/activities/`, `kind: volunteering` | `volunteering` | `templates/activities.md` |
-| Organization memberships | `content/activities/`, `kind: memberships` | `memberships` | `templates/activities.md` |
-| DAO participation | `content/activities/`, `kind: daos` | `daos` | `templates/activities.md` |
+| Organizations → Professional Organizations | `content/activities/`, `kind: memberships` | `memberships` | `templates/activities.md` |
+| Organizations → DAOs | `content/activities/`, `kind: daos` | `daos` | `templates/activities.md` |
 | Hobbies | `content/interests/` | `interests` | `templates/interests.md` |
 | GitHub projects | `content/repositories/` | `repositories` | `templates/repositories.md` |
 
@@ -24,6 +24,12 @@ using `blocks.interests_heading`. DAO participation has moved out of that list
 into its own activity file, so it is not repeated among the hobbies.
 
 ## Skill ratings
+
+Several related skills share one card. The `group` field on each skill determines
+its card; the current groups are Programming, Systems, and Data and analysis.
+The grid displays three cards per row on desktop, two on medium screens, and one
+on small screens. Each skill stays in its own reusable Markdown file, with its
+own symbols and an expandable Details section inside the group card.
 
 Each skill has a title, short description, longer Markdown body, `group`, `icon`,
 `display_order`, and `proficiency`. Set the rating to an integer from 1 to 5:
@@ -47,12 +53,21 @@ On the page, `skill_symbols: dots` selects red dots; `stars` selects red stars.
 Within each group, lower `display_order` values appear first, with the page list
 breaking ties. Skill entries can be reused on other pages.
 
-The initial six skills are a starter selection from the resume. Their ratings
+The initial seven skills are a starter selection from the resume. Their ratings
 remain `null` because the resume's numeric scores did not define a scale. The
 copyable template includes an explicitly illustrative 3/5 rating. Do not treat
 that template value as an assessment of an actual skill.
 
 ## Volunteering, memberships, and DAOs
+
+Organizations is one section with two subgroups: Professional Organizations and
+DAOs (Decentralized Autonomous Organization). Its position comes from
+`organizations` in `section_order`. The existing `memberships` and `daos` page lists
+select records for those subgroups; they are no longer top-level section names.
+`organization_group_order: [memberships, daos]` controls the subgroup order.
+Both names must appear once; a subgroup with no selected visible records is hidden.
+Use `blocks.organizations_heading` / `blocks.organizations_intro` for the section,
+and `blocks.memberships_heading` / `blocks.daos_heading` for subgroup labels.
 
 Each activity has a `kind` matching its page selection, plus optional `organization`,
 `role`, `participation`, and employment-style `periods` of quoted start/end months.

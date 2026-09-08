@@ -11,6 +11,7 @@ import ContactCards from '../components/ContactCards.astro';
 import GitHubProjects from '../components/GitHubProjects.astro';
 import SkillsSection from '../components/SkillsSection.astro';
 import ActivitySection from '../components/ActivitySection.astro';
+import OrganizationsSection from '../components/OrganizationsSection.astro';
 import { isVisible, pageContact, pageProfile, selected } from '../lib/content';
 import { sortExperience } from '../lib/experience';
 
@@ -47,13 +48,14 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
   {page.data.section_order.map((name) => {
     if (name === 'github') return <GitHubProjects page={page} />;
     if (name === 'skills') return <SkillsSection page={page} />;
-    if (name === 'volunteering' || name === 'memberships' || name === 'daos') return <ActivitySection page={page} kind={name} />;
+    if (name === 'volunteering') return <ActivitySection page={page} kind={name} />;
+    if (name === 'organizations') return <OrganizationsSection page={page} />;
     if (name === 'biography') return Bio && <section class="container bio-section" id="section-biography" aria-labelledby="heading-biography"><div><p class="eyebrow">{page.data.blocks.bio_eyebrow ?? 'Background'}</p><h2 id="heading-biography">{page.data.blocks.bio_heading ?? 'Biography'}</h2></div><div class="reading-copy"><Bio /></div></section>;
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
       <CredentialGroups entries={credentials} issuerOrder={page.data.issuer_order} />
     </section>;
-    if (name === 'articles') return <section class="container content-section" aria-label="Articles"><ArticleList /></section>;
+    if (name === 'articles') return <section class="container content-section" aria-label="Articles"><ArticleList page={page} /></section>;
     if (name === 'charts') return charts.length > 0 && <section class="container content-section" id="section-casework" aria-labelledby="chart-heading">
       <div class="section-heading"><h2 id="chart-heading">Case experience</h2></div><CaseDashboard charts={charts} />
     </section>;

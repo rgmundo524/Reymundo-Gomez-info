@@ -3,7 +3,7 @@ slug: data-visualization
 publication_status: draft
 content_kind: profile
 title: Data visualization
-group: Systems and analysis
+group: Data and analysis
 icon: chart-pie
 display_order: 30
 # Assign your own level from 1 to 5; null means not yet rated.

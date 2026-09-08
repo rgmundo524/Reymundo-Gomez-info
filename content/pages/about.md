@@ -16,19 +16,23 @@ blocks:
 section_order:
   - skills
   - volunteering
-  - memberships
-  - daos
+  - organizations
   - interests
   - github
 skill_symbols: dots
 skill_group_order:
   - Programming
-  - Systems and analysis
+  - Systems
+  - Data and analysis
+organization_group_order:
+  - memberships
+  - daos
 skills:
   - python
   - sql
   - solidity
   - linux-administration
+  - network-administration
   - data-analysis
   - data-visualization
 volunteering:

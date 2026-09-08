@@ -10,3 +10,9 @@ export function visibleArticles<T extends Article>(entries: T[], includeDrafts: 
 export function articleDate(date: string): string {
   return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
+
+type Reading = { id: string; data: ContentData<'reading'> };
+export function visibleReading<T extends Reading>(entries: T[], includeDrafts: boolean): T[] {
+  return entries.filter(({ data }) => includeDrafts || (data.publication_status === 'published' && data.content_kind === 'recommendation'))
+    .sort((a, b) => (b.data.added_on ?? '').localeCompare(a.data.added_on ?? '') || a.id.localeCompare(b.id));
+}

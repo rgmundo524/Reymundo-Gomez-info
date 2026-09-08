@@ -88,6 +88,7 @@ from `templates/` into the matching collection under `content/`.
 | `content/charts/` | Category definitions for case-filtering sunburst charts |
 | `content/cases/` | One structured record per case, driving charts and statistics |
 | `content/articles/` | Articles with dates, topics, takeaways, and related cases |
+| `content/reading/` | External articles, blog posts, and reports with attribution and reading notes |
 | `content/pages/` | Page introductions and selected content IDs |
 | `templates/` | Copyable examples; never loaded into the site |
 | `src/content/schemas.ts` | Shared authoring rules |
@@ -142,8 +143,9 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 The content inventory remains in draft while its wording and source claims are
 reviewed. It includes professional history, credentials, selected work, interests,
 case examples, a starter article, contact details, and page selections. The About
-additions include six unrated skills, a curated repository, and clearly labelled
-volunteer and membership examples. Run `npm run check:content` for the current count.
+additions include seven unrated skills in three group cards, a curated repository,
+and clearly labelled volunteer and membership examples. Organizations contains
+Professional Organizations and DAOs. Run `npm run check:content` for the current count.
 
 Casework is a Markdown-backed tracker. Add a record under `content/cases/` and
 its chart count, category share, and statistics update from that record. Real
@@ -153,6 +155,8 @@ Pagefind adds case search with per-case filters and direct links into summaries.
 Search refreshes from Markdown in local development and is generated with static
 builds. Content collections accept both `.md` and `.mdx`. The Articles section
 automatically discovers both formats, including files in subfolders.
+It shows My writing alongside Recommended reading, which discovers external
+sources from `content/reading/` and links directly to the original publisher.
 See [articles, search, and future editor storage](docs/articles-and-search.md).
 
 Astro Icon supplies locally bundled Lucide icons. OpenGraph Canvas generates

@@ -2,14 +2,15 @@
 import { render, type CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
 import { formatPeriods } from '../lib/dates';
-type Props = { entry: CollectionEntry<'activities'> };
-const { entry } = Astro.props;
+type Props = { entry: CollectionEntry<'activities'>; grouped?: boolean };
+const { entry, grouped = false } = Astro.props;
+const Heading = grouped ? 'h4' : 'h3';
 const { Content } = await render(entry);
 ---
 <article class="about-card" id={`activity-${entry.id}`}>
   <div class="about-card-heading">
     <Icon class="about-card-icon" name={`lucide:${entry.data.icon}`} aria-hidden="true" />
-    <h3>{entry.data.title}</h3>
+    <Heading>{entry.data.title}</Heading>
   </div>
   {entry.data.content_kind === 'example' && <p class="example-label">Example entry · not a claimed affiliation</p>}
   {entry.data.organization && <p class="entry-organization">{entry.data.organization}</p>}

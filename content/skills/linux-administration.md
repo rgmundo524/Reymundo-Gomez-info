@@ -3,7 +3,7 @@ slug: linux-administration
 publication_status: draft
 content_kind: profile
 title: Linux administration
-group: Systems and analysis
+group: Systems
 icon: terminal
 display_order: 10
 # Assign your own level from 1 to 5; null means not yet rated.

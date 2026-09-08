@@ -6,6 +6,7 @@ import { Icon } from 'astro-icon/components';
 import { navigationIcons } from '../lib/icons';
 import { openGraphPath } from '../lib/open-graph';
 import ParticleBackground from '../components/ParticleBackground.astro';
+import themeInit from '../scripts/theme-init.js?raw';
 
 type Props = {
   title: string;
@@ -29,6 +30,7 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
+    <script is:inline set:html={themeInit}></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content={description} />
@@ -92,21 +94,6 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
         const headerObserver = new ResizeObserver(updateHeaderHeight);
         headerObserver.observe(header);
         import.meta.hot?.dispose(() => headerObserver.disconnect());
-      }
-      const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
-      function applyTheme(dark: boolean) {
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-        toggle?.setAttribute('aria-pressed', String(dark));
-        toggle?.setAttribute('title', dark ? 'Switch to light mode' : 'Switch to dark mode');
-      }
-      if (toggle) {
-        toggle.hidden = false;
-        applyTheme(true);
-        toggle.addEventListener('click', () => {
-          const dark = document.documentElement.dataset.theme !== 'dark';
-          applyTheme(dark);
-        });
-        window.addEventListener('pageshow', (event) => { if (event.persisted) applyTheme(true); });
       }
     </script>
   </body>

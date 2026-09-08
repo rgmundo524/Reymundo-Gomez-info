@@ -103,7 +103,7 @@ visible in the current build. Work History now lives at `/work-history/`, and
 
 Supporting pages set `section_order`, a list of collection names such as
 `experience`, `biography`, `charts`, `projects`, `credentials`, `education`, `expertise`,
-`interests`, `github`, `skills`, `volunteering`, `memberships`, `daos`, and `callouts`. Listed sections render only when they have content;
+`interests`, `github`, `skills`, `volunteering`, `organizations`, and `callouts`. Listed sections render only when they have content;
 unlisted sections are omitted. The Astro templates still define each section's
 visual layout and the curated homepage structure.
 
@@ -131,8 +131,9 @@ to the About page's `interests` list. The list also controls display order; remo
 a slug to omit it from the page. Longer stories belong in the hobby file body.
 The existing selections were moved from Work History without inventing additional
 personal history. The professional profile body remains on Work History.
-Skills, volunteering, organization memberships, and DAO participation have separate
-sections and Markdown records. See [About authoring](about-content.md) for skill
+Skills and volunteering have dedicated sections. Organizations groups Professional
+Organizations and DAOs within a single section. Related skills share one card,
+with three cards per desktop row. See [About authoring](about-content.md) for skill
 ratings, activity fields, selection, and order. The `github` section follows the
 hobbies and selects per-repository files with `repositories`; `github_groups`
 controls personal and organization headings. See [GitHub project cards](github-projects.md).
@@ -230,11 +231,19 @@ each credential. See [credential authoring](credentials.md).
 
 ## Color mode
 
-Every page starts in dark mode directly in its HTML, including without JavaScript.
-The icon-only header toggle switches the current page to light or dark mode. It
-does not read or save a preference or follow the system color scheme. New page
-loads and browser history restorations return to dark mode. The accessible label
-and pressed state identify the toggle; its tooltip describes the next action.
+Dark mode is the default for a new page session and the fallback without JavaScript.
+The icon-only toggle saves the choice in this tab's `sessionStorage` as `rg-theme`.
+A small head script restores it before the first paint, so page navigation,
+reloads, and browser back/forward history keep the same theme. The accessible
+pressed state and tooltip stay synchronized with it. Persistent `localStorage`
+preferences and the system color scheme are not used for the theme.
+
+The preference lasts for the tab's page session. Normal session closure discards
+it; browser tab/session restoration may preserve that session, and a tab opened
+from another tab can inherit its initial session storage. See
+[sessionStorage semantics](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage).
+If storage is blocked, the toggle still works on the current page. The single
+implementation is `src/scripts/theme-init.js`, inlined by the shared layout.
 
 The toggle retains a 44-pixel touch target. It and the Contact button stay together
 on narrow screens, above the wrapping navigation links. Both color modes use the
