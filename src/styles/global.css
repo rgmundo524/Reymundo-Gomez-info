@@ -152,6 +152,14 @@ li + li { margin-top: .4rem; }
 .prose h2 { font-family: inherit; font-size: 1.15rem; font-weight: 600; letter-spacing: normal; margin: 1.5rem 0 .6rem; }
 .prose p { margin-bottom: 1rem; }
 .content-entry details .prose { border-left: 2px solid var(--line); padding-left: 1.25rem; margin-top: .75rem; }
+.frosted-section .entry-list { display: grid; gap: 1.25rem; border-top: 0; }
+.frosted-section .content-entry { min-width: 0; padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid var(--line); border-radius: .75rem; background: var(--surface); box-shadow: 0 .5rem 2rem rgb(0 0 0 / 6%); }
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .frosted-section .content-entry { background: color-mix(in srgb, var(--surface) 78%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+}
+@media print {
+  .frosted-section .content-entry { background: var(--paper); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+}
 .collection-credentials { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3rem; }
 .credential-issuer-nav { display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: 2.5rem; }
 .credential-issuer-nav a { display: inline-flex; align-items: center; gap: .6rem; padding: .5rem .8rem; min-height: 2.75rem; border: 1px solid var(--line); text-decoration: none; font-size: .875rem; }

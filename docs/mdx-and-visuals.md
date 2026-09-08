@@ -7,6 +7,17 @@ reference checks, draft rules, and slug-based URLs. No existing Markdown file
 needs converting unless it benefits from components. Duplicate slugs across
 formats are rejected. Keep imports below the closing frontmatter separator.
 
+Use `.md` for ordinary jobs, credentials, hobbies, page settings, and prose-only
+cases. Use `.mdx` when an article or other entry benefits from components inside
+its body. These formats already share one content system, so standardizing the
+extension would not simplify the schemas or rendering. If you prefer MDX for a
+particular entry, rename it rather than keeping both versions, and retain its
+slug. MDX uses JSX syntax: literal braces and angle brackets can need escaping,
+and component tags must be correctly closed. Check and build after conversion.
+
+References: [Astro MDX](https://docs.astro.build/en/guides/integrations-guide/mdx/),
+[MDX syntax troubleshooting](https://mdxjs.com/docs/troubleshooting-mdx/#problems-writing-mdx).
+
 The draft `content/articles/investigation-notes.mdx` demonstrates two components:
 
 ```mdx

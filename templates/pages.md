@@ -21,6 +21,7 @@ timeline:
 section_order:
   - charts
   - experience
+  # Add biography to render the selected profile body at this position.
   - expertise
   - projects
   - credentials

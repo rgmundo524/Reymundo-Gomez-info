@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This version has a focused professional landing page, a profile portrait, and
-supporting Work History, Casework, Credentials, Expertise, Articles, and Contact pages. Reusable Markdown
+supporting Work History, Casework, Credentials, About, Articles, and Contact pages. Reusable Markdown
 supplies the content across all routes. Content entries remain drafts for local
 development; an ordinary production build excludes them.
 
@@ -93,6 +93,9 @@ from `templates/` into the matching collection under `content/`.
 
 Each file in `content/pages/` controls navigation, section order, and selections.
 Work History automatically discovers job files and uses their `display_order`.
+Its expertise and approach sections follow the professional biography in frosted
+panels. Edit `content/pages/work-history.md` for that selection and order, and
+`content/pages/about.md` for the personal introduction and hobby selection.
 The home page presents a small selection; the supporting pages provide the full
 background and details. Other content files supply the writing. See
 [the page structure guide](docs/page-structure.md) for the route map and portrait.

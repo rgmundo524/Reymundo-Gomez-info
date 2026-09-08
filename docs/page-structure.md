@@ -7,8 +7,9 @@ background or work.
 | Route | Content selection | Purpose |
 | --- | --- | --- |
 | `/` | `content/pages/home.md` | Portrait, introduction, three expertise highlights, selected work, contact link |
-| `/about/` | `content/pages/about.md` | Work History: interactive role timeline, employment details, interests, biography |
-| `/expertise/` | `content/pages/expertise.md` | Full descriptions of all expertise areas and analytical approach |
+| `/work-history/` | `content/pages/work-history.md` | Interactive role timeline, employment details, professional biography, then expertise and analytical approach in frosted panels |
+| `/about/` | `content/pages/about.md` | Personal introduction, hobbies, and life outside work |
+| `/expertise/` | Compatibility redirect | Opens the expertise section at `/work-history/#section-expertise` when Work History is visible |
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Credentials discovered from Markdown, grouped by issuer, followed by education |
 | `/contact/` | `content/pages/contact.md` selects `content/contacts/reymundo.md` | Organization enquiry cards and a combined personal/social card |
@@ -28,8 +29,8 @@ blocks, while supporting pages use fuller content.
 - `src/styles/global.css` contains the shared navy, burgundy, white, typography,
   spacing, and responsive layout rules.
 - `src/pages/index.astro` renders the curated landing page.
-- `src/pages/[page].astro` renders the supporting page selections. The Work History
-  page also uses the full body of the selected profile.
+- `src/pages/[page].astro` renders the supporting page selections. A `biography`
+  section uses the full body of the selected profile at its configured position.
 - `src/components/ContentEntry.astro` presents the detailed content records.
 
 Typography uses locally available serif and system fonts. No hosted font,
@@ -74,7 +75,8 @@ optional fields under `social`; links appear in their written order. See
 
 `npm run dev` and the draft build show all seven main pages, the ten category pages,
 and the draft article.
-The ordinary production build continues to exclude draft content. Navigation
+The former Expertise URL also redirects to the new Work History section in builds
+where Work History is visible. The ordinary production build continues to exclude draft content. Navigation
 links follow visible page records, and home-page links are omitted when their
 destination page is not visible. Category return links lead to Casework when
 available and fall back to the home page otherwise.
@@ -89,17 +91,37 @@ select draft content. Site metadata remains `noindex` during development.
 
 Every page can set `navigation: { label: Home, order: 10 }` in its frontmatter.
 Lower values appear first; omitting navigation hides the menu item. The current
-menu order is Home, Work History, Casework, Credentials, Expertise, Articles.
+menu order is Home, Work History, Casework, Credentials, About, Articles.
 Contact is a separate button immediately to the right of the compact theme toggle.
 The `/contact/` page remains available; the button appears only when that page is
-visible in the current build. The renamed Work History page retains `/about/` to
-preserve existing links.
+visible in the current build. Work History now lives at `/work-history/`, and
+`/about/` is the personal page. Homepage job and expertise links use the new route.
 
 Supporting pages set `section_order`, a list of collection names such as
-`experience`, `charts`, `projects`, `credentials`, `education`, `expertise`,
+`experience`, `biography`, `charts`, `projects`, `credentials`, `education`, `expertise`,
 `interests`, and `callouts`. Listed sections render only when they have content;
 unlisted sections are omitted. The Astro templates still define each section's
 visual layout and the curated homepage structure.
+
+Work History sets `section_order: [experience, biography, expertise, callouts]`.
+Its `expertise` and `callouts` lists select reusable records in the written order.
+The expertise and approach cards use translucent, blurred backgrounds in both
+themes, with a solid fallback when backdrop blur is unsupported. The timeline
+keeps its transparent background.
+
+The `biography` section renders the selected profile body; `blocks.bio_heading`
+and optional `blocks.bio_eyebrow` control its heading. Other record sections can
+use `blocks.<section>_intro`, such as `blocks.expertise_intro`, for an introduction.
+
+## Personal About page
+
+Edit the body of `content/pages/about.md` for the personal introduction. Each
+hobby stays in its existing file under `content/interests/`. Add a hobby by
+copying `templates/interests.md`, assigning a unique slug, and adding that slug
+to the About page's `interests` list. The list also controls display order; remove
+a slug to omit it from the page. Longer stories belong in the hobby file body.
+The existing selections were moved from Work History without inventing additional
+personal history. The professional profile body remains on Work History.
 
 ## Adding a position
 
@@ -123,7 +145,7 @@ approaches the viewport. Its transparent canvas, plot, and axis labels leave the
 site-wide particle animation visible. The chart follows light/dark mode and
 respects reduced motion. No hosted chart service, account, or React is needed.
 
-`content/pages/about.md` controls the timeline:
+`content/pages/work-history.md` controls the timeline:
 
 ```yaml
 timeline:

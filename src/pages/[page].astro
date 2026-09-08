@@ -13,14 +13,19 @@ import { sortExperience } from '../lib/experience';
 
 export async function getStaticPaths() {
   const pages = await getCollection('pages', (entry) => entry.id !== 'home' && isVisible(entry));
-  return pages.map((page) => ({ params: { page: page.id }, props: { page } }));
+  const routes = pages.map((page) => ({ params: { page: page.id }, props: { page } }));
+  // Preserve the former Expertise URL only when its new destination is visible.
+  const workHistory = pages.find((page) => page.id === 'work-history');
+  if (workHistory) routes.push({ params: { page: 'expertise' }, props: { page: workHistory } });
+  return routes;
 }
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 const { page }: Props = Astro.props;
+if (Astro.params.page === 'expertise') return Astro.redirect('/work-history/#section-expertise', 301);
 const profile = await pageProfile(page);
 const contact = await pageContact(page);
 const { Content: Intro } = await render(contact ?? page);
-const biography = page.id === 'about' && profile ? await render(profile) : undefined;
+const biography = page.data.section_order.includes('biography') && profile ? await render(profile) : undefined;
 const Bio = biography?.Content;
 const charts = await selected('charts', page.data.charts);
 const experience = sortExperience(page.data.experience_source === 'all' ? await getCollection('experience', isVisible) : await selected('experience', page.data.experience));
@@ -37,6 +42,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
   </header>
   {contact && <ContactCards entry={contact} />}
   {page.data.section_order.map((name) => {
+    if (name === 'biography') return Bio && <section class="container bio-section" id="section-biography" aria-labelledby="heading-biography"><div><p class="eyebrow">{page.data.blocks.bio_eyebrow ?? 'Background'}</p><h2 id="heading-biography">{page.data.blocks.bio_heading ?? 'Biography'}</h2></div><div class="reading-copy"><Bio /></div></section>;
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
       <CredentialGroups entries={credentials} issuerOrder={page.data.issuer_order} />
@@ -46,11 +52,10 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
       <div class="section-heading"><h2 id="chart-heading">Case experience</h2></div><CaseDashboard charts={charts} />
     </section>;
     const section = sections.find((section) => section.name === name)!;
-    return section.entries.length > 0 && <section class:list={['container', 'content-section', { 'experience-section': name === 'experience' }]} id={`section-${name}`} aria-labelledby={`heading-${name}`}>
-      <div class="section-heading"><h2 id={`heading-${name}`}>{labels[name]}</h2></div>
+    return section.entries.length > 0 && <section class:list={['container', 'content-section', { 'experience-section': name === 'experience', 'frosted-section': name === 'expertise' || (page.id === 'work-history' && name === 'callouts') }]} id={`section-${name}`} aria-labelledby={`heading-${name}`}>
+      <div class="section-heading"><div><h2 id={`heading-${name}`}>{labels[name]}</h2>{page.data.blocks[`${name}_intro`] && <p class="reading-copy">{page.data.blocks[`${name}_intro`]}</p>}</div></div>
       {name === 'experience' && <ExperienceTimeline entries={experience} settings={page.data.timeline} />}
       <div class:list={['entry-list', `collection-${name}`]}>{section.entries.map((entry) => <ContentEntry entry={entry} expanded={name === 'expertise' || name === 'projects'} />)}</div>
     </section>;
   })}
-  {Bio && <section class="container bio-section"><div><p class="eyebrow">Background</p><h2>{page.data.blocks.bio_heading}</h2></div><div class="reading-copy"><Bio /></div></section>}
 </SiteLayout>

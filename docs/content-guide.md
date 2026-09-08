@@ -88,6 +88,13 @@ Other collections retain explicit page selections. Page records get their own ro
 credentials appear within the selected page.
 See [the page structure guide](page-structure.md).
 
+`content/pages/work-history.md` selects the professional sections and their order,
+including expertise at the end. `content/pages/about.md` owns the personal
+introduction and ordered hobby selection from `content/interests/`. Each hobby's
+short description and longer body remain in its own reusable file. Add `biography`
+to a page's `section_order` only when you want to render the professional profile
+body there.
+
 The Contact page selects one contact directory using `contact: reymundo`.
 `content/contacts/reymundo.md` holds organization cards, personal details, social
 links, and the displayed introduction. See [contact authoring](contacts.md).

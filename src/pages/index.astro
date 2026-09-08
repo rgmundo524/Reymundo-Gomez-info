@@ -26,7 +26,7 @@ const hasPage = (id: string) => visiblePages.some((entry) => entry.id === id);
         {Intro && <div class="hero-intro"><Intro /></div>}
         <div class="actions">
           {hasPage('casework') && <a class="button button-primary" href="/casework/">Explore my work <Icon name="lucide:arrow-up-right" aria-hidden="true" /></a>}
-          {hasPage('about') && <a class="text-link" href="/about/">Work history <Icon name="lucide:arrow-right" aria-hidden="true" /></a>}
+          {hasPage('work-history') && <a class="text-link" href="/work-history/">Work history <Icon name="lucide:arrow-right" aria-hidden="true" /></a>}
         </div>
       </div>
       <Portrait profile={profile} />
@@ -37,11 +37,11 @@ const hasPage = (id: string) => visiblePages.some((entry) => entry.id === id);
     </div>}
     {expertise.length > 0 && <section class="container home-section">
       <div class="section-heading"><div><p class="eyebrow">Areas of focus</p><h2>{page.data.blocks.expertise_heading}</h2></div>
-        {hasPage('expertise') && <a class="text-link" href="/expertise/">All areas of expertise <Icon name="lucide:arrow-right" aria-hidden="true" /></a>}
+        {hasPage('work-history') && <a class="text-link" href="/work-history/#section-expertise">All areas of expertise <Icon name="lucide:arrow-right" aria-hidden="true" /></a>}
       </div>
       <div class="expertise-grid">{expertise.map((entry, index) => <article class="expertise-preview">
         <span class="section-number">{String(index + 1).padStart(2, '0')}</span>
-        <h3>{hasPage('expertise') ? <a href={`/expertise/#${entry.id}`}>{entry.data.title}</a> : entry.data.title}</h3>
+        <h3>{hasPage('work-history') ? <a href={`/work-history/#${entry.id}`}>{entry.data.title}</a> : entry.data.title}</h3>
         <p>{entry.data.description_short}</p>
       </article>)}</div>
     </section>}
