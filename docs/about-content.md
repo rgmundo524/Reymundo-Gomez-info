@@ -32,7 +32,7 @@ on small screens. Each skill stays in its own reusable Markdown file, with its
 own symbols and an expandable Details section inside the group card.
 
 Each skill has a title, short description, longer Markdown body, `group`, `icon`,
-`display_order`, and `proficiency`. Set the rating to an integer from 1 to 5:
+`display_order`, and `proficiency`. Set the rating from 1 to 5 in half-point steps:
 
 | Value | Displayed level |
 | --- | --- |
@@ -45,6 +45,9 @@ Each skill has a title, short description, longer Markdown body, `group`, `icon`
 
 For example, `proficiency: 3` fills exactly three of the five symbols and shows
 `3/5 · Proficient`. These are self-assessments, not third-party credentials.
+`proficiency: 2.5` fills two complete symbols and half of the third, and labels
+the level as between Developing and Proficient. Both dots and stars preserve the
+fraction; the accessible meter announces the same numeric value.
 `assessed_on` optionally records a quoted `YYYY-MM-DD` date. Put specific examples
 and evidence links in the body and `links` rather than relying on a score alone.
 
@@ -53,10 +56,10 @@ On the page, `skill_symbols: dots` selects red dots; `stars` selects red stars.
 Within each group, lower `display_order` values appear first, with the page list
 breaking ties. Skill entries can be reused on other pages.
 
-The initial seven skills are a starter selection from the resume. Their ratings
-remain `null` because the resume's numeric scores did not define a scale. The
-copyable template includes an explicitly illustrative 3/5 rating. Do not treat
-that template value as an assessment of an actual skill.
+The original seven skills remain an unrated starter selection. Set proficiency
+from your own self-assessment; leave unknown levels as `null`. The copyable
+template's 3/5 rating is illustrative. A resume update date does not necessarily
+establish when a skill was assessed, so record `assessed_on` only when known.
 
 ## Volunteering, memberships, and DAOs
 

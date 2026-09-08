@@ -158,7 +158,7 @@ export const schemas = {
   }),
   skills: z.strictObject({
     ...aboutFields, group: text, icon: aboutIcon.default('code'),
-    proficiency: z.number().int().min(1).max(5).nullable().default(null),
+    proficiency: z.number().min(1).max(5).multipleOf(0.5).nullable().default(null),
     assessed_on: z.iso.date().nullable().default(null),
   }).refine(reviewedAboutEntry, { message: exampleMessage, path: ['content_kind'] }),
   activities: z.strictObject({

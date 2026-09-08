@@ -10,7 +10,7 @@ import { classificationKeys, chartSearchSelection, createCaseSearchController, t
 import { sortExperience, isCurrentPosition, plotExperience } from '../src/lib/experience';
 import { careerTimeline, careerTooltip, monthTimestamp, timelineWindow } from '../src/lib/career-timeline';
 import { groupCredentials } from '../src/lib/credentials';
-import { orderAboutEntries } from '../src/lib/about';
+import { orderAboutEntries, skillLevelLabel } from '../src/lib/about';
 import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
 import { visibleArticles } from '../src/lib/articles';
@@ -180,8 +180,10 @@ test('Organizations has one page section with two uniquely ordered subgroup kind
 test('About ratings distinguish unknown levels and keep illustrative entries out of publication', () => {
   const skill = { ...base, title: 'Python', group: 'Programming' };
   assert.equal(schemas.skills.parse(skill).proficiency, null);
-  for (const value of [1, 2, 3, 4, 5, null]) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, true);
-  for (const value of [0, 6, 2.5, '3']) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, false);
+  for (const value of [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, null]) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, true);
+  for (const value of [0, 0.5, 6, 2.25, '3']) assert.equal(schemas.skills.safeParse({ ...skill, proficiency: value }).success, false);
+  assert.equal(skillLevelLabel(2.5), 'Between Developing and Proficient');
+  assert.equal(skillLevelLabel(5), 'Expert');
   assert.equal(schemas.skills.safeParse({ ...skill, icon: 'nonexistent-icon' }).success, false);
   assert.equal(schemas.skills.safeParse({ ...skill, content_kind: 'example', publication_status: 'published' }).success, false);
   const activity = { ...base, title: 'Example membership', kind: 'memberships', content_kind: 'example' };

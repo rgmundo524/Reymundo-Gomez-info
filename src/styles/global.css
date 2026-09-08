@@ -217,6 +217,8 @@ li + li { margin-top: .4rem; }
 .skill-rating { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-block: .65rem; }
 .skill-symbols { display: inline-flex; gap: .4rem; color: var(--accent); }
 .skill-symbol { width: 1rem; height: 1rem; fill: none; }
+.skill-symbol-slot { position: relative; display: inline-flex; width: 1rem; height: 1rem; }
+.skill-symbol-fill { position: absolute; inset: 0; }
 .skill-symbol.is-filled :is(circle, path) { fill: currentColor; }
 .skill-rating-label { color: var(--muted); font-size: .8rem; }
 .about-card .example-label { color: var(--accent-text); font-size: .8rem; }
