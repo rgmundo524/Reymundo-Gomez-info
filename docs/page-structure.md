@@ -25,7 +25,11 @@ blocks, while supporting pages use fuller content.
 ## Shared presentation
 
 - `src/layouts/SiteLayout.astro` owns the header, navigation, footer, title, and
-  description. All routes use it.
+  description. All routes use it. The compact navigation header stays at the top
+  while scrolling, with a blurred background. Its measured height reserves room
+  for anchor navigation and keyboard focus as links wrap. On short screens the
+  header is capped at half the viewport and can scroll internally; print uses
+  normal document flow.
 - `src/styles/global.css` contains the shared navy, burgundy, white, typography,
   spacing, and responsive layout rules.
 - `src/pages/index.astro` renders the curated landing page.
@@ -105,9 +109,14 @@ visual layout and the curated homepage structure.
 
 Work History sets `section_order: [experience, biography, expertise, callouts]`.
 Its `expertise` and `callouts` lists select reusable records in the written order.
-The expertise and approach cards use translucent, blurred backgrounds in both
-themes, with a solid fallback when backdrop blur is unsupported. The timeline
-keeps its transparent background.
+The expertise and approach cards and homepage Selected Work banner share a
+translucent tint with a soft Gaussian backdrop blur in both themes. In
+`src/styles/global.css`, `--glass-surface` uses 38% background opacity (62%
+transparency), and `--glass-blur` is 5px. Lower the opacity to reveal more of the
+particles; increase the blur to soften their outlines. Text remains fully opaque.
+The tint stays translucent even if backdrop blur is unavailable. The timeline
+keeps its transparent background. The sticky header has a separate, stronger
+85% tint so navigation remains legible over scrolling text.
 
 The `biography` section renders the selected profile body; `blocks.bio_heading`
 and optional `blocks.bio_eyebrow` control its heading. Other record sections can

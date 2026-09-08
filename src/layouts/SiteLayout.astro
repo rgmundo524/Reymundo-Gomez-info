@@ -82,6 +82,17 @@ const socialImage = new URL(openGraphPath(currentPath), Astro.site!);
       </div>
     </footer>
     <script>
+      // Keep anchors and keyboard focus below the sticky header as its links wrap.
+      const header = document.querySelector<HTMLElement>('.site-header');
+      if (header) {
+        const updateHeaderHeight = () => {
+          document.documentElement.style.setProperty('--site-header-height', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+        };
+        updateHeaderHeight();
+        const headerObserver = new ResizeObserver(updateHeaderHeight);
+        headerObserver.observe(header);
+        import.meta.hot?.dispose(() => headerObserver.disconnect());
+      }
       const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
       function applyTheme(dark: boolean) {
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';

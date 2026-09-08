@@ -65,6 +65,29 @@ Only displayed fields are rendered. `editorial_note` remains an authoring note,
 and personal contact information is not added to the case-search index. No
 database, form backend, email-delivery service, or new package is needed.
 
+## Scheduling calls with Google Calendar
+
+Google Calendar's native appointment schedules can handle booking without a
+custom scheduler, Calendar API integration, or D1 table in this site. On desktop,
+choose **Create → Appointment schedule**, set your availability and call duration,
+enable calendar availability checks, and select Google Meet if appropriate. Save
+the schedule and copy its booking-page link.
+
+The existing contact record already supports that link: add an item under
+`social.links` with `label: Book a call` and `url` set to the actual booking URL.
+Its position in the list controls display order. No booking URL has been added
+yet. Use the booking page, rather than a link to your private Calendar view.
+
+A personal Google Account supports one booking page. Checking availability
+across multiple calendars, extra schedules, and automated reminders require an
+eligible paid plan. Google also supplies popup-button and inline-page embeds if
+booking directly inside the Contact page is preferred later.
+
+Official guides, checked September 8, 2026:
+[create an appointment schedule](https://support.google.com/calendar/answer/10729749?hl=en),
+[plan features](https://support.google.com/calendar/answer/16287038?hl=en),
+[share or embed a booking page](https://support.google.com/calendar/answer/10733297?hl=en).
+
 ## Initial link sources
 
 Checked September 7, 2026:
