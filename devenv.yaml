@@ -1,3 +1,6 @@
+require_version: ">=2.1"
+shell: fish
+
 inputs:
   nixpkgs:
     # Pinned revision of devenv-nixpkgs/rolling, resolved during scaffold setup.

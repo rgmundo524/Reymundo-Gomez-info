@@ -50,7 +50,7 @@ do not supply public branding.
 From the builder repository, inside `devenv shell`:
 
 ```sh
-npm run content:export -- ../reymundo-site-data
+site-export ../reymundo-site-data
 ```
 
 The destination's parent must already exist. The command validates and copies
@@ -60,29 +60,20 @@ It does not delete originals, create a GitHub repository, or change Git history.
 If a copy fails partway through, inspect the new folder before retrying with a
 new destination. The command exports the currently selected source.
 
-Point the builder at your exported directory:
+## Select content through devenv
 
-```sh
-export SITE_DATA_DIR=../reymundo-site-data
-npm run dev
+`devenv.nix` declares the default variables:
+
+```nix
+env = {
+  SITE_DATA_DIR = lib.mkDefault ".";
+  TAILSCALE_HOSTNAME = lib.mkDefault "";
+};
 ```
 
-The same variable works for all commands:
-
-```sh
-SITE_DATA_DIR=../reymundo-site-data npm run check:content
-SITE_DATA_DIR=../reymundo-site-data npm run build:drafts
-SITE_DATA_DIR=../reymundo-site-data npm run build
-```
-
-An unset or blank variable keeps using the existing repository data for a smooth
-migration. A nonempty invalid path or invalid `site.json` stops the command; it
-never silently falls back to the bundled personal content. Paths resolve from
-the builder root, and absolute paths are also supported. Quote paths with spaces;
-use an absolute path instead of a literal `~` inside an environment file.
-
-For a persistent local devenv setting, create the already-ignored
-`devenv.local.nix` in the builder:
+`.` keeps using the data in this repository. Change the quoted default to your
+content directory, or put a personal override in the already-ignored
+`devenv.local.nix`:
 
 ```nix
 {
@@ -90,19 +81,80 @@ For a persistent local devenv setting, create the already-ignored
 }
 ```
 
-Re-enter `devenv shell` after changing that file. Alternatively add
-`SITE_DATA_DIR=../reymundo-site-data` to the ignored builder `.env` file.
-Node 24's native environment loader supplies it to both scripts and Astro;
-existing shell/devenv variables take precedence. No dotenv package is needed.
-Restart development after changing the source directory, site settings, or
-adding the first record to a previously empty collection. Existing records
-continue to use Astro's normal file watching; case search watches the selected
-content directory too.
+Keep content paths as quoted strings, not Nix path literals. The builder reads
+the live content directory; Nix does not need to copy that data into its store.
+All relative paths resolve from the builder root. Absolute paths also work.
+
+For a one-time selection, use devenv's existing configuration override flag.
+Run this from your ordinary terminal, outside an existing devenv shell:
+
+```sh
+devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data shell
+```
+
+This opens Fish with that directory selected for the session. There is no manual
+`export`, `.env` setup, or custom flag parser. `--option` is the long form of `-O`.
+Quote paths with spaces, for example:
+
+```sh
+devenv -O env.SITE_DATA_DIR:string "../Reymundo site data" shell
+```
+
+Inside that shell, use `site-dev`, `site-check`, `site-build`, or `site-drafts`.
+The `site-*` commands run from the builder root, including when invoked from a
+subdirectory. Existing npm commands continue to inherit the selected variables.
+You can also run a build or the managed development process without opening an
+interactive shell:
+
+```sh
+devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data shell -- site-build
+devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data up
+```
+
+The flag overrides the configured default for that invocation. It does not edit
+`devenv.nix` or permanently save the selection. To keep a selection across future
+sessions, use the Nix setting above. Devenv owns these environment variables;
+the builder no longer reads them from `.env`. Without devenv, the existing npm
+commands still accept ordinary inherited process environment variables.
+
+A nonempty invalid directory or invalid `site.json` stops the command; it never
+silently falls back to bundled personal content. Blank or unset `SITE_DATA_DIR`
+retains the repository default for direct npm usage. Use an absolute path instead
+of a literal `~` inside a quoted Nix setting.
+
+Exit and re-enter the shell after changing the selected directory. Restart the
+site development process after changing site settings or adding the first record
+to a previously empty collection. Existing records continue to use Astro's normal
+file watching; case search watches the selected content directory too.
+
+## Fish shell
+
+The project requires devenv 2.1 or newer and sets its native shell option in
+`devenv.yaml`:
+
+```yaml
+require_version: ">=2.1"
+shell: fish
+```
+
+`devenv.nix` supplies `pkgs.fish`, Node, npm, and the site commands. Run
+`devenv shell` to open Fish. This does not change your system login shell.
+Devenv chooses the interactive shell before evaluating the environment, so
+`env.SHELL` in Nix is not the setting for this. No `exec fish` activation hook is
+needed; devenv's native Fish prompt/reload integration remains in charge.
+
+For an occasional Bash session, use `devenv --shell bash shell`. The optional
+existing direnv setup only loads the environment into your current shell; use
+`devenv shell` when you want the project to choose Fish.
+
+Official references: [configuration override flags](https://devenv.sh/ad-hoc-developer-environments/),
+[interactive shell setting](https://devenv.sh/reference/yaml-options/#shell), and
+[devenv 2.1 native shells](https://devenv.sh/blog/2026/05/07/devenv-21-nix-with-zsh-fish-and-nushell-via-libghostty/).
 
 ## Start another person's site
 
-Copy `examples/site-data` to a separate folder, then choose that folder with
-`SITE_DATA_DIR`. It includes a generic profile, Home, and an MDX About example
+Copy `examples/site-data` to a separate folder, then choose that folder using
+the devenv `-O env.SITE_DATA_DIR:string` flag or the Nix default. It includes a generic profile, Home, and an MDX About example
 that imports the existing Callout component. Replace the example content and
 site URL; use `templates/` to add the collections and sections you need. Keep
 ordinary prose in `.md` and use `.mdx` when a component helps.

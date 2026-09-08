@@ -1,12 +1,9 @@
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
-import { loadEnvFile } from 'node:process';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const builderRoot = fileURLToPath(new URL('../', import.meta.url));
-// Node's native loader preserves values already exported by the shell/devenv.
-if (existsSync(path.join(builderRoot, '.env'))) loadEnvFile(path.join(builderRoot, '.env'));
 
 export function resolveSiteData(value = process.env.SITE_DATA_DIR, root = builderRoot) {
   const selected = path.resolve(root, value?.trim() || '.');

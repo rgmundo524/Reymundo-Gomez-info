@@ -15,8 +15,8 @@ into this repository. Keep the Markdown, images, and `site.json` in a separate
 local folder or private repository:
 
 ```sh
-npm run content:export -- ../reymundo-site-data
-SITE_DATA_DIR=../reymundo-site-data npm run dev
+devenv shell -- site-export ../reymundo-site-data
+devenv -O env.SITE_DATA_DIR:string ../reymundo-site-data shell -- site-dev
 ```
 
 See [external content and migration](docs/external-content.md) for devenv settings,
@@ -25,16 +25,18 @@ The existing bundled content remains the default during migration.
 
 ## Start locally
 
-Install Nix and [devenv](https://devenv.sh/getting-started/) on your computer, then
+Install Nix and [devenv 2.1 or newer](https://devenv.sh/getting-started/) on your computer, then
 run these commands from this repository:
 
 ```sh
 devenv shell
-npm run dev
+site-dev
 ```
 
 Open the localhost URL printed by Astro, normally `http://127.0.0.1:4321`.
-devenv supplies Node and npm, installs Astro and the other project dependencies
+The shell opens in Fish using `shell: fish` in `devenv.yaml`. The Fish package,
+Node, npm, and default `SITE_DATA_DIR`/`TAILSCALE_HOSTNAME` values are declared in
+`devenv.nix`. Devenv installs Astro and the other project dependencies
 from `package-lock.json`, and exposes the local commands inside the environment.
 The first activation needs network access to download any uncached dependencies.
 Subsequent activations reuse the installation while the dependency inputs match.
@@ -52,8 +54,9 @@ site process in one command.
 Node 24 is selected in `devenv.nix`. The npm dependency versions are pinned in
 `package-lock.json`, and `devenv.yaml` pins the nixpkgs input to an exact revision.
 The first `devenv shell` creates `devenv.lock`; commit that generated lockfile.
-Nix and devenv were unavailable in the scaffold environment, so their activation
-has not been executed there. The Astro checks and builds are verified separately.
+Nix, devenv, and Fish are unavailable in this development workspace, so shell
+activation has not been executed here. Configuration follows the official devenv
+2.1+ options; Astro checks and builds are verified separately.
 
 The included `.envrc` is optional. If you use direnv, review it and run
 `direnv allow`. Otherwise, continue using `devenv shell`.
@@ -72,8 +75,9 @@ The included `.envrc` is optional. If you use direnv, review it and run
 | `npm run content:export -- ../my-site-data` | Copy the selected content and assets to a new separate directory |
 | `npm test` | Check important invalid-content cases |
 
-The devenv shell also provides `site-check`, `site-build`, and `site-drafts` as
-shortcuts. `site-setup` remains available to force a clean dependency reinstall
+The devenv shell provides `site-dev`, `site-check`, `site-build`, `site-drafts`,
+and `site-export` as commands that always run from the builder root.
+`site-setup` remains available to force a clean dependency reinstall
 when troubleshooting; it is not required for normal startup.
 
 All initial entries are drafts, so the ordinary build intentionally shows only
@@ -129,12 +133,11 @@ ordering, optional contact fields, and adding more services or social accounts.
 
 ## Access through Tailscale
 
-Keep Astro bound to localhost. If using Tailscale Serve, allow only your exact
-Tailscale hostname before starting Astro:
+Keep Astro bound to localhost. If using Tailscale Serve, set your exact hostname
+in `devenv.local.nix` or select it using devenv's native flag:
 
 ```sh
-export TAILSCALE_HOSTNAME=your-device.your-tailnet.ts.net
-npm run dev
+devenv -O env.TAILSCALE_HOSTNAME:string your-device.your-tailnet.ts.net shell -- site-dev
 ```
 
 In a second terminal:

@@ -8,7 +8,6 @@ devenv.local.yaml
 .direnv/
 .env
 .env.*
-!.env.example
 *.log
 .DS_Store
 .site-data/

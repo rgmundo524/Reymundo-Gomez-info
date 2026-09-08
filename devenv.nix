@@ -1,8 +1,20 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
+let
+  # devenv scripts are executable commands, usable from Fish and noninteractive runs.
+  npmCommand = command: ''
+    cd ${lib.escapeShellArg config.devenv.root}
+    exec npm ${command} "$@"
+  '';
+in
 {
-  # Set env.SITE_DATA_DIR in devenv.local.nix to use an external content checkout.
-  packages = [ pkgs.git ];
+  packages = [ pkgs.git pkgs.fish ];
+
+  env = {
+    # Quoted paths stay outside the Nix store. Override locally or with -O.
+    SITE_DATA_DIR = lib.mkDefault ".";
+    TAILSCALE_HOSTNAME = lib.mkDefault "";
+  };
 
   languages.javascript = {
     enable = true;
@@ -15,10 +27,12 @@
     };
   };
 
-  scripts.site-setup.exec = "npm ci";
-  scripts.site-check.exec = "npm run check";
-  scripts.site-build.exec = "npm run build";
-  scripts.site-drafts.exec = "npm run build:drafts";
+  scripts.site-setup.exec = npmCommand "ci";
+  scripts.site-dev.exec = npmCommand "run dev --";
+  scripts.site-check.exec = npmCommand "run check --";
+  scripts.site-build.exec = npmCommand "run build --";
+  scripts.site-drafts.exec = npmCommand "run build:drafts --";
+  scripts.site-export.exec = npmCommand "run content:export --";
 
-  processes.site.exec = "npm run dev";
+  processes.site.exec = "site-dev";
 }
