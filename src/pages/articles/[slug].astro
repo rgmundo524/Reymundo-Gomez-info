@@ -2,12 +2,14 @@
 import { getCollection, render } from 'astro:content';
 import type { InferGetStaticPropsType } from 'astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { includeDrafts, selected } from '../../lib/content';
+import { includeDrafts, isVisible, selected } from '../../lib/content';
 import { articleDate, visibleArticles } from '../../lib/articles';
 import { categoryUrl } from '../../lib/charts';
 import { readable } from '../../lib/cases';
 
 export async function getStaticPaths() {
+  const enabled = (await getCollection('pages', isVisible)).some(({ id, data }) => id === 'articles' && data.section_order.includes('articles'));
+  if (!enabled) return [];
   return visibleArticles(await getCollection('articles'), includeDrafts)
     .map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }

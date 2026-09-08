@@ -4,7 +4,7 @@ Astro, reusable Markdown, and a local devenv environment for
 `https://reymundo-gomez.info`.
 
 This version has a focused professional landing page, a profile portrait, and
-supporting Work History, Casework, Credentials, About, Articles, and Contact pages. Reusable Markdown
+supporting Work History, Casework, Credentials, About, Resources, and Contact pages. Reusable Markdown
 supplies the content across all routes. Content entries remain drafts for local
 development; an ordinary production build excludes them.
 
@@ -87,8 +87,8 @@ from `templates/` into the matching collection under `content/`.
 | `content/callouts/` | Independently reusable passages |
 | `content/charts/` | Category definitions for case-filtering sunburst charts |
 | `content/cases/` | One structured record per case, driving charts and statistics |
-| `content/articles/` | Articles with dates, topics, takeaways, and related cases |
-| `content/reading/` | External articles, blog posts, and reports with attribution and reading notes |
+| `content/resources/` | Official victim guidance, reporting and support links, and reference reports |
+| `content/articles/` | Reserved for future original writing; currently empty and inactive |
 | `content/pages/` | Page introductions and selected content IDs |
 | `templates/` | Copyable examples; never loaded into the site |
 | `src/content/schemas.ts` | Shared authoring rules |
@@ -142,7 +142,7 @@ DNS records, GitHub Actions workflows, or public site are created by this scaffo
 
 The content inventory remains in draft while its wording and source claims are
 reviewed. It includes professional history, credentials, selected work, interests,
-case examples, a starter article, contact details, and page selections. The About
+case examples, victim resources, contact details, and page selections. The About
 additions include seven unrated skills in three group cards, a curated repository,
 and clearly labelled volunteer and membership examples. Organizations contains
 Professional Organizations and DAOs. Run `npm run check:content` for the current count.
@@ -153,11 +153,12 @@ cases and examples use separate datasets. Charts store no manual counts.
 
 Pagefind adds case search with per-case filters and direct links into summaries.
 Search refreshes from Markdown in local development and is generated with static
-builds. Content collections accept both `.md` and `.mdx`. The Articles section
-automatically discovers both formats, including files in subfolders.
-It shows My writing alongside Recommended reading, which discovers external
-sources from `content/reading/` and links directly to the original publisher.
-See [articles, search, and future editor storage](docs/articles-and-search.md).
+builds. Content collections accept both `.md` and `.mdx`. Resources discovers
+individual files from `content/resources/`, groups them by category, and links
+directly to the original provider. See [resource authoring](docs/resources.md).
+The starter article is now a template, not displayed writing. The BDO publication
+remains in Selected Work. The article infrastructure can be enabled when there
+is original writing to feature; see [future articles and case search](docs/articles-and-search.md).
 
 Astro Icon supplies locally bundled Lucide icons. OpenGraph Canvas generates
 social sharing images from visible page, article, and case category content, using

@@ -4,7 +4,7 @@ import { schemas, type CollectionName } from './content/schemas';
 import { loadContent } from '../scripts/content';
 
 // Also validate direct `astro dev` / `astro build` calls, not just npm scripts.
-await loadContent();
+const records = await loadContent();
 
 function loader(name: CollectionName) {
   return glob({
@@ -28,7 +28,8 @@ export const collections = {
   callouts: defineCollection({ loader: loader('callouts'), schema: schemas.callouts }),
   charts: defineCollection({ loader: loader('charts'), schema: schemas.charts }),
   cases: defineCollection({ loader: loader('cases'), schema: schemas.cases }),
-  articles: defineCollection({ loader: loader('articles'), schema: schemas.articles }),
-  reading: defineCollection({ loader: loader('reading'), schema: schemas.reading }),
+  // Original writing is paused. Keep its schema available without an empty-glob warning.
+  articles: defineCollection({ loader: records.some(({ collection }) => collection === 'articles') ? loader('articles') : async () => [], schema: schemas.articles }),
+  resources: defineCollection({ loader: loader('resources'), schema: schemas.resources }),
   pages: defineCollection({ loader: loader('pages'), schema: schemas.pages }),
 };

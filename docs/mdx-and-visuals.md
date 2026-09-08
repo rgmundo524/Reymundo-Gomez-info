@@ -18,7 +18,8 @@ and component tags must be correctly closed. Check and build after conversion.
 References: [Astro MDX](https://docs.astro.build/en/guides/integrations-guide/mdx/),
 [MDX syntax troubleshooting](https://mdxjs.com/docs/troubleshooting-mdx/#problems-writing-mdx).
 
-The draft `content/articles/investigation-notes.mdx` demonstrates two components:
+The unused `templates/investigation-notes.mdx` example demonstrates two components.
+It is outside the content collections and does not appear as Reymundo's writing:
 
 ```mdx
 import Callout from '@components/Callout.astro';
@@ -64,7 +65,7 @@ and are hidden from screen readers when decorative.
 pages, articles, and case categories. For example:
 
 - `/open-graph/home.png`
-- `/open-graph/articles/investigation-notes.png`
+- `/open-graph/resources.png`
 - `/open-graph/investigations/professional-investigations/divorce.png`
 
 Titles and summaries come from the content, with navy/burgundy styling and the

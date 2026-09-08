@@ -1,0 +1,19 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import ResourceCard from './ResourceCard.astro';
+import { includeDrafts } from '../lib/content';
+import { groupResources, resourceGroups } from '../lib/resources';
+type Props = { page: CollectionEntry<'pages'> };
+const { page } = Astro.props;
+const groups = groupResources(await getCollection('resources'), page.data.resource_group_order, includeDrafts);
+---
+{groups.length > 0 && <div class="container content-section" id="section-resources">
+  {groups.map(({ category, entries }) => <section class="resource-group" id={`resources-${category}`} aria-labelledby={`heading-resources-${category}`}>
+    <div class="resource-heading">
+      <Icon name={resourceGroups[category].icon} aria-hidden="true" />
+      <h2 id={`heading-resources-${category}`}>{page.data.blocks[`resources_${category.replaceAll('-', '_')}_heading`] ?? resourceGroups[category].title}</h2>
+    </div>
+    <div class="about-card-grid">{entries.map((entry) => <ResourceCard entry={entry} />)}</div>
+  </section>)}
+</div>}

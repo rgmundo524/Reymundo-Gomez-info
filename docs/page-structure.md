@@ -13,8 +13,8 @@ background or work.
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Credentials discovered from Markdown, grouped by issuer, followed by education |
 | `/contact/` | `content/pages/contact.md` selects `content/contacts/reymundo.md` | Organization enquiry cards and a combined personal/social card |
-| `/articles/` | `content/pages/articles.md` | Automatically discovered articles, newest dated entries first |
-| `/articles/<slug>/` | `content/articles/` | Article body, takeaway, topics, and related cases |
+| `/resources/` | `content/pages/resources.md` | Victim guidance, reporting and support, scam awareness, and reference reports |
+| `/articles/` | Compatibility redirect | Opens `/resources/` while no Articles page is configured and Resources is visible |
 | `/investigations/<chart>/<category>/` | Matching records in `content/cases/` | Case summaries reached from chart slices or legend links |
 
 The home page intentionally omits the full CV and chart tables. The underlying
@@ -95,7 +95,7 @@ select draft content. Site metadata remains `noindex` during development.
 
 Every page can set `navigation: { label: Home, order: 10 }` in its frontmatter.
 Lower values appear first; omitting navigation hides the menu item. The current
-menu order is Home, Work History, Casework, Credentials, About, Articles.
+menu order is Home, Work History, Casework, Credentials, About, Resources.
 Contact is a separate button immediately to the right of the compact theme toggle.
 The `/contact/` page remains available; the button appears only when that page is
 visible in the current build. Work History now lives at `/work-history/`, and
@@ -103,7 +103,7 @@ visible in the current build. Work History now lives at `/work-history/`, and
 
 Supporting pages set `section_order`, a list of collection names such as
 `experience`, `biography`, `charts`, `projects`, `credentials`, `education`, `expertise`,
-`interests`, `github`, `skills`, `volunteering`, `organizations`, and `callouts`. Listed sections render only when they have content;
+`interests`, `github`, `skills`, `volunteering`, `organizations`, `resources`, and `callouts`. Listed sections render only when they have content;
 unlisted sections are omitted. The Astro templates still define each section's
 visual layout and the curated homepage structure.
 

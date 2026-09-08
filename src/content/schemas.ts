@@ -31,6 +31,7 @@ const contactService = z.strictObject({
   ...contactDetails,
 });
 const refs = () => z.array(slug).default([]);
+export const resourceCategory = z.enum(['first-steps', 'reporting', 'avoid-scams', 'reports']);
 const githubAccount = text.regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/, 'Use a GitHub user or organization name.');
 const githubRepository = text.regex(/^[A-Za-z0-9_.-]+$/, 'Use a repository name, without its owner or URL.')
   .refine((name) => name !== '.' && name !== '..', 'Use a repository name.');
@@ -183,19 +184,18 @@ export const schemas = {
     if (entry.publication_status === 'published' && !entry.published_on) ctx.addIssue({ code: 'custom', path: ['published_on'], message: 'Published articles need a publication date.' });
     if (entry.updated_on && (!entry.published_on || entry.updated_on < entry.published_on)) ctx.addIssue({ code: 'custom', path: ['updated_on'], message: 'An update date requires a publication date and cannot precede it.' });
   }),
-  reading: z.strictObject({
+  resources: z.strictObject({
     ...common, title: text,
-    reading_type: z.enum(['article', 'blog', 'report']),
-    content_kind: z.enum(['recommendation', 'example']).default('example'),
+    category: resourceCategory,
+    display_order: z.number().int().nonnegative().default(100),
+    action_label: text.default('Open resource'),
     source: z.strictObject({
       url: webUrl, publisher: text, author: text.optional(),
       published_on: z.iso.date().nullable().default(null),
     }),
-    added_on: z.iso.date().nullable().default(null),
-    tags: z.array(slug).default([]).refine((items) => new Set(items).size === items.length, 'Use each tag once.'),
+    reviewed_on: z.iso.date().nullable().default(null),
   }).superRefine((entry, ctx) => {
-    if (entry.publication_status === 'published' && entry.content_kind === 'example') ctx.addIssue({ code: 'custom', path: ['content_kind'], message: 'Review the example and mark it as a recommendation before publishing.' });
-    if (entry.publication_status === 'published' && !entry.added_on) ctx.addIssue({ code: 'custom', path: ['added_on'], message: 'Published reading entries need an added_on date.' });
+    if (entry.publication_status === 'published' && !entry.reviewed_on) ctx.addIssue({ code: 'custom', path: ['reviewed_on'], message: 'Published resources need a reviewed_on date for the destination and description.' });
   }),
   cases: z.strictObject({
     ...common,
@@ -241,13 +241,16 @@ export const schemas = {
     organization_group_order: z.array(z.enum(['memberships', 'daos'])).length(2)
       .refine((items) => new Set(items).size === items.length, 'List memberships and daos once each.')
       .default(['memberships', 'daos']),
+    resource_group_order: z.array(resourceCategory).min(1)
+      .refine((items) => new Set(items).size === items.length, 'List each resource group once.')
+      .default(['first-steps', 'reporting', 'avoid-scams', 'reports']),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
     experience_source: z.enum(['selected', 'all']).default('selected'),
     credentials_source: z.enum(['selected', 'all']).default('selected'),
     issuer_order: z.array(text).default([]).refine((issuers) => new Set(issuers.map((issuer) => issuer.replace(/\s+/g, ' ').toLocaleLowerCase('en-US'))).size === issuers.length,
       'List each issuer once; capitalization and repeated spaces are ignored.'),
     timeline: timelineSchema,
-    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'skills', 'volunteering', 'organizations', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'skills', 'volunteering', 'organizations', 'callouts', 'charts', 'articles', 'resources'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };

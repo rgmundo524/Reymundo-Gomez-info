@@ -1,4 +1,25 @@
-# Articles and case search
+# Future articles and case search
+
+The live page structure now uses Resources instead of Articles. There are no
+original articles in the active content collection. The BDO-associated publication
+remains in Selected Work, and the former starter article is retained only as
+`templates/investigation-notes.mdx`. External guidance and reports now use
+`content/resources/`; see [resource authoring](resources.md).
+
+## Enable original writing later
+
+When there is original writing to feature:
+
+1. Create real article records under `content/articles/` using the templates below.
+2. Create `content/pages/articles.md` from the page template, with `slug: articles`,
+   `section_order: [articles]`, a profile reference, and the desired navigation order.
+3. Restart local development after adding the first article so the previously empty
+   collection switches to its Markdown loader.
+4. Publish the intended article records, page, and referenced profile together.
+
+The Articles directory and individual article routes are active only when a visible
+Articles page is configured with the articles section. Its original URL then stops
+redirecting to Resources. The current resource directory needs no blog CMS.
 
 ## Add an article
 
@@ -26,47 +47,7 @@ does not schedule publication: `publication_status` controls visibility.
 Published articles cannot reference draft case records. Publish the Articles
 page and its required profile separately to include it in public navigation.
 
-Articles follows About in the navigation, using `order: 55` in
-`content/pages/articles.md`; Contact is a separate header button. Its `section_order: [articles]` selects the automatic
-article listing. A starter introduction remains a draft for review.
-
-## External articles, blogs, and reports
-
-The hub now has **My writing** and **Recommended reading**. Your original articles
-keep their existing routes and MDX capabilities. External sources live separately
-under `content/reading/`, one Markdown file per source, and are discovered
-automatically. Their cards link directly to the original publisher; they do not
-create local article routes or imply that you authored the source.
-
-Copy `templates/reading.md` and supply:
-
-| Field | Meaning |
-| --- | --- |
-| `title`, `description_short` | Source title and your own concise description |
-| `reading_type` | `article`, `blog`, or `report`, displayed as a label |
-| `source.url` | Original HTTP(S) destination, including PDF reports |
-| `source.publisher` | Required publisher attribution |
-| `source.author` | Optional original author |
-| `source.published_on` | Optional quoted source publication date; null if unknown |
-| `added_on` | Date you added it to the reading list; required when publishing |
-| `tags` | Topics displayed on the card |
-| `content_kind` | `example` until reviewed; `recommendation` for an approved selection |
-| Markdown body | Your reading notes, shown under an expandable Reading notes control |
-
-Recommendations sort by `added_on`, newest first, then slug. The date the source
-was published is separate: an older report can be a newly added recommendation.
-Do not infer publication dates from report years. Draft entries stay in local
-previews; examples cannot be published. The IC3 2025 report entry demonstrates
-attribution and linking and is clearly marked as an example awaiting review.
-Its [original report](https://www.ic3.gov/AnnualReport/Reports/2025_IC3Report.pdf)
-and [report archive](https://www.ic3.gov/annualreport/reports) were checked against
-the official IC3 website.
-
-`blocks.writing_heading`, `blocks.reading_heading`, and `blocks.reading_intro` in
-`content/pages/articles.md` control the labels. Use short original annotations and
-links; do not copy full external articles. No external site is scraped at build
-time, and no additional database or package is required for this reading list.
-Pagefind remains scoped to Casework.
+External guides and reports are maintained through [Resources](resources.md).
 
 ## Search casework
 
@@ -121,7 +102,7 @@ The current source remains Markdown in Git. Keystatic has not been installed.
 A practical next step is Keystatic in local mode behind the existing local or
 Tailscale access: its editor writes files into the checkout on the machine running
 Keystatic. Commit and push those files through the usual Git workflow.
-It could present separate forms for My writing and Recommended reading while
+It could present separate forms for future articles and current Resources while
 preserving the current Markdown files. This is an editor integration, not a new
 blog theme; the Astro components continue to determine the page layout.
 
@@ -141,8 +122,8 @@ initially; larger media storage can be introduced when it is needed.
 MDX is now enabled for reusable components, imports, and expressions in content.
 Existing `.md` files remain supported. Markdoc is not installed. A future Keystatic
 configuration will need to map supported editor components to these MDX components.
-Keystatic's MDX field specifically excludes imports and raw HTML. The current
-starter article imports Astro components, so it must be reviewed or adapted before
+Keystatic's MDX field specifically excludes imports and raw HTML. The unused
+article template imports Astro components, so it must be reviewed or adapted before
 it can use that editor. Keystatic has a documented recipe to keep the admin local
 and exclude its runtime from production.
 

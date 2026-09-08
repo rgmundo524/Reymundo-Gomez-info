@@ -8,9 +8,11 @@ import { openGraphKey, previewText } from '../../lib/open-graph';
 
 const require = createRequire(import.meta.url);
 const fonts = [400, 700].map((weight) => require.resolve(`@fontsource/inter/files/inter-latin-${weight}-normal.woff2`));
-const [pageEntries, articleEntries, charts, cases] = await Promise.all([
-  getCollection('pages', isVisible), getCollection('articles'), getCollection('charts'), getCollection('cases'),
+const [pageEntries, charts, cases] = await Promise.all([
+  getCollection('pages', isVisible), getCollection('charts'), getCollection('cases'),
 ]);
+const articleEntries = pageEntries.some(({ id, data }) => id === 'articles' && data.section_order.includes('articles'))
+  ? await getCollection('articles') : [];
 const pages: Record<string, { title: string; description: string }> = {
   home: { title: 'Site in preparation', description: 'A personal website in preparation.' },
 };

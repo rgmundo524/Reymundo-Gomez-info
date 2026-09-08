@@ -308,9 +308,13 @@ body:has(.particle-toggle:not([hidden])) .site-footer { padding-bottom: calc(4re
 .article-preview h3 { font-family: var(--serif); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 400; }
 .article-preview h3 a { color: var(--ink); text-decoration: none; }
 .article-preview h3 a:hover { color: var(--accent-text); text-decoration: underline; }
-.reading-preview h3 svg { width: 1.1rem; height: 1.1rem; margin-left: .4rem; }
-.reading-preview .reading-example { color: var(--accent-text); font-size: .875rem; }
-.reading-preview details { margin-bottom: 1rem; }
+.resource-group + .resource-group { margin-top: 3.5rem; }
+.resource-heading { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.5rem; }
+.resource-heading h2 { margin: 0; }
+.resource-heading svg { flex: none; width: 1.75rem; height: 1.75rem; color: var(--accent-text); }
+.resource-card > .meta:first-child { margin-top: 0; }
+.resource-card details { margin-bottom: 1.25rem; }
+.resource-card .resource-reviewed { margin-bottom: 0; font-size: .8rem; }
 .article-preview > p { color: var(--muted); max-width: 44rem; }
 .tag-list { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; margin-block: 1rem 1.5rem; }
 .tag-list li { margin: 0; border: 1px solid var(--line); padding: .15rem .6rem; font-size: .8125rem; color: var(--muted); }

@@ -28,6 +28,7 @@ section_order:
   - education
   - interests
   # Optional About sections: skills, volunteering, organizations.
+  # Add resources to show the automatically discovered resource cards.
   # Add github to show the curated groups below.
   - callouts
 profile: new-profile
@@ -52,6 +53,11 @@ skill_group_order: []
 organization_group_order:
   - memberships
   - daos
+resource_group_order:
+  - first-steps
+  - reporting
+  - avoid-scams
+  - reports
 ---
 
 Write the full description here. Use paragraphs, lists, and links as needed.

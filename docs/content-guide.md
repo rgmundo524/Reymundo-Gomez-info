@@ -104,6 +104,10 @@ The Contact page selects one contact directory using `contact: reymundo`.
 `content/contacts/reymundo.md` holds organization cards, personal details, social
 links, and the displayed introduction. See [contact authoring](contacts.md).
 
+Resources automatically discovers `content/resources/` files and groups them using
+their `category`. Each card uses `display_order` within its group; the page's
+`resource_group_order` controls group order. See [resource authoring](resources.md).
+
 ## Reuse from Astro components
 
 ```astro

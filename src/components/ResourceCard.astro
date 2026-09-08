@@ -1,0 +1,19 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import { articleDate } from '../lib/articles';
+type Props = { entry: CollectionEntry<'resources'> };
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { source } = entry.data;
+---
+<article class="about-card resource-card" id={`resource-${entry.id}`}>
+  <p class="meta">{source.publisher}{source.author && <span> · {source.author}</span>}</p>
+  <h3>{entry.data.title}</h3>
+  <p>{entry.data.description_short}</p>
+  {source.published_on && <p class="meta">Source published <time datetime={source.published_on}>{articleDate(source.published_on)}</time></p>}
+  <details><summary>About this resource<span class="sr-only">: {entry.data.title}</span></summary><div class="prose"><Content /></div></details>
+  <a class="text-link" href={source.url}>{entry.data.action_label}<Icon name="lucide:arrow-up-right" aria-hidden="true" /><span class="sr-only">: {entry.data.title}</span></a>
+  {entry.data.links.length > 0 && <ul class="links">{entry.data.links.map((link) => <li><a href={link.url}>{link.label}</a></li>)}</ul>}
+  {entry.data.reviewed_on && <p class="meta resource-reviewed">Link reviewed <time datetime={entry.data.reviewed_on}>{articleDate(entry.data.reviewed_on)}</time></p>}
+</article>

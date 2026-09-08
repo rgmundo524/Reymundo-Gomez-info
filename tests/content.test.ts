@@ -13,7 +13,8 @@ import { groupCredentials } from '../src/lib/credentials';
 import { orderAboutEntries } from '../src/lib/about';
 import { timelineSchema } from '../src/content/schemas';
 import { formatPeriods } from '../src/lib/dates';
-import { visibleArticles, visibleReading } from '../src/lib/articles';
+import { visibleArticles } from '../src/lib/articles';
+import { groupResources } from '../src/lib/resources';
 import { caseSearchRecords } from '../src/lib/search';
 import { createSearchCache } from '../scripts/search-index';
 import { mdxSearchText } from '../src/lib/mdx-text';
@@ -66,24 +67,31 @@ test('theme restores before paint, survives navigation and history, and resets f
   assert.equal(unavailable.root.dataset.theme, 'light');
 });
 
-test('reading links require attribution and review, and retain separate source and curation dates', () => {
-  const reading = { ...base, title: 'An outside report', reading_type: 'report', source: { url: 'https://example.com/report.pdf', publisher: 'Publisher' } };
-  const example = schemas.reading.parse(reading);
-  assert.equal(example.source.published_on, null);
-  assert.equal(example.content_kind, 'example');
-  assert.equal(schemas.reading.safeParse({ ...reading, source: { url: 'https://example.com' } }).success, false);
-  assert.equal(schemas.reading.safeParse({ ...reading, source: { ...reading.source, url: 'javascript:alert(1)' } }).success, false);
-  assert.equal(schemas.reading.safeParse({ ...reading, publication_status: 'published', added_on: '2026-09-08' }).success, false);
-  const reviewed = { ...reading, content_kind: 'recommendation', publication_status: 'published' };
-  assert.equal(schemas.reading.safeParse(reviewed).success, false);
-  assert.equal(schemas.reading.safeParse({ ...reviewed, added_on: '2026-09-08' }).success, true);
+test('resources require attribution and review, group in page order, and exclude drafts', () => {
+  const resource = { ...base, title: 'An outside guide', category: 'first-steps', source: { url: 'https://example.com/guide', publisher: 'Publisher' } };
+  const draft = schemas.resources.parse(resource);
+  assert.equal(draft.source.published_on, null);
+  assert.equal(draft.reviewed_on, null);
+  assert.equal(schemas.resources.safeParse({ ...resource, source: { url: 'https://example.com' } }).success, false);
+  assert.equal(schemas.resources.safeParse({ ...resource, source: { ...resource.source, url: 'javascript:alert(1)' } }).success, false);
+  assert.equal(schemas.resources.safeParse({ ...resource, category: 'misspelled' }).success, false);
+  assert.equal(schemas.resources.safeParse({ ...resource, display_order: -1 }).success, false);
+  assert.equal(schemas.resources.safeParse({ ...resource, publication_status: 'published' }).success, false);
+  const reviewed = { ...resource, publication_status: 'published', reviewed_on: '2026-09-08' };
+  assert.equal(schemas.resources.safeParse(reviewed).success, true);
   const entries = [
-    { id: 'example', data: example },
-    { id: 'older', data: schemas.reading.parse({ ...reviewed, added_on: '2026-08-01', source: { ...reading.source, published_on: '2026-07-01' } }) },
-    { id: 'newer', data: schemas.reading.parse({ ...reviewed, added_on: '2026-09-08', source: { ...reading.source, published_on: '2020-01-01' } }) },
+    { id: 'draft', data: draft },
+    { id: 'report', data: schemas.resources.parse({ ...reviewed, category: 'reports' }) },
+    { id: 'later', data: schemas.resources.parse({ ...reviewed, display_order: 20 }) },
+    { id: 'first', data: schemas.resources.parse({ ...reviewed, display_order: 10 }) },
   ];
-  assert.deepEqual(visibleReading(entries, false).map(({ id }) => id), ['newer', 'older']);
-  assert.deepEqual(visibleReading(entries, true).map(({ id }) => id), ['newer', 'older', 'example']);
+  const groups = groupResources(entries, ['reports', 'first-steps', 'reporting'], false);
+  assert.deepEqual(groups.map(({ category }) => category), ['reports', 'first-steps']);
+  assert.deepEqual(groups[1].entries.map(({ id }) => id), ['first', 'later']);
+  assert.deepEqual(groupResources(entries, ['first-steps'], true)[0].entries.map(({ id }) => id), ['first', 'later', 'draft']);
+  assert.equal(groupResources([], ['reports'], true).length, 0);
+  const page = { ...base, title: 'Resources', profile: 'example', section_order: ['resources'] };
+  assert.equal(schemas.pages.safeParse({ ...page, resource_group_order: ['reports', 'reports'] }).success, false);
 });
 
 test('Organizations has one page section with two uniquely ordered subgroup kinds', () => {
