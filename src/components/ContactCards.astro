@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
+import BookingButton from './BookingButton.astro';
 
 type Props = { entry: CollectionEntry<'contacts'> };
 const { entry } = Astro.props;
@@ -22,7 +23,10 @@ const showSocial = social?.enabled && (social.links.length > 0 || social.email |
           {service.email && <div><dt>Email</dt><dd><a href={`mailto:${service.email}`}>{service.email}</a></dd></div>}
           {service.phone && <div><dt>Phone</dt><dd><a href={`tel:${service.phone.number}`}>{service.phone.label}</a></dd></div>}
         </dl>}
-        <div class="contact-card-action"><a class="button button-primary" href={service.action.url}>{service.action.label}<Icon name="lucide:arrow-up-right" aria-hidden="true" /></a></div>
+        <div class="contact-card-action">
+          {service.booking?.enabled && <BookingButton booking={service.booking} />}
+          <a class={service.booking?.enabled ? 'text-link' : 'button button-primary'} href={service.action.url}>{service.action.label}<Icon name="lucide:arrow-up-right" aria-hidden="true" /></a>
+        </div>
       </article>)}
     </div>
   </section>}

@@ -18,6 +18,10 @@ services:
     action:
       label: Contact Go-Crypto
       url: https://www.go-crypto.org/report-fraud
+    booking:
+      label: Book with Reymundo
+      enabled: true
+      url: https://calendar.google.com/calendar/appointments/schedules/AcZssZ0M-HkMI6r-3Fs2yLWWE-VDbK74wBoLF8V5MpM8N0MfV-15VXxlMUGt_N-u1BM7RI87afBWPkyp
     email: jannette@go-crypto.org
     phone:
       label: 903-705-5802
@@ -36,6 +40,10 @@ services:
     action:
       label: Contact CipherBlade
       url: https://cipherblade.com/contact/
+    booking:
+      label: Book with Reymundo
+      enabled: true
+      url: https://calendar.google.com/calendar/appointments/schedules/AcZssZ0ugesGv58i4jEC0wccBvcu7LPSSoM_VDzSBg0NBVx7eB0ZE5YlbYhSBID_14K2ncV5qIWvQY9x
     email: null
     phone: null
 social:
@@ -58,6 +66,7 @@ editorial_note: >-
   CipherBlade's contact page is its enquiry destination; no email or phone was inferred.
   LinkedIn comes from the resume, and GitHub is the account supplied for this project.
   A personal public email and phone have not been selected.
+  Booking URLs supplied by Reymundo on September 8, 2026: Go-Crypto https://calendar.app.google/jA72sojozgbrEegu6 and CipherBlade https://calendar.app.google/warL9Jt8UcXFFYhS6. Full destinations were resolved for Google's booking widget.
 ---
 
 For investigation services, contact the organization that best fits your enquiry.

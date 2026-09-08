@@ -27,6 +27,7 @@ section_order:
   - credentials
   - education
   - interests
+  # Add github to show the curated groups below.
   - callouts
 profile: new-profile
 # For a contact directory, select the slug from content/contacts/.
@@ -39,6 +40,7 @@ projects: []
 interests: []
 callouts: []
 charts: []
+github_groups: []
 ---
 
 Write the full description here. Use paragraphs, lists, and links as needed.

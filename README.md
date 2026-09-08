@@ -95,7 +95,9 @@ Each file in `content/pages/` controls navigation, section order, and selections
 Work History automatically discovers job files and uses their `display_order`.
 Its expertise and approach sections follow the professional biography in frosted
 panels. Edit `content/pages/work-history.md` for that selection and order, and
-`content/pages/about.md` for the personal introduction and hobby selection.
+`content/pages/about.md` for the personal introduction, hobby selection, and
+curated GitHub repository cards. See [GitHub projects](docs/github-projects.md)
+for the card integration and Go-Crypto organization setup.
 The home page presents a small selection; the supporting pages provide the full
 background and details. Other content files supply the writing. See
 [the page structure guide](docs/page-structure.md) for the route map and portrait.

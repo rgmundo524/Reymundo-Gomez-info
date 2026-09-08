@@ -120,7 +120,18 @@ li + li { margin-top: .4rem; }
 .contact-details div { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: .8rem; }
 .contact-details dt { color: var(--muted); }
 .contact-details dd { margin: 0; min-width: 0; }
-.contact-card-action { margin-top: auto; padding-top: 1rem; }
+.contact-card-action { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: auto; padding-top: 1rem; }
+.google-booking { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
+.google-booking [data-booking-mount] { display: none; }
+.booking-direct-link { font-size: .875rem; }
+.google-booking > button { background: var(--button) !important; color: white !important; font: inherit; font-weight: 600; min-height: 3.1rem; max-width: 100%; padding: .85rem 1.3rem; border-radius: .2rem; }
+.google-booking > button:hover { background: var(--button-hover) !important; }
+.google-booking > button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+/* Google's supplied popup otherwise reserves 72px on both sides of a phone. */
+@media (max-width: 760px) {
+  body:has(.google-booking) .hur54b { padding: 4.5rem 1rem 1rem; }
+  body:has(.google-booking) .Xfsokf { top: 1rem; right: 1rem; }
+}
 .contact-card-action .button { max-width: 100%; }
 .contact-card-action svg, .contact-social-links svg { flex-shrink: 0; width: 1.2rem; height: 1.2rem; }
 .contact-social { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 2rem 4rem; align-items: center; margin-top: 2rem; }
@@ -182,6 +193,18 @@ li + li { margin-top: .4rem; }
 .collection-interests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 2rem; }
 .collection-interests h3 { font-size: 1.05rem; }
 .collection-interests .content-entry { padding-block: 1.5rem; }
+.github-group { margin-block: 2rem; }
+.github-group-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .75rem 1.5rem; margin-bottom: 1.25rem; }
+.github-group-heading h3 { margin: 0; font-size: 1.35rem; }
+.github-project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr)); gap: 1.5rem; }
+.github-project { display: block; max-width: 34rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--glass-surface); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); text-decoration: none; }
+.github-project:hover { border-color: var(--accent); }
+.github-project-name { display: block; color: var(--ink); font-size: 1.1rem; font-weight: 600; }
+.github-project-owner { display: block; color: var(--muted); font-size: .875rem; }
+.github-project img { width: 100%; height: auto; margin-top: .75rem; }
+.github-card-dark { display: none; }
+[data-theme='dark'] .github-card-dark { display: block; }
+[data-theme='dark'] .github-card-light { display: none; }
 .notice { background: var(--surface); color: var(--muted); border-left: 3px solid var(--accent); padding: .7rem 1rem; font-size: .875rem; margin-top: 1.5rem; max-width: 45rem; }
 .callout { border-left: 3px solid var(--accent); padding: .5rem 0 .5rem 1.2rem; max-width: 48rem; }
 .category-nav { display: flex; flex-wrap: wrap; gap: .6rem 1.8rem; padding-block: 1.3rem; border-bottom: 1px solid var(--line); }

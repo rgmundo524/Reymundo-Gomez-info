@@ -17,9 +17,30 @@ const contactService = z.strictObject({
   display_order: z.number().int().nonnegative().default(100),
   enabled: z.boolean().default(true),
   website: link.optional(), action: link,
+  booking: z.strictObject({
+    label: text,
+    url: webUrl.refine((value) => {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' && url.hostname === 'calendar.google.com'
+          && /^\/calendar\/appointments\/schedules\/[A-Za-z0-9_-]+\/?$/.test(url.pathname);
+      } catch { return false; }
+    }, 'Use the full Google Calendar appointment schedule URL.'),
+    enabled: z.boolean().default(true),
+  }).optional(),
   ...contactDetails,
 });
 const refs = () => z.array(slug).default([]);
+const githubAccount = text.regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/, 'Use a GitHub user or organization name.');
+const githubRepository = text.regex(/^[A-Za-z0-9_.-]+$/, 'Use a repository name, without its owner or URL.')
+  .refine((name) => name !== '.' && name !== '..', 'Use a repository name.');
+const githubGroup = z.strictObject({
+  id: slug, title: text,
+  account: githubAccount.nullable(),
+  enabled: z.boolean().default(true),
+  repositories: z.array(githubRepository).default([])
+    .refine((items) => new Set(items.map((item) => item.toLowerCase())).size === items.length, 'List each repository once.'),
+}).refine((group) => !group.enabled || group.account !== null, 'An enabled GitHub group needs an account name.');
 const common = {
   slug,
   publication_status: z.enum(['draft', 'published']).default('draft'),
@@ -171,6 +192,8 @@ export const schemas = {
   pages: z.strictObject({
     ...common, title: text, profile: slug,
     contact: slug.optional(),
+    github_groups: z.array(githubGroup).default([])
+      .refine((items) => new Set(items.map((item) => item.id)).size === items.length, 'Each GitHub group needs a unique id.'),
     experience: refs(), education: refs(), credentials: refs(),
     expertise: refs(), projects: refs(), interests: refs(), callouts: refs(), charts: refs(),
     navigation: z.strictObject({ label: text, order: z.number().int().min(0) }).optional(),
@@ -179,7 +202,7 @@ export const schemas = {
     issuer_order: z.array(text).default([]).refine((issuers) => new Set(issuers.map((issuer) => issuer.replace(/\s+/g, ' ').toLocaleLowerCase('en-US'))).size === issuers.length,
       'List each issuer once; capitalization and repeated spaces are ignored.'),
     timeline: timelineSchema,
-    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
+    section_order: z.array(z.enum(['experience', 'biography', 'expertise', 'projects', 'credentials', 'education', 'interests', 'github', 'callouts', 'charts', 'articles'])).default(['charts', 'experience', 'expertise', 'projects', 'credentials', 'education', 'interests', 'callouts'])
       .refine((items) => new Set(items).size === items.length, 'Each section can appear only once.'),
   }),
 };

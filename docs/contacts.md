@@ -22,6 +22,8 @@ organization, then change its `id`, content, and links.
 | `enabled` | Set to `false` to hide the card without deleting its configuration |
 | `website.label` / `website.url` | Optional website link and its visible text |
 | `action.label` / `action.url` | Required button text and direct enquiry/onboarding destination |
+| `booking.label` / `booking.url` | Optional Google appointment popup button and full schedule URL |
+| `booking.enabled` | Set to `false` to hide booking while keeping the organization card |
 | `email` | Optional public organization email; omit or use `null` to hide |
 | `phone.label` / `phone.number` | Optional displayed phone number and international dialing number |
 
@@ -73,15 +75,34 @@ choose **Create → Appointment schedule**, set your availability and call durat
 enable calendar availability checks, and select Google Meet if appropriate. Save
 the schedule and copy its booking-page link.
 
-The existing contact record already supports that link: add an item under
-`social.links` with `label: Book a call` and `url` set to the actual booking URL.
-Its position in the list controls display order. No booking URL has been added
-yet. Use the booking page, rather than a link to your private Calendar view.
+Each organization can now have a `booking` object with `label`, `url`, and
+`enabled`. The Go-Crypto and CipherBlade schedules supplied by Reymundo are
+configured on their respective cards. Go-Crypto comes first through its existing
+`display_order: 10`. To offer only Go-Crypto bookings, set the CipherBlade card's
+`booking.enabled` to `false`; its ordinary contact information remains visible.
+
+Use the full HTTPS `calendar.google.com/calendar/appointments/schedules/...`
+address. Open a `calendar.app.google` short link and copy its final URL, or copy
+the URL from Google's website-embed settings. The supplied short links are kept
+in the non-rendered editorial note for reference. Validation rejects private
+calendar-view URLs and unrelated providers in the booking field.
+
+`BookingButton.astro` loads Google's official booking script and stylesheet once
+on the contact page. Google renders the popup, availability, and booking form;
+the site does not implement a scheduler or store calendar credentials. Existing
+booking links work when JavaScript, Google's script, or its stylesheet cannot
+load. After initialization, an "Open booking page" link remains available if
+the popup's embedded calendar fails. The site's dark-red theme styles the buttons, and a narrow-screen CSS
+override reduces the official popup's side padding on phones. That override
+uses Google's current popup/close-button classes; recheck it if the upstream
+widget changes. Normal social links can
+still include a booking URL when only an external link is wanted.
 
 A personal Google Account supports one booking page. Checking availability
 across multiple calendars, extra schedules, and automated reminders require an
-eligible paid plan. Google also supplies popup-button and inline-page embeds if
-booking directly inside the Contact page is preferred later.
+eligible paid plan. Booking details and notifications are configured in Google
+Calendar; these widgets do not enable the proposed visitor database or direct
+message form.
 
 Official guides, checked September 8, 2026:
 [create an appointment schedule](https://support.google.com/calendar/answer/10729749?hl=en),

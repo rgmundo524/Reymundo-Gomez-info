@@ -8,7 +8,7 @@ background or work.
 | --- | --- | --- |
 | `/` | `content/pages/home.md` | Portrait, introduction, three expertise highlights, selected work, contact link |
 | `/work-history/` | `content/pages/work-history.md` | Interactive role timeline, employment details, professional biography, then expertise and analytical approach in frosted panels |
-| `/about/` | `content/pages/about.md` | Personal introduction, hobbies, and life outside work |
+| `/about/` | `content/pages/about.md` | Personal introduction, hobbies, and curated public GitHub projects |
 | `/expertise/` | Compatibility redirect | Opens the expertise section at `/work-history/#section-expertise` when Work History is visible |
 | `/casework/` | `content/pages/casework.md` | Interactive charts, selected projects, and investigation experience |
 | `/credentials/` | `content/pages/credentials.md` | Credentials discovered from Markdown, grouped by issuer, followed by education |
@@ -103,7 +103,7 @@ visible in the current build. Work History now lives at `/work-history/`, and
 
 Supporting pages set `section_order`, a list of collection names such as
 `experience`, `biography`, `charts`, `projects`, `credentials`, `education`, `expertise`,
-`interests`, and `callouts`. Listed sections render only when they have content;
+`interests`, `github`, and `callouts`. Listed sections render only when they have content;
 unlisted sections are omitted. The Astro templates still define each section's
 visual layout and the curated homepage structure.
 
@@ -131,6 +131,9 @@ to the About page's `interests` list. The list also controls display order; remo
 a slug to omit it from the page. Longer stories belong in the hobby file body.
 The existing selections were moved from Work History without inventing additional
 personal history. The professional profile body remains on Work History.
+The `github` section follows the hobbies and uses `github_groups` to select
+personal and organization projects. See [GitHub project cards](github-projects.md)
+for the existing card integration, selection fields, and future Go-Crypto group.
 
 ## Adding a position
 

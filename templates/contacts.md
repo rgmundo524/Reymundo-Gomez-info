@@ -15,6 +15,8 @@ services:
     action:
       label: Contact Example organization
       url: https://example.com/contact/
+    # Optional: add booking with label, enabled, and a full Google appointment
+    # schedule URL. See docs/contacts.md; do not use a private calendar-view URL.
     email: null
     phone: null
     # To display a phone number, replace null with:

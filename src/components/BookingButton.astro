@@ -1,0 +1,57 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+type Booking = NonNullable<CollectionEntry<'contacts'>['data']['services'][number]['booking']>;
+type Props = { booking: Booking };
+const { booking } = Astro.props;
+---
+<div class="google-booking" data-booking-url={booking.url} data-booking-label={booking.label}>
+  <a class="button button-primary" href={booking.url} data-booking-fallback>{booking.label}</a>
+  <span data-booking-mount></span>
+  <a class="text-link booking-direct-link" href={booking.url} data-booking-direct hidden>Open booking page</a>
+</div>
+<script>
+  type SchedulingButton = { load(options: { url: string; color: string; label: string; target: HTMLElement }): void };
+  const calendarWindow = window as Window & { calendar?: { schedulingButton?: SchedulingButton } };
+  const bookings = document.querySelectorAll<HTMLElement>('.google-booking');
+
+  async function loadBookingWidget() {
+    // Google supplies the button, booking dialog, availability and submission flow.
+    // Keep ordinary links available if either of its assets cannot load.
+    await Promise.all([
+      new Promise<void>((resolve, reject) => {
+        const stylesheet = document.createElement('link');
+        stylesheet.rel = 'stylesheet';
+        stylesheet.href = 'https://calendar.google.com/calendar/scheduling-button-script.css';
+        stylesheet.onload = () => resolve();
+        stylesheet.onerror = () => reject(new Error('Booking styles unavailable.'));
+        document.head.append(stylesheet);
+      }),
+      new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://calendar.google.com/calendar/scheduling-button-script.js';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Booking widget unavailable.'));
+        document.head.append(script);
+      }),
+    ]);
+    const widget = calendarWindow.calendar?.schedulingButton;
+    if (!widget) return;
+    for (const booking of bookings) {
+      const target = booking.querySelector<HTMLElement>('[data-booking-mount]');
+      if (!target || !booking.dataset.bookingUrl || !booking.dataset.bookingLabel) continue;
+      widget.load({
+        url: booking.dataset.bookingUrl,
+        label: booking.dataset.bookingLabel,
+        color: getComputedStyle(document.documentElement).getPropertyValue('--button').trim(),
+        target,
+      });
+      if (target.nextElementSibling?.tagName === 'BUTTON') {
+        booking.querySelector<HTMLElement>('[data-booking-fallback]')!.hidden = true;
+        booking.querySelector<HTMLElement>('[data-booking-direct]')!.hidden = false;
+      }
+    }
+  }
+  if (bookings.length) void loadBookingWidget().catch(() => { /* The booking links remain usable. */ });
+</script>

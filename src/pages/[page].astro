@@ -8,6 +8,7 @@ import ExperienceTimeline from '../components/ExperienceTimeline.astro';
 import ArticleList from '../components/ArticleList.astro';
 import CredentialGroups from '../components/CredentialGroups.astro';
 import ContactCards from '../components/ContactCards.astro';
+import GitHubProjects from '../components/GitHubProjects.astro';
 import { isVisible, pageContact, pageProfile, selected } from '../lib/content';
 import { sortExperience } from '../lib/experience';
 
@@ -42,6 +43,7 @@ const labels = { experience: 'Professional experience', expertise: 'Areas of exp
   </header>
   {contact && <ContactCards entry={contact} />}
   {page.data.section_order.map((name) => {
+    if (name === 'github') return <GitHubProjects page={page} />;
     if (name === 'biography') return Bio && <section class="container bio-section" id="section-biography" aria-labelledby="heading-biography"><div><p class="eyebrow">{page.data.blocks.bio_eyebrow ?? 'Background'}</p><h2 id="heading-biography">{page.data.blocks.bio_heading ?? 'Biography'}</h2></div><div class="reading-copy"><Bio /></div></section>;
     if (name === 'credentials') return credentials.length > 0 && <section class="container content-section" id="section-credentials" aria-labelledby="heading-credentials">
       <div class="section-heading"><h2 id="heading-credentials">{labels.credentials}</h2></div>
