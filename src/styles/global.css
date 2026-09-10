@@ -41,7 +41,7 @@
 html { scroll-padding-top: calc(var(--site-header-height) + 1rem); }
 button { font: inherit; cursor: pointer; }
 * { box-sizing: border-box; }
-body { margin: 0; font-size: 1rem; background: var(--paper); isolation: isolate; }
+body { position: relative; min-height: 100vh; min-height: 100svh; margin: 0; font-size: 1rem; background: var(--paper); isolation: isolate; }
 img, svg { max-width: 100%; }
 img { display: block; height: auto; }
 a { color: var(--accent-text); text-underline-offset: .25em; overflow-wrap: anywhere; }
@@ -304,7 +304,8 @@ li + li { margin-top: .4rem; }
 .mdx-disclosure summary::-webkit-details-marker { display: none; }
 .mdx-disclosure[open] summary [data-icon] { transform: rotate(180deg); }
 .mdx-disclosure > div { padding: .5rem 0 1rem; }
-.site-particles { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+/* The body is the canvas's containing block, so scrolling reveals more of the network. */
+.site-particles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
 .hero-copy, .hero > .portrait { position: relative; }
 .hero-intro, .hero-statement { background: transparent; }
 .particle-toggle { position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(.8rem, env(safe-area-inset-bottom)); z-index: 5; border: 1px solid var(--line); background: var(--paper); color: var(--muted); font: inherit; font-size: .875rem; padding: .45rem .7rem; cursor: pointer; }

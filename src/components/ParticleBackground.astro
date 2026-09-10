@@ -68,6 +68,15 @@ import { Icon } from 'astro-icon/components';
       try { localStorage.setItem('reymundo-particles-paused', String(paused)); } catch {}
       refresh();
     }
+    function clearHoverOnScroll() {
+      // tsParticles updates canvas-relative hover coordinates on pointer movement.
+      // Hide the old connection while scrolling until its next pointer update.
+      type HoverPlugin = Container['plugins'][number] & {
+        interactionManager: { interactivityData: { mouse: { position?: unknown } } };
+      };
+      const plugin = container?.plugins.find((entry): entry is HoverPlugin => 'interactionManager' in entry);
+      if (plugin) delete plugin.interactionManager.interactivityData.mouse.position;
+    }
     button.addEventListener('click', toggleAnimation);
     const theme = new MutationObserver(refresh);
     theme.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -91,6 +100,7 @@ import { Icon } from 'astro-icon/components';
     window.addEventListener('pagehide', onPageHide);
     window.addEventListener('pageshow', onPageShow);
     window.addEventListener('storage', onStorage);
+    window.addEventListener('scroll', clearHoverOnScroll, { passive: true });
     import.meta.hot?.dispose(() => {
       disposed = true;
       generation++;
@@ -103,6 +113,7 @@ import { Icon } from 'astro-icon/components';
       window.removeEventListener('pagehide', onPageHide);
       window.removeEventListener('pageshow', onPageShow);
       window.removeEventListener('storage', onStorage);
+      window.removeEventListener('scroll', clearHoverOnScroll);
     });
     refresh();
   }

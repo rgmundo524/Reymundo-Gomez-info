@@ -20,7 +20,7 @@ export function particleOptions(dark: boolean, compact: boolean, hover: boolean)
       move: { enable: true, speed: settings.speed, outModes: { default: 'bounce' } },
     },
     interactivity: {
-      // Window coordinates remain accurate when the pointer is over nested page content.
+      // The plugin converts window coordinates to the document-height canvas on pointer movement.
       detectsOn: 'window',
       events: { onHover: { enable: hover, mode: 'grab' }, onClick: { enable: false } },
       modes: { grab: { distance: settings.hoverDistance, links: { color, opacity: 0.35 } } },

@@ -89,12 +89,18 @@ page's card because URL fragments are not separate pages.
 ## tsParticles
 
 Every page contains a decorative network of connected particles, mounted once in
-the shared site layout. The canvas stays fixed to the viewport, so long pages
-do not create an increasingly large animation or add more particles as you scroll.
-Pointer movement highlights nearby connections. The canvas does not intercept
-links or text selection. The animation follows light/dark mode, pauses outside
-the viewport or when the browser loses focus, and runs at a capped 30 frames
-per second. Small screens use fewer particles.
+the shared site layout. The canvas covers the full page height and scrolls with
+the content, so scrolling reveals another part of the same animated network.
+The positioned body sizes the canvas through CSS; tsParticles' built-in resize
+observer updates it when content expands or contracts, including case search
+results. Short pages still receive a background at least one screen tall.
+
+Pointer movement highlights nearby connections. Scrolling clears the previous
+cursor connection until the pointer moves again, so an outdated hover position
+does not remain attached to a point farther up the document. The canvas does not
+intercept links or text selection. The animation follows light/dark mode, pauses
+when the browser loses focus, and runs at a capped 30 frames per second. Small
+screens use fewer particles.
 
 The Pause animation button stays in the lower-right corner and remembers the
 choice across pages in browser storage. Users with
@@ -105,8 +111,8 @@ Adjust the animation in `src/config/particles.json`:
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| `count.desktop` | `100` | Total nodes on screens wider than 760px |
-| `count.mobile` | `50` | Total nodes on screens up to 760px wide |
+| `count.desktop` | `100` | Total nodes across the full page on screens wider than 760px |
+| `count.mobile` | `50` | Total nodes across the full page on screens up to 760px wide |
 | `size.min` | `3` | Smallest node radius in pixels |
 | `size.max` | `6` | Largest node radius in pixels |
 | `connectionDistance` | `240` | Maximum distance in pixels for ordinary connecting lines |
@@ -118,8 +124,11 @@ for equal-sized nodes. The current range produces nodes 6–12 pixels across.
 For example, min `2` and max `4` makes smaller nodes;
 desktop `70` and mobile `30` makes a sparser network. These are examples, not
 automatic presets. Counts currently stay fixed for each screen class because
-automatic area-based density is disabled. More nodes and longer connections
-increase the rendering work; keep mobile counts lower.
+automatic area-based density is disabled. Longer pages spread those nodes over
+more space, making the visible network sparser. Scrolling does not spawn more
+nodes or restart the animation. More nodes and longer connections increase the
+rendering work; keep mobile counts lower. The full-height canvas also uses more
+memory on long pages than a viewport-sized canvas; retina scaling remains disabled.
 
 `hoverDistance` controls the cursor's reach independently of connections between
 nodes. For example, `500` connects the cursor to nodes farther away, while `80`
